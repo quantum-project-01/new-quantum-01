@@ -150,27 +150,27 @@ const SportsSection: React.FC = () => {
 
         <div className="relative z-10 h-full flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8">
           {/* Section Header */}
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 px-2">
               Choose from{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">
                 40+ Sports
               </span>
             </h2>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-gray-300 max-w-2xl mx-auto px-4">
               Discover your perfect sport from our extensive collection of activities
             </p>
           </div>
 
           {/* Stacking Cards Container */}
-          <div className="relative w-80 h-[500px] perspective-1000">
+          <div className="relative w-72 sm:w-80 md:w-96 h-[400px] sm:h-[450px] md:h-[500px] perspective-1000">
             {sportsData.map((sport, index) => (
               <div
                 key={sport.id}
                 ref={(el) => {
                   if (el) cardsRef.current[index] = el;
                 }}
-                className={`absolute inset-0 rounded-2xl shadow-2xl transform-gpu transition-all duration-700 ease-out ${sport.color}`}
+                className={`absolute inset-0 rounded-xl sm:rounded-2xl shadow-2xl transform-gpu transition-all duration-700 ease-out ${sport.color}`}
                 style={{
                   transform: 'translateY(100px) scale(0.8)',
                   opacity: 0,
@@ -178,33 +178,33 @@ const SportsSection: React.FC = () => {
                   transformStyle: 'preserve-3d'
                 }}
               >
-                <div className="relative h-full p-8 flex flex-col items-center justify-center text-white">
+                <div className="relative h-full p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center text-white">
                   {/* Sport Icon */}
-                  <div className="text-7xl mb-6 transform hover:scale-110 transition-transform duration-300">
+                  <div className="text-5xl sm:text-6xl md:text-7xl mb-4 sm:mb-6 transform hover:scale-110 transition-transform duration-300">
                     {sport.image}
                   </div>
                   
                   {/* Sport Name */}
-                  <h3 className="text-3xl font-bold mb-3 text-center">
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3 text-center">
                     {sport.name}
                   </h3>
                   
                   {/* Sport Description */}
-                  <p className="text-center text-white/90 mb-8 text-lg">
+                  <p className="text-center text-white/90 mb-6 sm:mb-8 text-sm sm:text-base md:text-lg px-2">
                     {sport.description}
                   </p>
                   
                   {/* Action Button */}
-                  <button className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 hover:scale-105 shadow-lg">
+                  <button className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-semibold transition-all duration-300 hover:scale-105 shadow-lg text-sm sm:text-base">
                     Book Now
                   </button>
 
                   {/* Decorative Elements */}
-                  <div className="absolute top-6 right-6 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
-                  <div className="absolute bottom-6 left-6 w-16 h-16 bg-white/10 rounded-full blur-lg"></div>
+                  <div className="absolute top-4 sm:top-6 right-4 sm:right-6 w-16 sm:w-20 h-16 sm:h-20 bg-white/10 rounded-full blur-xl"></div>
+                  <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 w-12 sm:w-16 h-12 sm:h-16 bg-white/10 rounded-full blur-lg"></div>
                   
                   {/* Card Number Indicator */}
-                  <div className="absolute top-4 left-4 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-sm font-bold">
+                  <div className="absolute top-3 sm:top-4 left-3 sm:left-4 w-6 sm:w-8 h-6 sm:h-8 bg-white/20 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold">
                     {index + 1}
                   </div>
                 </div>
@@ -213,12 +213,12 @@ const SportsSection: React.FC = () => {
           </div>
 
           {/* Progress Indicator */}
-          <div className="mt-12">
-            <div className="flex justify-center items-center space-x-2 mb-4">
+          <div className="mt-8 sm:mt-12">
+            <div className="flex justify-center items-center space-x-1.5 sm:space-x-2 mb-3 sm:mb-4">
               {sportsData.map((_, index) => (
                 <div
                   key={index}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
                     index <= currentCard 
                       ? 'bg-orange-500 scale-125' 
                       : 'bg-white/30'
@@ -226,20 +226,20 @@ const SportsSection: React.FC = () => {
                 />
               ))}
             </div>
-            <p className="text-white/60 text-center text-sm">
+            <p className="text-white/60 text-center text-xs sm:text-sm">
               {currentCard + 1} of {sportsData.length} sports
             </p>
           </div>
 
           {/* Scroll Indicator */}
           {isSticky && (
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white/60">
+            <div className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 text-white/60">
               <div className="flex flex-col items-center">
-                <span className="text-sm mb-2">
+                <span className="text-xs sm:text-sm mb-2 text-center px-4">
                   {currentCard < sportsData.length - 1 ? 'Scroll to see next sport' : 'Scroll to continue'}
                 </span>
-                <div className="w-6 h-10 border-2 border-white/30 rounded-full relative">
-                  <div className="w-1 h-3 bg-white/60 rounded-full absolute top-2 left-1/2 transform -translate-x-1/2 animate-bounce"></div>
+                <div className="w-5 sm:w-6 h-8 sm:h-10 border-2 border-white/30 rounded-full relative">
+                  <div className="w-1 h-2 sm:h-3 bg-white/60 rounded-full absolute top-1.5 sm:top-2 left-1/2 transform -translate-x-1/2 animate-bounce"></div>
                 </div>
               </div>
             </div>

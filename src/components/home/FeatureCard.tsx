@@ -51,14 +51,14 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon: Icon, title, descriptio
   const colors = colorClasses[colorScheme];
 
   return (
-    <div className={`group relative bg-white p-8 rounded-3xl border border-gray-100 ${colors.hoverBorder} hover:shadow-xl transition-all duration-300`}>
-      <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradientFrom} to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity`}></div>
+    <div className={`group relative bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-gray-100 ${colors.hoverBorder} hover:shadow-xl transition-all duration-300`}>
+      <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradientFrom} to-transparent rounded-2xl sm:rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity`}></div>
       <div className="relative">
-        <div className={`w-14 h-14 ${colors.bg} rounded-2xl flex items-center justify-center mb-6 transition-colors`}>
-          <Icon className={`h-7 w-7 ${colors.iconColor}`} />
+        <div className={`w-12 h-12 sm:w-14 sm:h-14 ${colors.bg} rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 transition-colors`}>
+          <Icon className={`h-6 w-6 sm:h-7 sm:w-7 ${colors.iconColor}`} />
         </div>
-        <h3 className="text-xl font-bold text-gray-900 mb-4">{title}</h3>
-        <p className="text-gray-600 leading-relaxed">
+        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">{title}</h3>
+        <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
           {description}
         </p>
       </div>

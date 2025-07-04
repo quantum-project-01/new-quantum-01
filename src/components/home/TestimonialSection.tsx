@@ -173,14 +173,14 @@ const TestimonialSection: React.FC = () => {
           /* Mobile specific animations */
           @media (max-width: 768px) {
             .animate-scroll-right {
-              animation: scroll-right 25s linear infinite;
+              animation: scroll-right 30s linear infinite;
             }
           }
           
           /* Tablet specific animations */
           @media (min-width: 769px) and (max-width: 1024px) {
             .animate-scroll-right {
-              animation: scroll-right 22s linear infinite;
+              animation: scroll-right 25s linear infinite;
             }
           }
         `
@@ -213,15 +213,15 @@ const TestimonialSection: React.FC = () => {
                 return (
                   <div
                     key={`${testimonial.id}-${index}`}
-                    className={`group relative bg-white p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border ${colors.border} hover:shadow-xl transition-all duration-300 hover:border-opacity-50 flex-shrink-0 w-72 sm:w-80 md:w-96 mx-2 sm:mx-3 md:mx-4 hover:scale-105 hover:z-20`}
+                    className={`group relative bg-white p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border ${colors.border} hover:shadow-xl transition-all duration-300 hover:border-opacity-50 flex-shrink-0 w-64 sm:w-72 md:w-80 lg:w-96 mx-2 sm:mx-3 md:mx-4 hover:scale-105 hover:z-20`}
                   >
                     {/* Background Gradient */}
                     <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradientFrom} ${colors.gradientTo} rounded-2xl sm:rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
 
                     <div className="relative">
                       {/* Quote Icon */}
-                      <div className={`w-10 h-10 sm:w-12 sm:h-12 ${colors.bg} rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                        <Quote className={`h-5 w-5 sm:h-6 sm:w-6 ${colors.accent}`} />
+                      <div className={`w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 ${colors.bg} rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                        <Quote className={`h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 ${colors.accent}`} />
                       </div>
 
                       {/* Rating */}

@@ -43,25 +43,25 @@ const FeaturesSection: React.FC = () => {
   ];
 
   return (
-    <section className="py-24 bg-white">
+    <section className="py-12 sm:py-16 md:py-20 lg:py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-20">
-          <div className="inline-flex items-center px-4 py-2 rounded-full bg-green-50 text-green-600 text-sm font-medium mb-6">
-            <Award className="h-4 w-4 mr-2" />
+        <div className="text-center mb-12 sm:mb-16 md:mb-20">
+          <div className="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-green-50 text-green-600 text-xs sm:text-sm font-medium mb-4 sm:mb-6">
+            <Award className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
             Why Choose Us
           </div>
-          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 px-2">
             Everything You Need
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed px-4">
             We've built the most comprehensive sports venue booking platform 
             with features that make booking effortless and playing enjoyable.
           </p>
         </div>
         
         {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {features.map((feature, index) => (
             <FeatureCard
               key={index}
