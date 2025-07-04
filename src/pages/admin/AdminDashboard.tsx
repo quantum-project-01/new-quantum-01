@@ -5,7 +5,6 @@ import {
   Building, 
   Calendar, 
   DollarSign, 
-  TrendingUp, 
   Eye, 
   Edit, 
   Trash2,
@@ -16,8 +15,6 @@ import {
   UserPlus,
   Download,
   Search,
-  Filter,
-  Settings,
   Save
 } from 'lucide-react';
 import DashboardLayout from '../../components/layout/DashboardLayout';

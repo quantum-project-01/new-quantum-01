@@ -5,13 +5,9 @@ import {
   Calendar, 
   Building, 
   MapPin, 
-  Users, 
-  TrendingUp, 
   Eye,
   Edit,
-  Trash2,
   Plus,
-  Filter,
   Download,
   Clock,
   CheckCircle,
@@ -19,7 +15,6 @@ import {
   AlertCircle,
   Star,
   Search,
-  Settings,
   Save
 } from 'lucide-react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
