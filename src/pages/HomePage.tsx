@@ -4,6 +4,7 @@ import {
   HowItWorksSection,
   FeaturesSection,
   SportsSection,
+  TestimonialSection,
   CTASection
 } from '../components/home';
 
@@ -14,6 +15,7 @@ const HomePage: React.FC = () => {
       <HowItWorksSection />
       <FeaturesSection />
       <SportsSection />
+      <TestimonialSection />
       <CTASection />
     </div>
   );
