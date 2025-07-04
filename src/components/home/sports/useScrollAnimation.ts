@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { sportsData } from './data';
 
 export const useScrollAnimation = (cardsRef: React.MutableRefObject<HTMLDivElement[]>) => {
@@ -7,7 +7,7 @@ export const useScrollAnimation = (cardsRef: React.MutableRefObject<HTMLDivEleme
   const containerRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
 
-  const updateCardTransforms = (cardIndex: number) => {
+  const updateCardTransforms = useCallback((cardIndex: number) => {
     cardsRef.current.forEach((card, index) => {
       if (!card) return;
 
@@ -38,16 +38,16 @@ export const useScrollAnimation = (cardsRef: React.MutableRefObject<HTMLDivEleme
       card.style.opacity = opacity.toString();
       card.style.zIndex = zIndex.toString();
     });
-  };
+  }, [cardsRef]);
 
-  const resetCards = () => {
+  const resetCards = useCallback(() => {
     cardsRef.current.forEach((card, index) => {
       if (!card) return;
       card.style.transform = 'translateY(20px) scale(0.95)';
       card.style.opacity = '0';
       card.style.zIndex = (sportsData.length - index).toString();
     });
-  };
+  }, [cardsRef]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -79,7 +79,7 @@ export const useScrollAnimation = (cardsRef: React.MutableRefObject<HTMLDivEleme
     handleScroll();
 
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [resetCards, updateCardTransforms]);
 
   return { currentCard, isSticky, containerRef, sectionRef };
 }; 
