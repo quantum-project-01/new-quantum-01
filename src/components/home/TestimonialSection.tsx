@@ -128,7 +128,7 @@ const TestimonialSection: React.FC = () => {
     return Array.from({ length: 5 }, (_, index) => (
       <Star
         key={index}
-        className={`h-4 w-4 ${index < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
+        className={`h-3 w-3 sm:h-4 sm:w-4 ${index < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
           }`}
       />
     ));
@@ -156,27 +156,48 @@ const TestimonialSection: React.FC = () => {
             animation-play-state: paused;
           }
           
+          .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+          
           .line-clamp-4 {
             display: -webkit-box;
             -webkit-line-clamp: 4;
             -webkit-box-orient: vertical;
             overflow: hidden;
           }
+          
+          /* Mobile specific animations */
+          @media (max-width: 768px) {
+            .animate-scroll-right {
+              animation: scroll-right 25s linear infinite;
+            }
+          }
+          
+          /* Tablet specific animations */
+          @media (min-width: 769px) and (max-width: 1024px) {
+            .animate-scroll-right {
+              animation: scroll-right 22s linear infinite;
+            }
+          }
         `
       }} />
 
-      <section className="py-24 bg-gray-50 overflow-hidden">
+      <section className="py-12 sm:py-16 md:py-20 lg:py-24 bg-gray-50 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Header */}
-          <div className="text-center mb-20">
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-50 text-blue-600 text-sm font-medium mb-6">
-              <Quote className="h-4 w-4 mr-2" />
+          <div className="text-center mb-12 sm:mb-16 md:mb-20">
+            <div className="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-blue-50 text-blue-600 text-xs sm:text-sm font-medium mb-4 sm:mb-6">
+              <Quote className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
               Game Changing Stories
             </div>
-            <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 px-4">
               What Our Players Say
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed px-4">
               Join thousands of happy players who have found their perfect game through our platform.
               Every booking creates memorable experiences and lasting connections.
             </p>
@@ -192,24 +213,24 @@ const TestimonialSection: React.FC = () => {
                 return (
                   <div
                     key={`${testimonial.id}-${index}`}
-                    className={`group relative bg-white p-8 rounded-3xl border ${colors.border} hover:shadow-xl transition-all duration-300 hover:border-opacity-50 flex-shrink-0 w-96 mx-4 hover:scale-105 hover:z-20`}
+                    className={`group relative bg-white p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border ${colors.border} hover:shadow-xl transition-all duration-300 hover:border-opacity-50 flex-shrink-0 w-72 sm:w-80 md:w-96 mx-2 sm:mx-3 md:mx-4 hover:scale-105 hover:z-20`}
                   >
                     {/* Background Gradient */}
-                    <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradientFrom} ${colors.gradientTo} rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
+                    <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradientFrom} ${colors.gradientTo} rounded-2xl sm:rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
 
                     <div className="relative">
                       {/* Quote Icon */}
-                      <div className={`w-12 h-12 ${colors.bg} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                        <Quote className={`h-6 w-6 ${colors.accent}`} />
+                      <div className={`w-10 h-10 sm:w-12 sm:h-12 ${colors.bg} rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                        <Quote className={`h-5 w-5 sm:h-6 sm:w-6 ${colors.accent}`} />
                       </div>
 
                       {/* Rating */}
-                      <div className="flex items-center mb-4">
+                      <div className="flex items-center mb-3 sm:mb-4">
                         {renderStars(testimonial.rating)}
                       </div>
 
                       {/* Testimonial Text */}
-                      <p className="text-gray-700 leading-relaxed mb-6 text-base line-clamp-4">
+                      <p className="text-gray-700 leading-relaxed mb-4 sm:mb-6 text-sm sm:text-base line-clamp-3 sm:line-clamp-4">
                         "{testimonial.text}"
                       </p>
 
@@ -219,15 +240,15 @@ const TestimonialSection: React.FC = () => {
                           <img
                             src={testimonial.image}
                             alt={testimonial.name}
-                            className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm group-hover:scale-110 transition-transform duration-300"
+                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-white shadow-sm group-hover:scale-110 transition-transform duration-300"
                           />
-                          <div className={`absolute -bottom-1 -right-1 w-5 h-5 ${colors.bg} rounded-full flex items-center justify-center border-2 border-white group-hover:scale-110 transition-transform duration-300`}>
-                            <div className={`w-2 h-2 ${colors.accent.replace('text-', 'bg-')} rounded-full`}></div>
+                          <div className={`absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 w-4 h-4 sm:w-5 sm:h-5 ${colors.bg} rounded-full flex items-center justify-center border-2 border-white group-hover:scale-110 transition-transform duration-300`}>
+                            <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 ${colors.accent.replace('text-', 'bg-')} rounded-full`}></div>
                           </div>
                         </div>
-                        <div className="ml-4">
-                          <h4 className="font-semibold text-gray-900">{testimonial.name}</h4>
-                          <p className="text-sm text-gray-500">{testimonial.location} • {testimonial.sport}</p>
+                        <div className="ml-3 sm:ml-4">
+                          <h4 className="font-semibold text-gray-900 text-sm sm:text-base">{testimonial.name}</h4>
+                          <p className="text-xs sm:text-sm text-gray-500">{testimonial.location} • {testimonial.sport}</p>
                         </div>
                       </div>
                     </div>
@@ -237,15 +258,15 @@ const TestimonialSection: React.FC = () => {
             </div>
 
             {/* Left Fade Gradient - positioned at the beginning of testimonials */}
-            <div className="absolute left-0 top-0 w-32 h-full bg-gradient-to-r from-gray-50 via-gray-50/80 to-transparent z-10 pointer-events-none"></div>
+            <div className="absolute left-0 top-0 w-16 sm:w-24 md:w-32 h-full bg-gradient-to-r from-gray-50 via-gray-50/80 to-transparent z-10 pointer-events-none"></div>
 
             {/* Right Fade Gradient - positioned at the end of testimonials */}
-            <div className="absolute right-0 top-0 w-32 h-full bg-gradient-to-l from-gray-50 via-gray-50/80 to-transparent z-10 pointer-events-none"></div>
+            <div className="absolute right-0 top-0 w-16 sm:w-24 md:w-32 h-full bg-gradient-to-l from-gray-50 via-gray-50/80 to-transparent z-10 pointer-events-none"></div>
           </div>
 
           {/* Call to Action */}
-          <div className="text-center mt-16">
-            <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl cursor-pointer">
+          <div className="text-center mt-12 sm:mt-16">
+            <div className="inline-flex items-center px-4 py-2.5 sm:px-6 sm:py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg sm:rounded-xl hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl cursor-pointer text-sm sm:text-base">
               <span>Share Your Story</span>
             </div>
           </div>
