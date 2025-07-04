@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
@@ -23,6 +23,9 @@ import PartnerVenues from './pages/partner/PartnerVenues';
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
 
+// Demo Page
+// import DashboardDemo from './pages/DashboardDemo';
+
 // Protected Route Component
 import ProtectedRoute from './components/common/ProtectedRoute';
 
@@ -36,78 +39,98 @@ const queryClient = new QueryClient({
   },
 });
 
+// Layout component that conditionally renders Header and Footer
+const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const location = useLocation();
+  
+  // Define routes where Header and Footer should be hidden
+  const dashboardRoutes = [
+    '/admin/dashboard',
+    '/partner/dashboard'
+  ];
+  
+  // Check if current route is a dashboard route
+  const isDashboardRoute = dashboardRoutes.some(route => 
+    location.pathname === route || location.pathname.startsWith(route)
+  );
+  
+  if (isDashboardRoute) {
+    // For dashboard routes, render without Header and Footer
+    return <>{children}</>;
+  }
+  
+  // For regular routes, render with Header and Footer
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Header />
+      <main className="flex-1">
+        {children}
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
-        <div className="min-h-screen bg-gray-50 flex flex-col">
-          <Header />
-          
-          <main className="flex-1">
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<HomePage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/venues" element={<VenuesPage />} />
-              <Route path="/venues/:id" element={<VenueDetailPage />} />
-              
-              {/* Protected User Routes */}
-              <Route
-                path="/booking/:venueId/:slotId"
-                element={
-                  <ProtectedRoute>
-                    <BookingPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <ProfilePage />
-                  </ProtectedRoute>
-                }
-              />
-              
-              {/* Partner Routes */}
-              <Route
-                path="/partner/dashboard"
-                element={
-                  <ProtectedRoute requiredRole="partner">
-                    <PartnerDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/partner/venues"
-                element={
-                  <ProtectedRoute requiredRole="partner">
-                    <PartnerVenues />
-                  </ProtectedRoute>
-                }
-              />
-              
-              {/* Admin Routes */}
-              <Route
-                path="/admin/dashboard"
-                element={
-                  <ProtectedRoute requiredRole="admin">
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              
-              {/* 404 Route */}
-              <Route path="*" element={<div className="container mx-auto px-4 py-8 text-center">
-                <h1 className="text-4xl font-bold text-gray-900 mb-4">404 - Page Not Found</h1>
-                <p className="text-gray-600">The page you're looking for doesn't exist.</p>
-              </div>} />
-            </Routes>
-          </main>
-          
-          <Footer />
-        </div>
+        <Layout>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/venues" element={<VenuesPage />} />
+            <Route path="/venues/:id" element={<VenueDetailPage />} />
+            
+            {/* Demo Routes */}
+            {/* <Route path="/demo" element={<DashboardDemo />} />
+            <Route path="/dashboard-demo" element={<DashboardDemo />} /> */}
+            
+            {/* Protected User Routes */}
+            <Route
+              path="/booking/:venueId/:slotId"
+              element={
+                <ProtectedRoute>
+                  <BookingPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            
+            {/* Admin Routes - Nested dashboard routes */}
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/dashboard/users" element={<AdminDashboard />} />
+            <Route path="/admin/dashboard/partners" element={<AdminDashboard />} />
+            <Route path="/admin/dashboard/venues" element={<AdminDashboard />} />
+            <Route path="/admin/dashboard/bookings" element={<AdminDashboard />} />
+            <Route path="/admin/dashboard/settings" element={<AdminDashboard />} />
+            
+            {/* Partner Routes - Nested dashboard routes */}
+            <Route path="/partner/dashboard" element={<PartnerDashboard />} />
+            <Route path="/partner/dashboard/bookings" element={<PartnerDashboard />} />
+            <Route path="/partner/dashboard/venues" element={<PartnerDashboard />} />
+            <Route path="/partner/dashboard/analytics" element={<PartnerDashboard />} />
+            <Route path="/partner/dashboard/settings" element={<PartnerDashboard />} />
+            
+            {/* Legacy Partner Routes for backward compatibility */}
+            <Route path="/partner/venues" element={<PartnerVenues />} />
+            
+            {/* 404 Route */}
+            <Route path="*" element={<div className="container mx-auto px-4 py-8 text-center">
+              <h1 className="text-4xl font-bold text-gray-900 mb-4">404 - Page Not Found</h1>
+              <p className="text-gray-600">The page you're looking for doesn't exist.</p>
+            </div>} />
+          </Routes>
+        </Layout>
       </Router>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

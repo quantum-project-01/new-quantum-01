@@ -148,6 +148,60 @@ export interface PartnerStats {
   };
 }
 
+export interface PartnerDashboardData {
+  stats: PartnerStats;
+  recentBookings: Booking[];
+  venues: Venue[];
+  earningsChart: {
+    labels: string[];
+    data: number[];
+  };
+  bookingsChart: {
+    labels: string[];
+    data: number[];
+  };
+}
+
+// Admin Types
+export interface AdminStats {
+  totalUsers: number;
+  totalPartners: number;
+  totalVenues: number;
+  totalBookings: number;
+  totalRevenue: number;
+  pendingApprovals: number;
+  last7Days: {
+    users: number;
+    partners: number;
+    venues: number;
+    bookings: number;
+    revenue: number;
+  };
+  last30Days: {
+    users: number;
+    partners: number;
+    venues: number;
+    bookings: number;
+    revenue: number;
+  };
+}
+
+export interface AdminDashboardData {
+  stats: AdminStats;
+  recentUsers: User[];
+  recentPartners: User[];
+  pendingVenues: Venue[];
+  recentBookings: Booking[];
+  revenueChart: {
+    labels: string[];
+    data: number[];
+  };
+  usersChart: {
+    labels: string[];
+    data: number[];
+  };
+}
+
 // API Response Types
 export interface ApiResponse<T> {
   success: boolean;
