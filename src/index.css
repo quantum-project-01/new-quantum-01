@@ -2,6 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global cursor hiding - Applied immediately on page load */
+*, *::before, *::after {
+  cursor: none !important;
+}
+
+html, body {
+  cursor: none !important;
+}
+
+/* Ensure all interactive elements have no cursor */
+a, button, input, textarea, select, label,
+[role="button"], [role="link"], [role="menuitem"],
+.cursor-pointer, .hover-effect {
+  cursor: none !important;
+}
+
+/* Handle special cases */
+iframe, embed, object {
+  cursor: none !important;
+}
+
+::selection {
+  cursor: none !important;
+}
+
+[draggable="true"] {
+  cursor: none !important;
+}
+
+::-webkit-scrollbar {
+  cursor: none !important;
+}
+
+.resize {
+  cursor: none !important;
+}
+
+/* Override any inline cursor styles */
+[style*="cursor"] {
+  cursor: none !important;
+}
+
 @layer base {
   * {
     box-sizing: border-box;
