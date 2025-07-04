@@ -43,8 +43,8 @@ const Header: React.FC = () => {
       <header 
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled 
-            // ? 'bg-white/20 backdrop-blur-xl border-b border-white/30 shadow-lg' 
-            // : 'bg-white/10 backdrop-blur-lg border-b border-white/20'
+            ? 'bg-gray-900/95 backdrop-blur-xl border-b border-gray-700/50 shadow-xl shadow-black/10' 
+            : 'bg-gray-900/80 backdrop-blur-lg border-b border-gray-800/50'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -61,7 +61,7 @@ const Header: React.FC = () => {
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-400 rounded-xl opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+              <span className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
                 Quantum
               </span>
             </Link>
@@ -72,8 +72,8 @@ const Header: React.FC = () => {
                 to="/venues"
                 className={`relative px-4 py-2 font-medium transition-all duration-200 ${
                   isActivePath('/venues')
-                    ? 'text-blue-600'
-                    : 'text-gray-700 hover:text-blue-600'
+                    ? 'text-blue-400'
+                    : 'text-gray-300 hover:text-white'
                 }`}
               >
                 Venues
@@ -85,8 +85,8 @@ const Header: React.FC = () => {
                 to="/events"
                 className={`relative px-4 py-2 font-medium transition-all duration-200 ${
                   isActivePath('/events')
-                    ? 'text-blue-600'
-                    : 'text-gray-700 hover:text-blue-600'
+                    ? 'text-blue-400'
+                    : 'text-gray-300 hover:text-white'
                 }`}
               >
                 Events
@@ -98,8 +98,8 @@ const Header: React.FC = () => {
                 to="/shop"
                 className={`relative px-4 py-2 font-medium transition-all duration-200 ${
                   isActivePath('/shop')
-                    ? 'text-blue-600'
-                    : 'text-gray-700 hover:text-blue-600'
+                    ? 'text-blue-400'
+                    : 'text-gray-300 hover:text-white'
                 }`}
               >
                 Shop
@@ -113,16 +113,16 @@ const Header: React.FC = () => {
             <div className="hidden lg:flex items-center space-x-4">
               {isAuthenticated ? (
                 <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-3 px-4 py-2 bg-white/20 backdrop-blur-md rounded-xl border border-white/30">
+                  <div className="flex items-center space-x-3 px-4 py-2 bg-gray-800/50 backdrop-blur-md rounded-xl border border-gray-700/50">
                     <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
                       <User className="h-4 w-4 text-white" />
                     </div>
-                    <span className="text-gray-700 font-medium">Hi, {user?.name}</span>
+                    <span className="text-gray-200 font-medium">Hi, {user?.name}</span>
                   </div>
                   
                   <Link
                     to="/profile"
-                    className="p-2 text-gray-600 hover:text-blue-600 hover:bg-white/20 rounded-lg transition-all duration-200"
+                    className="p-2 text-gray-300 hover:text-blue-400 hover:bg-gray-800/50 rounded-lg transition-all duration-200"
                     title="Profile"
                   >
                     <Settings className="h-5 w-5" />
@@ -131,7 +131,7 @@ const Header: React.FC = () => {
                   {user?.role === 'partner' && (
                     <Link
                       to="/partner/dashboard"
-                      className="p-2 text-gray-600 hover:text-blue-600 hover:bg-white/20 rounded-lg transition-all duration-200"
+                      className="p-2 text-gray-300 hover:text-blue-400 hover:bg-gray-800/50 rounded-lg transition-all duration-200"
                       title="Partner Dashboard"
                     >
                       <BarChart3 className="h-5 w-5" />
@@ -141,7 +141,7 @@ const Header: React.FC = () => {
                   {user?.role === 'admin' && (
                     <Link
                       to="/admin/dashboard"
-                      className="p-2 text-gray-600 hover:text-blue-600 hover:bg-white/20 rounded-lg transition-all duration-200"
+                      className="p-2 text-gray-300 hover:text-blue-400 hover:bg-gray-800/50 rounded-lg transition-all duration-200"
                       title="Admin Panel"
                     >
                       <Shield className="h-5 w-5" />
@@ -150,7 +150,7 @@ const Header: React.FC = () => {
                   
                   <button
                     onClick={handleLogout}
-                    className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
+                    className="p-2 text-gray-300 hover:text-red-400 hover:bg-red-900/20 rounded-lg transition-all duration-200"
                     title="Logout"
                   >
                     <LogOut className="h-5 w-5" />
@@ -160,7 +160,7 @@ const Header: React.FC = () => {
                 <div className="flex items-center space-x-3">
                   <Link
                     to="/login"
-                    className="px-6 py-2 text-gray-700 hover:text-blue-600 font-medium transition-all duration-200"
+                    className="px-6 py-2 text-gray-300 hover:text-white font-medium transition-all duration-200"
                   >
                     Login
                   </Link>
@@ -177,7 +177,7 @@ const Header: React.FC = () => {
             {/* Mobile Menu Button */}
             <button
               onClick={toggleMenu}
-              className="lg:hidden p-2 text-gray-700 hover:text-blue-600 hover:bg-white/20 rounded-lg transition-all duration-200"
+              className="lg:hidden p-2 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-lg transition-all duration-200"
             >
               {isMenuOpen ? (
                 <X className="h-6 w-6" />
@@ -198,7 +198,7 @@ const Header: React.FC = () => {
           ></div>
           
           {/* Mobile Menu Panel */}
-          <div className="absolute top-16 left-0 right-0 bg-white/30 backdrop-blur-xl border-b border-white/30 shadow-xl">
+          <div className="absolute top-16 left-0 right-0 bg-gray-900/95 backdrop-blur-xl border-b border-gray-700/50 shadow-xl">
             <div className="max-w-7xl mx-auto px-4 py-6">
               {/* Mobile Navigation */}
               <nav className="space-y-4 mb-6">
@@ -207,8 +207,8 @@ const Header: React.FC = () => {
                   onClick={closeMenu}
                   className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
                     isActivePath('/venues')
-                      ? 'bg-blue-50 text-blue-600 border border-blue-200'
-                      : 'text-gray-700 hover:bg-gray-50'
+                      ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
+                      : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
                   }`}
                 >
                   Venues
@@ -218,8 +218,8 @@ const Header: React.FC = () => {
                   onClick={closeMenu}
                   className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
                     isActivePath('/events')
-                      ? 'bg-blue-50 text-blue-600 border border-blue-200'
-                      : 'text-gray-700 hover:bg-gray-50'
+                      ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
+                      : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
                   }`}
                 >
                   Events
@@ -229,8 +229,8 @@ const Header: React.FC = () => {
                   onClick={closeMenu}
                   className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
                     isActivePath('/shop')
-                      ? 'bg-blue-50 text-blue-600 border border-blue-200'
-                      : 'text-gray-700 hover:bg-gray-50'
+                      ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
+                      : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
                   }`}
                 >
                   Shop
@@ -238,17 +238,17 @@ const Header: React.FC = () => {
               </nav>
 
               {/* Mobile User Actions */}
-              <div className="border-t border-gray-200 pt-6">
+              <div className="border-t border-gray-700/50 pt-6">
                 {isAuthenticated ? (
                   <div className="space-y-4">
                     {/* User Info */}
-                    <div className="flex items-center space-x-3 px-4 py-3 bg-white/20 backdrop-blur-md rounded-xl border border-white/30">
+                    <div className="flex items-center space-x-3 px-4 py-3 bg-gray-800/50 backdrop-blur-md rounded-xl border border-gray-700/50">
                       <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
                         <User className="h-5 w-5 text-white" />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900">Hi, {user?.name}</p>
-                        <p className="text-sm text-gray-500 capitalize">{user?.role}</p>
+                        <p className="font-medium text-gray-200">Hi, {user?.name}</p>
+                        <p className="text-sm text-gray-400 capitalize">{user?.role}</p>
                       </div>
                     </div>
                     
@@ -256,7 +256,7 @@ const Header: React.FC = () => {
                     <Link
                       to="/profile"
                       onClick={closeMenu}
-                      className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-200"
+                      className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-gray-800/50 hover:text-white rounded-xl transition-all duration-200"
                     >
                       <Settings className="h-5 w-5" />
                       <span>Profile Settings</span>
@@ -266,7 +266,7 @@ const Header: React.FC = () => {
                       <Link
                         to="/partner/dashboard"
                         onClick={closeMenu}
-                        className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-200"
+                        className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-gray-800/50 hover:text-white rounded-xl transition-all duration-200"
                       >
                         <BarChart3 className="h-5 w-5" />
                         <span>Partner Dashboard</span>
@@ -277,7 +277,7 @@ const Header: React.FC = () => {
                       <Link
                         to="/admin/dashboard"
                         onClick={closeMenu}
-                        className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-200"
+                        className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-gray-800/50 hover:text-white rounded-xl transition-all duration-200"
                       >
                         <Shield className="h-5 w-5" />
                         <span>Admin Panel</span>
@@ -286,7 +286,7 @@ const Header: React.FC = () => {
                     
                     <button
                       onClick={handleLogout}
-                      className="flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 w-full text-left"
+                      className="flex items-center space-x-3 px-4 py-3 text-red-400 hover:bg-red-900/20 rounded-xl transition-all duration-200 w-full text-left"
                     >
                       <LogOut className="h-5 w-5" />
                       <span>Logout</span>
@@ -297,7 +297,7 @@ const Header: React.FC = () => {
                     <Link
                       to="/login"
                       onClick={closeMenu}
-                      className="block px-6 py-3 text-center text-gray-700 hover:bg-gray-50 rounded-xl font-medium transition-all duration-200"
+                      className="block px-6 py-3 text-center text-gray-300 hover:bg-gray-800/50 hover:text-white rounded-xl font-medium transition-all duration-200"
                     >
                       Login
                     </Link>
