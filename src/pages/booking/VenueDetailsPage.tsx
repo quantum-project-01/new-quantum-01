@@ -5,21 +5,12 @@ import {
   Heart,
   Bookmark,
   Share2,
-  Play,
   Calendar,
-  Clock,
-  Users,
-  Shield,
   Award,
-  Wifi,
-  Car,
-  Camera,
-  Droplets,
-  Zap,
 } from "lucide-react";
 
 // Types
-interface VenueDetails {
+interface VenueDetailsData {
   id: number;
   name: string;
   tagline: string;
@@ -37,7 +28,7 @@ interface VenueDetails {
 }
 
 // Dummy venue data
-const venueData: VenueDetails = {
+const venueData: VenueDetailsData = {
   id: 1,
   name: "Sunset Arena",
   tagline: "Premium turf in the heart of Mumbai",
@@ -69,7 +60,7 @@ const venueData: VenueDetails = {
 };
 
 // Venue Media Component
-const VenueMedia: React.FC<{ venue: VenueDetails }> = ({ venue }) => {
+const VenueMedia: React.FC<{ venue: VenueDetailsData }> = ({ venue }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   // Combine video first, then images into one array
@@ -198,7 +189,7 @@ const VenueMedia: React.FC<{ venue: VenueDetails }> = ({ venue }) => {
 };
 
 // Venue Details Component
-const VenueDetails: React.FC<{ venue: VenueDetails }> = ({ venue }) => {
+const VenueDetails: React.FC<{ venue: VenueDetailsData }> = ({ venue }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
@@ -396,7 +387,7 @@ const MembershipPlans: React.FC = () => (
 );
 
 // Details Tab Component
-const Details: React.FC<{ venue: VenueDetails }> = ({ venue }) => (
+const Details: React.FC<{ venue: VenueDetailsData }> = ({ venue }) => (
   <div className="space-y-6">
     <div>
       <h3 className="text-lg font-semibold text-gray-900 mb-3">
@@ -439,7 +430,7 @@ const Details: React.FC<{ venue: VenueDetails }> = ({ venue }) => (
 );
 
 // Venue Info Tabs Component
-const VenueInfoTabs: React.FC<{ venue: VenueDetails }> = ({ venue }) => {
+const VenueInfoTabs: React.FC<{ venue: VenueDetailsData }> = ({ venue }) => {
   const [activeTab, setActiveTab] = useState(0);
 
   const tabs = [

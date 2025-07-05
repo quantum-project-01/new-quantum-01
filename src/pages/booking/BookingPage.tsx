@@ -111,7 +111,7 @@ const venues: Venue[] = [
 const ImageCarousel: React.FC<{ images: string[] }> = ({ images }) => {
   const [currentImage, setCurrentImage] = useState(0);
   const [direction, setDirection] = useState(0); // -1 for left, 1 for right, 0 for none
-
+  console.log(direction);
   const nextImage = () => {
     setDirection(1);
     setCurrentImage((prev) => (prev + 1) % images.length);
@@ -400,9 +400,11 @@ const BookingPage: React.FC = () => {
           {filteredVenues.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredVenues.map((venue) => (
-                <div onClick={() => {
-                  navigate(`/booking/${venue.id}`);
-                }}>
+                <div
+                  onClick={() => {
+                    navigate(`/booking/${venue.id}`);
+                  }}
+                >
                   <VenueCard key={venue.id} venue={venue} />
                 </div>
               ))}
