@@ -24,16 +24,16 @@ const ActivitySelector: React.FC<ActivitySelectorProps> = ({
   // If an activity is selected, show only that card with a change button
   if (selectedActivity) {
     return (
-      <div className="space-y-6 bg-white rounded-xl px-8 pt-6 pb-6">
+      <div className="space-y-6 bg-white rounded-xl px-2 xl:px-8 py-6">
         <div className="flex items-center justify-between">
-          <h3 className="text-2xl font-semibold text-gray-900">
+          <h3 className="text-xl lg:text-2xl font-semibold text-gray-900">
             Selected Activity
           </h3>
           <button
             onClick={onResetSelection}
-            className="flex items-center text-green-600 hover:text-green-700 text-sm font-medium transition-colors"
+            className="flex items-center text-green-600 hover:text-green-700 text-xs lg:text-sm font-medium transition-colors"
           >
-            <ArrowLeft className="w-4 h-4 mr-1" />
+            <ArrowLeft className="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
             Change Activity
           </button>
         </div>
@@ -71,11 +71,11 @@ const ActivitySelector: React.FC<ActivitySelectorProps> = ({
 
   // Show all activities in a horizontal scrollable layout
   return (
-    <div className="space-y-6 bg-white rounded-xl px-8 pt-6 pb-2">
-      <h3 className="text-2xl font-semibold text-gray-900 ">
+    <div className="space-y-3 lg:space-y-6 bg-white rounded-xl  px-2 xl:px-8 py-6">
+      <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 ">
         Choose an Activity
       </h3>
-      <div className="flex space-x-4 overflow-x-auto p-4 scrollbar-hide">
+      <div className="flex space-x-4 overflow-x-auto px-1 lg:p-4 scrollbar-hide">
         {activities.map((activity) => (
           <div
             key={activity.id}

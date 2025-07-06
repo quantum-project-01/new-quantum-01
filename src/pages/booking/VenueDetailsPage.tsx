@@ -216,14 +216,14 @@ const VenueDetails: React.FC<{ venue: VenueDetailsData }> = ({ venue }) => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
             {venue.name}
           </h1>
           <p className="text-lg text-gray-600 mb-4">{venue.tagline}</p>
         </div>
-        <div className="flex flex-col items-center space-x-2">
+        <div className="flex flex-col lg:items-center space-x-2">
           <div className="flex items-center space-x-2">
             {[...Array(5)].map((_, i) => (
               <Star
@@ -338,7 +338,7 @@ const Tab: React.FC<{
 }> = ({ isActive, onClick, children }) => (
   <button
     onClick={onClick}
-    className={`px-4 text-2xl py-2 font-bold transition-all duration-200 ${
+    className={`px-2 md:px-4 text-sm lg:text-2xl py-2 font-medium lg:font-bold transition-all duration-200 ${
       isActive
         ? "text-green-500 border-b-2 border-green-500"
         : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
@@ -351,7 +351,7 @@ const Tab: React.FC<{
 // Book Slots Tab Component
 const BookSlots: React.FC = () => {
   // Import the BookSlots component from the components folder
-  const BookSlotsComponent = React.lazy(() => import("./components/BookSlots"));
+  const BookSlotsComponent = React.lazy(() => import("./components"));
 
   return (
     <React.Suspense
@@ -446,7 +446,7 @@ const VenueInfoTabs: React.FC<{ venue: VenueDetailsData }> = ({ venue }) => {
   return (
     <div className="bg-gray-200">
       {/* Tab Headers */}
-      <div className="bg-white border-b border-gray-400 px-8">
+      <div className="bg-white border-b border-gray-400 px-2 lg:px-8">
         <div className="flex space-x-1">
           {tabs.map((tab) => (
             <Tab
@@ -472,7 +472,7 @@ const VenueDetailsPage: React.FC = () => {
     <div className="min-h-screen">
       <div className="py-8 mt-24">
         {/* Top Section - Venue Header */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 px-8 lg:px-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 px-4 lg:px-20">
           {/* Left Side - Media Area */}
           <div>
             <VenueMedia venue={venueData} />

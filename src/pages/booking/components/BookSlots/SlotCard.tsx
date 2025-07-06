@@ -51,9 +51,9 @@ const SlotCard: React.FC<SlotCardProps> = ({
         isSelected ? "border-blue-500 bg-blue-50 shadow-md" : getStatusStyles()
       } ${isClickable ? "hover:shadow-md" : "cursor-not-allowed"}`}
     >
-      <div className="h-full flex flex-col items-center justify-center text-xs p-1">
-        <div className="font-semibold text-sm">₹{slot.slotAmount}</div>
-        <div className="text-xs opacity-75 mt-1">{getStatusText()}</div>
+      <div className="h-full flex flex-col items-center justify-center text-[10px] lg:text-xs p-1">
+        <div className="font-semibold text-[10px] lg:text-sm">₹{slot.slotAmount}</div>
+        <div className="text-[10px] lg:text-xs opacity-75 mt-1">{getStatusText()}</div>
       </div>
     </div>
   );
