@@ -28,6 +28,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 
 // Protected Route Component
 import ProtectedRoute from './components/common/ProtectedRoute';
+import VenueDetailsPage from './pages/booking/VenueDetailsPage';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -90,13 +91,17 @@ function App() {
             
             {/* Protected User Routes */}
             <Route
-              path="/booking/:venueId/:slotId"
+              path="/booking"
               element={
-                <ProtectedRoute>
-                  <BookingPage />
-                </ProtectedRoute>
-              }
-            />
+                    <BookingPage />
+                }
+              />
+              <Route
+              path="/booking/:venueId"
+              element={
+                    <VenueDetailsPage />
+                }
+              />
             <Route
               path="/profile"
               element={
