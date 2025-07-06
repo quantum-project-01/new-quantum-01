@@ -34,9 +34,6 @@ const DateFilter: React.FC<DateFilterProps> = ({
     },
   ];
 
-  const handleDateChange = (date: Date) => {
-    onDateChange(date);
-  };
 
   return (
     <div className="flex flex-row items-center gap-4 w-full">

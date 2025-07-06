@@ -22,15 +22,6 @@ interface Facility {
   availability: string;
 }
 
-interface TimeSlot {
-  id: string;
-  time: string;
-  date: string;
-  price: number;
-  status: "available" | "booked" | "filling-fast" | "not-available";
-  facilityId: string;
-  availability?: string;
-}
 
 // Dummy data
 const activities: Activity[] = [
