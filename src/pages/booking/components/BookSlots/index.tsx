@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import ActivitySelector from "./ActivitySelector";
 import FacilitySelector from "./FacilitySelector";
-import SlotSelector from "./SlotSelector";
+import SlotSelector, { Slot } from "./SlotSelector";
 import CheckoutCard from "./CheckoutCard";
 
 // Types
@@ -118,7 +118,7 @@ const BookSlots: React.FC = () => {
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(
     null
   );
-  const [selectedSlots, setSelectedSlots] = useState<TimeSlot[]>([]);
+  const [selectedSlots, setSelectedSlots] = useState<Slot[]>([]);
 
   const handleActivitySelect = (activity: Activity) => {
     setSelectedActivity(activity);
@@ -132,7 +132,8 @@ const BookSlots: React.FC = () => {
     setSelectedSlots([]);
   };
 
-  const handleFacilitySelect = (facility: Facility) => {
+  const handleFacilitySelect = (activity: Activity, facility: Facility) => {
+    setSelectedActivity(activity);
     setSelectedFacility(facility);
     setSelectedSlots([]);
   };
@@ -142,10 +143,10 @@ const BookSlots: React.FC = () => {
     setSelectedSlots([]);
   };
 
-  const handleSlotSelect = (slot: TimeSlot) => {
-    const isSelected = selectedSlots.some((s) => s.id === slot.id);
+  const handleSlotSelect = (slot: Slot) => {
+    const isSelected = selectedSlots.some((s) => s.slotId === slot.slotId);
     if (isSelected) {
-      setSelectedSlots(selectedSlots.filter((s) => s.id !== slot.id));
+      setSelectedSlots(selectedSlots.filter((s) => s.slotId !== slot.slotId));
     } else {
       setSelectedSlots([...selectedSlots, slot]);
     }
@@ -160,9 +161,9 @@ const BookSlots: React.FC = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 py-4">
       {/* Left Section - Booking Steps */}
-      <div className="lg:col-span-2 space-y-8">
+      <div className="lg:col-span-2 space-y-8 px-4">
         <ActivitySelector
           activities={activities}
           selectedActivity={selectedActivity}
@@ -172,13 +173,16 @@ const BookSlots: React.FC = () => {
 
         <FacilitySelector
           facilities={facilities}
-          selectedActivity={selectedActivity?.id || null}
+          selectedActivity={selectedActivity || null}
           selectedFacility={selectedFacility}
-          onFacilitySelect={handleFacilitySelect}
+          onFacilitySelect={(facility, selectedActivity) =>
+            handleFacilitySelect(selectedActivity, facility)
+          }
           onResetSelection={handleFacilityReset}
         />
 
         <SlotSelector
+          selectedActivity={selectedActivity}
           selectedFacility={selectedFacility}
           selectedSlots={selectedSlots}
           onSlotSelect={handleSlotSelect}

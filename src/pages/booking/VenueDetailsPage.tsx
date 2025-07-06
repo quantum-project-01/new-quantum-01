@@ -216,29 +216,33 @@ const VenueDetails: React.FC<{ venue: VenueDetailsData }> = ({ venue }) => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
-          {venue.name}
-        </h1>
-        <p className="text-lg text-gray-600 mb-4">{venue.tagline}</p>
-      </div>
-
-      {/* Rating */}
-      <div className="flex items-center space-x-2">
-        <div className="flex items-center">
-          {[...Array(5)].map((_, i) => (
-            <Star
-              key={i}
-              className={`w-5 h-5 ${
-                i < Math.floor(venue.rating)
-                  ? "text-yellow-400 fill-current"
-                  : "text-gray-300"
-              }`}
-            />
-          ))}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+            {venue.name}
+          </h1>
+          <p className="text-lg text-gray-600 mb-4">{venue.tagline}</p>
         </div>
-        <span className="text-gray-600 font-medium">{venue.rating}</span>
-        <span className="text-gray-500">({venue.totalReviews} reviews)</span>
+        <div className="flex flex-col items-center space-x-2">
+          <div className="flex items-center space-x-2">
+            {[...Array(5)].map((_, i) => (
+              <Star
+                key={i}
+                className={`w-5 h-5 ${
+                  i < Math.floor(venue.rating)
+                    ? "text-yellow-400 fill-current"
+                    : "text-gray-300"
+                }`}
+              />
+            ))}
+          </div>
+          <div>
+            <span className="text-gray-600 font-medium">{venue.rating}</span>
+            <span className="text-gray-500">
+              ({venue.totalReviews} reviews)
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Address */}
@@ -334,9 +338,9 @@ const Tab: React.FC<{
 }> = ({ isActive, onClick, children }) => (
   <button
     onClick={onClick}
-    className={`px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
+    className={`px-4 text-2xl py-2 font-bold transition-all duration-200 ${
       isActive
-        ? "bg-blue-50 text-blue-700 border-b-2 border-blue-700"
+        ? "text-green-500 border-b-2 border-green-500"
         : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
     }`}
   >
@@ -440,10 +444,10 @@ const VenueInfoTabs: React.FC<{ venue: VenueDetailsData }> = ({ venue }) => {
   ];
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+    <div className="bg-gray-200">
       {/* Tab Headers */}
-      <div className="border-b border-gray-200">
-        <div className="flex space-x-1 p-4">
+      <div className="bg-white border-b border-gray-400 px-8">
+        <div className="flex space-x-1">
           {tabs.map((tab) => (
             <Tab
               key={tab.id}
@@ -465,10 +469,10 @@ const VenueInfoTabs: React.FC<{ venue: VenueDetailsData }> = ({ venue }) => {
 // Main VenueDetailsPage Component
 const VenueDetailsPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-16">
+    <div className="min-h-screen">
+      <div className="py-8 mt-24">
         {/* Top Section - Venue Header */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 px-8 lg:px-20">
           {/* Left Side - Media Area */}
           <div>
             <VenueMedia venue={venueData} />
@@ -479,9 +483,9 @@ const VenueDetailsPage: React.FC = () => {
             <VenueDetails venue={venueData} />
           </div>
         </div>
-
-        {/* Bottom Section - Tabbed Content */}
-        <VenueInfoTabs venue={venueData} />
+        <div className="bg-white-50 rounded-xl">
+          <VenueInfoTabs venue={venueData} />
+        </div>
       </div>
     </div>
   );

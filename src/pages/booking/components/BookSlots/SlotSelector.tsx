@@ -1,24 +1,37 @@
 import React, { useState } from "react";
 import DateFilter from "./DateFilter";
 import SlotCard from "./SlotCard";
+import { Sun, Moon } from "lucide-react";
+import { Activity } from "./ActivitySelector";
+import { Facility } from "./FacilitySelector";
 
-interface TimeSlot {
-  id: string;
-  time: string;
-  date: string;
-  price: number;
-  status: "available" | "booked" | "filling-fast" | "not-available";
-  facilityId: string;
-  availability?: string;
+type SlotAvailability =
+  | "available"
+  | "not-available"
+  | "booked"
+  | "filling-fast";
+
+export interface Slot {
+  slotId: number;
+  slotDate: string;
+  slotAmount: number;
+  slotAvailability: SlotAvailability;
+  slotTime: string;
+}
+
+interface SlotDataByDate {
+  [date: string]: Slot[];
 }
 
 interface SlotSelectorProps {
-  selectedFacility: any;
-  selectedSlots: TimeSlot[];
-  onSlotSelect: (slot: TimeSlot) => void;
+  selectedFacility: Facility | null;
+  selectedActivity: Activity | null;
+  selectedSlots: Slot[];
+  onSlotSelect: (slot: Slot) => void;
 }
 
 const SlotSelector: React.FC<SlotSelectorProps> = ({
+  selectedActivity,
   selectedFacility,
   selectedSlots,
   onSlotSelect,
@@ -26,171 +39,85 @@ const SlotSelector: React.FC<SlotSelectorProps> = ({
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [filter, setFilter] = useState("all");
 
-  if (!selectedFacility) return null;
-
-  // Generate time slots for the next 4 days
-  const generateTimeSlots = () => {
-    const slots: TimeSlot[] = [];
-    const times = [
-      "00:00",
-      "00:30",
-      "01:00",
-      "01:30",
-      "02:00",
-      "02:30",
-      "03:00",
-      "03:30",
-      "04:00",
-      "04:30",
-      "05:00",
-      "05:30",
-      "06:00",
-      "06:30",
-      "07:00",
-      "07:30",
-      "08:00",
-      "08:30",
-      "09:00",
-      "09:30",
-      "10:00",
-      "10:30",
-      "11:00",
-      "11:30",
-      "12:00",
-      "12:30",
-      "13:00",
-      "13:30",
-      "14:00",
-      "14:30",
-      "15:00",
-      "15:30",
-      "16:00",
-      "16:30",
-      "17:00",
-      "17:30",
-      "18:00",
-      "18:30",
-      "19:00",
-      "19:30",
-      "20:00",
-      "20:30",
-      "21:00",
-      "21:30",
-      "22:00",
-      "22:30",
-      "23:00",
-      "23:30",
-    ];
-
-    for (let day = 0; day < 4; day++) {
-      const date = new Date(selectedDate);
-      date.setDate(date.getDate() + day);
-
-      times.forEach((time, index) => {
-        const isToday = day === 0;
-        const currentHour = new Date().getHours();
-        const currentMinute = new Date().getMinutes();
-        const slotHour = Math.floor(index / 2);
-        const slotMinute = (index % 2) * 30;
-
-        let status: TimeSlot["status"] = "available";
-        if (
-          isToday &&
-          (slotHour < currentHour ||
-            (slotHour === currentHour && slotMinute <= currentMinute))
-        ) {
-          status = "not-available";
-        } else if (Math.random() < 0.3) {
-          status = "booked";
-        } else if (Math.random() < 0.2) {
-          status = "filling-fast";
-        }
-
-        const availability =
-          status === "available"
-            ? `${Math.floor(Math.random() * 5) + 1} left`
-            : undefined;
-
-        slots.push({
-          id: `slot-${day}-${index}`,
-          time,
-          date: date.toISOString().split("T")[0],
-          price: selectedFacility.minPrice + Math.floor(Math.random() * 200),
-          status,
-          facilityId: selectedFacility.id,
-          availability,
-        });
-      });
-    }
-    return slots;
+  if (!selectedFacility || !selectedActivity) {
+    return (
+      <div className="space-y-6 bg-white rounded-xl px-8 pt-6 pb-6">
+        <h3 className="text-2xl font-semibold text-gray-900">Select Time Slot</h3>
+        <p className="text-gray-600">Please select a facility to view available slots.</p>
+      </div>
+    );
   };
 
-  const timeSlots = generateTimeSlots();
-  const filteredSlots = timeSlots.filter((slot) => {
-    if (filter === "all") return true;
-    return slot.status === filter;
+  function generateSlotDataForNext10Days(): SlotDataByDate {
+    const availabilityOptions: SlotAvailability[] = [
+      "available",
+      "not-available",
+      "booked",
+      "filling-fast",
+    ];
+
+    const data: SlotDataByDate = {};
+    const today = new Date();
+
+    for (let d = 0; d < 10; d++) {
+      const dateObj = new Date(today);
+      dateObj.setDate(today.getDate() + d);
+      const dateStr = dateObj.toISOString().split("T")[0]; // Format: YYYY-MM-DD
+
+      const slots: Slot[] = [];
+
+      for (let i = 0; i < 48; i++) {
+        const hour = Math.floor(i / 2);
+        const minute = i % 2 === 0 ? "00" : "30";
+        const startTime = `${String(hour).padStart(2, "0")}:${minute}`;
+        const endHour = i % 2 === 0 ? hour : (hour + 1) % 24;
+        const endMinute = i % 2 === 0 ? "30" : "00";
+        const endTime = `${String(endHour).padStart(2, "0")}:${endMinute}`;
+
+        const slot: Slot = {
+          slotId: i + 1,
+          slotDate: dateStr,
+          slotAmount: Math.floor(Math.random() * 400) + 100,
+          slotAvailability:
+            availabilityOptions[
+              Math.floor(Math.random() * availabilityOptions.length)
+            ],
+          slotTime: `${startTime} - ${endTime}`,
+        };
+
+        slots.push(slot);
+      }
+
+      data[dateStr] = slots;
+    }
+
+    return data;
+  }
+
+  const slotData = generateSlotDataForNext10Days();
+  console.log("slotData", slotData);
+
+  // Generate timeLabels from the first available date in slotData
+  const firstDateWithSlots = Object.keys(slotData).find(
+    (date) => slotData[date] && slotData[date].length > 0
+  );
+  const timeLabels = firstDateWithSlots
+    ? slotData[firstDateWithSlots].map((slot) => slot.slotTime)
+    : [];
+
+  // Prepare the 4 visible dates for the grid
+  const visibleDates = Array.from({ length: 4 }, (_, i) => {
+    const dateObj = new Date(selectedDate);
+    dateObj.setDate(selectedDate.getDate() + i);
+    return dateObj.toISOString().split("T")[0];
   });
 
-  const timeLabels = [
-    "12 AM",
-    "12:30 AM",
-    "1 AM",
-    "1:30 AM",
-    "2 AM",
-    "2:30 AM",
-    "3 AM",
-    "3:30 AM",
-    "4 AM",
-    "4:30 AM",
-    "5 AM",
-    "5:30 AM",
-    "6 AM",
-    "6:30 AM",
-    "7 AM",
-    "7:30 AM",
-    "8 AM",
-    "8:30 AM",
-    "9 AM",
-    "9:30 AM",
-    "10 AM",
-    "10:30 AM",
-    "11 AM",
-    "11:30 AM",
-    "12 PM",
-    "12:30 PM",
-    "1 PM",
-    "1:30 PM",
-    "2 PM",
-    "2:30 PM",
-    "3 PM",
-    "3:30 PM",
-    "4 PM",
-    "4:30 PM",
-    "5 PM",
-    "5:30 PM",
-    "6 PM",
-    "6:30 PM",
-    "7 PM",
-    "7:30 PM",
-    "8 PM",
-    "8:30 PM",
-    "9 PM",
-    "9:30 PM",
-    "10 PM",
-    "10:30 PM",
-    "11 PM",
-    "11:30 PM",
-  ];
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-xl font-semibold text-gray-900">
+    <div className="bg-white rounded-xl px-8 pt-6 pb-6">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-2xl font-semibold text-gray-900">
           Select Time Slot
         </h3>
-        <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-          Change Facility
-        </button>
       </div>
 
       <DateFilter
@@ -200,38 +127,93 @@ const SlotSelector: React.FC<SlotSelectorProps> = ({
         onFilterChange={setFilter}
       />
 
-      {/* Time Slot Grid */}
-      <div className="grid grid-cols-5 gap-2">
-        {/* Time Labels */}
-        <div className="space-y-2">
-          {timeLabels.map((label, index) => (
+      {/* Date Headers Row (outside scrollable area) */}
+      <div className="grid grid-cols-5 gap-2 lg:p-5 border-t border-x border-gray-300 rounded-t-xl bg-gray-100 mt-5">
+        {/* Empty cell for time labels */}
+        <div className="flex flex-col items-center justify-center text-center text-xl">
+          Timings
+        </div>
+        {/* Date headers */}
+        {visibleDates.map((dateStr, dayIndex) => {
+          const dateObj = new Date(dateStr);
+          const dayNum = dateObj.getDate().toString().padStart(2, "0");
+          const weekday = dateObj.toLocaleDateString("en-US", {
+            weekday: "short",
+          });
+          const month = dateObj.toLocaleDateString("en-US", { month: "short" });
+          return (
             <div
-              key={index}
-              className="h-16 flex items-center text-sm text-gray-600 font-medium px-2"
+              className="flex flex-col items-center justify-center text-center"
+              key={dayIndex}
             >
-              {label}
+              <span className="text-2xl font-bold text-gray-900">{dayNum}</span>
+              <div className="flex flex-row items-center justify-center gap-1">
+                <span className="text-base text-gray-700">{weekday}</span>
+                <span className="text-base text-gray-500">{month}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Time Slot Grid (Scrollable) */}
+      <div className="h-[400px] overflow-y-auto scrollbar-hide border border-gray-300 rounded-b-xl">
+        <div className="grid grid-cols-5 gap-2 lg:p-5">
+          {/* Time Labels */}
+          <div className="flex flex-col justify-center text-center gap-2">
+            {timeLabels.map((label, rowIdx) => {
+              // Determine if this is a day or night slot (6 AM = 12, 6 PM = 36)
+              const isDay = rowIdx >= 12 && rowIdx < 36;
+              return (
+                <div
+                  key={rowIdx}
+                  className={`h-full flex justify-center items-center text-center text-sm font-medium pl-2 gap-1 border-r border-gray-400 ${
+                    isDay
+                      ? "bg-yellow-50 text-yellow-700"
+                      : "bg-blue-50 text-blue-700"
+                  }`}
+                >
+                  {label}
+                  {isDay ? (
+                    <Sun className="w-4 h-4 inline-block ml-1 text-yellow-400" />
+                  ) : (
+                    <Moon className="w-4 h-4 inline-block ml-1 text-blue-400" />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Date Columns: Render by row for perfect alignment */}
+          {visibleDates.map((dateStr, dayIndex) => (
+            <div
+              className="flex flex-col h-full space-y-3 min-h-0 scrollbar-hide"
+              key={dateStr}
+            >
+              {timeLabels.map((_, rowIdx) => {
+                const slotsForDate = slotData[dateStr] || [];
+                const slot = slotsForDate[rowIdx];
+                return slot ? (
+                  <SlotCard
+                    key={slot.slotId}
+                    isSelected={selectedSlots.some(
+                      (selectedSlot) => selectedSlot.slotId === slot.slotId
+                    )}
+                    onClick={() => onSlotSelect(slot)}
+                    slot={slot}
+                  />
+                ) : (
+                  <div
+                    key={"not-available-" + rowIdx}
+                    className="h-16 flex items-center justify-center bg-gray-100 text-gray-400 rounded-lg border border-gray-200 text-sm font-semibold"
+                  >
+                    N/A
+                  </div>
+                );
+              })}
             </div>
           ))}
         </div>
-
-        {/* Date Columns */}
-        {Array.from({ length: 4 }, (_, dayIndex) => (
-          <div key={dayIndex} className="space-y-2">
-            {filteredSlots
-              .filter((_, index) => index % 4 === dayIndex)
-              .map((slot) => (
-                <SlotCard
-                  key={slot.id}
-                  time={slot.time}
-                  price={slot.price}
-                  status={slot.status}
-                  isSelected={selectedSlots.some((s) => s.id === slot.id)}
-                  onClick={() => onSlotSelect(slot)}
-                  availability={slot.availability}
-                />
-              ))}
-          </div>
-        ))}
       </div>
     </div>
   );

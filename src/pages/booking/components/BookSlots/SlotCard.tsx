@@ -1,24 +1,19 @@
 import React from "react";
+import { Slot } from "./SlotSelector";
 
 interface SlotCardProps {
-  time: string;
-  price: number;
-  status: "available" | "booked" | "filling-fast" | "not-available";
+  slot: Slot;
   isSelected: boolean;
   onClick: () => void;
-  availability?: string;
 }
 
 const SlotCard: React.FC<SlotCardProps> = ({
-  time,
-  price,
-  status,
+  slot,
   isSelected,
   onClick,
-  availability,
 }) => {
   const getStatusStyles = () => {
-    switch (status) {
+    switch (slot.slotAvailability) {
       case "available":
         return "bg-green-50 text-green-800 border-green-200 hover:border-green-300";
       case "booked":
@@ -33,9 +28,9 @@ const SlotCard: React.FC<SlotCardProps> = ({
   };
 
   const getStatusText = () => {
-    switch (status) {
+    switch (slot.slotAvailability) {
       case "available":
-        return availability || "Available";
+        return slot.slotAvailability || "Available";
       case "booked":
         return "Booked";
       case "filling-fast":
@@ -47,7 +42,7 @@ const SlotCard: React.FC<SlotCardProps> = ({
     }
   };
 
-  const isClickable = status === "available" || status === "filling-fast";
+  const isClickable = slot.slotAvailability === "available" || slot.slotAvailability === "filling-fast";
 
   return (
     <div
@@ -57,7 +52,7 @@ const SlotCard: React.FC<SlotCardProps> = ({
       } ${isClickable ? "hover:shadow-md" : "cursor-not-allowed"}`}
     >
       <div className="h-full flex flex-col items-center justify-center text-xs p-1">
-        <div className="font-semibold text-sm">₹{price}</div>
+        <div className="font-semibold text-sm">₹{slot.slotAmount}</div>
         <div className="text-xs opacity-75 mt-1">{getStatusText()}</div>
       </div>
     </div>
