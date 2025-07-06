@@ -1,8 +1,12 @@
 import React, { useState } from "react";
-import ActivitySelector from "./ActivitySelector";
-import FacilitySelector from "./FacilitySelector";
-import SlotSelector, { Slot, SlotAvailability, SlotDataByDate } from "./SlotSelector";
-import CheckoutCard from "./CheckoutCard";
+import ActivitySelector from "./BookSlots/ActivitySelector";
+import FacilitySelector from "./BookSlots/FacilitySelector";
+import SlotSelector, {
+  Slot,
+  SlotAvailability,
+  SlotDataByDate,
+} from "./BookSlots/SlotSelector";
+import CheckoutCard from "./BookSlots/CheckoutCard";
 
 // Types
 interface Activity {
@@ -21,7 +25,6 @@ interface Facility {
   images: string[];
   availability: string;
 }
-
 
 // Dummy data
 const activities: Activity[] = [
@@ -151,6 +154,7 @@ function generateSlotDataForNext10Days(): SlotDataByDate {
 
 const slotData = generateSlotDataForNext10Days();
 
+console.log(slotData);
 
 const BookSlots: React.FC = () => {
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
@@ -204,7 +208,7 @@ const BookSlots: React.FC = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 py-4">
       {/* Left Section - Booking Steps */}
-      <div className="lg:col-span-2 space-y-8 px-4">
+      <div className="lg:col-span-2 space-y-8 xl:px-4">
         <ActivitySelector
           activities={activities}
           selectedActivity={selectedActivity}
