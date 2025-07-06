@@ -5,7 +5,7 @@ import { Sun, Moon } from "lucide-react";
 import { Activity } from "./ActivitySelector";
 import { Facility } from "./FacilitySelector";
 
-type SlotAvailability =
+export type SlotAvailability =
   | "available"
   | "not-available"
   | "booked"
@@ -19,7 +19,7 @@ export interface Slot {
   slotTime: string;
 }
 
-interface SlotDataByDate {
+export interface SlotDataByDate {
   [date: string]: Slot[];
 }
 
@@ -27,6 +27,7 @@ interface SlotSelectorProps {
   selectedFacility: Facility | null;
   selectedActivity: Activity | null;
   selectedSlots: Slot[];
+  slotData: SlotDataByDate;
   onSlotSelect: (slot: Slot) => void;
 }
 
@@ -34,6 +35,7 @@ const SlotSelector: React.FC<SlotSelectorProps> = ({
   selectedActivity,
   selectedFacility,
   selectedSlots,
+  slotData,
   onSlotSelect,
 }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -42,60 +44,15 @@ const SlotSelector: React.FC<SlotSelectorProps> = ({
   if (!selectedFacility || !selectedActivity) {
     return (
       <div className="space-y-6 bg-white rounded-xl px-8 pt-6 pb-6">
-        <h3 className="text-2xl font-semibold text-gray-900">Select Time Slot</h3>
-        <p className="text-gray-600">Please select a facility to view available slots.</p>
+        <h3 className="text-2xl font-semibold text-gray-900">
+          Select Time Slot
+        </h3>
+        <p className="text-gray-600">
+          Please select a facility to view available slots.
+        </p>
       </div>
     );
-  };
-
-  function generateSlotDataForNext10Days(): SlotDataByDate {
-    const availabilityOptions: SlotAvailability[] = [
-      "available",
-      "not-available",
-      "booked",
-      "filling-fast",
-    ];
-
-    const data: SlotDataByDate = {};
-    const today = new Date();
-
-    for (let d = 0; d < 10; d++) {
-      const dateObj = new Date(today);
-      dateObj.setDate(today.getDate() + d);
-      const dateStr = dateObj.toISOString().split("T")[0]; // Format: YYYY-MM-DD
-
-      const slots: Slot[] = [];
-
-      for (let i = 0; i < 48; i++) {
-        const hour = Math.floor(i / 2);
-        const minute = i % 2 === 0 ? "00" : "30";
-        const startTime = `${String(hour).padStart(2, "0")}:${minute}`;
-        const endHour = i % 2 === 0 ? hour : (hour + 1) % 24;
-        const endMinute = i % 2 === 0 ? "30" : "00";
-        const endTime = `${String(endHour).padStart(2, "0")}:${endMinute}`;
-
-        const slot: Slot = {
-          slotId: i + 1,
-          slotDate: dateStr,
-          slotAmount: Math.floor(Math.random() * 400) + 100,
-          slotAvailability:
-            availabilityOptions[
-              Math.floor(Math.random() * availabilityOptions.length)
-            ],
-          slotTime: `${startTime} - ${endTime}`,
-        };
-
-        slots.push(slot);
-      }
-
-      data[dateStr] = slots;
-    }
-
-    return data;
   }
-
-  const slotData = generateSlotDataForNext10Days();
-  console.log("slotData", slotData);
 
   // Generate timeLabels from the first available date in slotData
   const firstDateWithSlots = Object.keys(slotData).find(
@@ -196,11 +153,12 @@ const SlotSelector: React.FC<SlotSelectorProps> = ({
                 return slot ? (
                   <SlotCard
                     key={slot.slotId}
+                    slot={slot}
                     isSelected={selectedSlots.some(
                       (selectedSlot) => selectedSlot.slotId === slot.slotId
                     )}
                     onClick={() => onSlotSelect(slot)}
-                    slot={slot}
+                    
                   />
                 ) : (
                   <div

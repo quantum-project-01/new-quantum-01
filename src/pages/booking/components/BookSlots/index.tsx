@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import ActivitySelector from "./ActivitySelector";
 import FacilitySelector from "./FacilitySelector";
-import SlotSelector, { Slot } from "./SlotSelector";
+import SlotSelector, { Slot, SlotAvailability, SlotDataByDate } from "./SlotSelector";
 import CheckoutCard from "./CheckoutCard";
 
 // Types
@@ -111,6 +111,56 @@ const facilities: Facility[] = [
   },
 ];
 
+function generateSlotDataForNext10Days(): SlotDataByDate {
+  const availabilityOptions: SlotAvailability[] = [
+    "available",
+    "not-available",
+    "booked",
+    "filling-fast",
+  ];
+
+  const data: SlotDataByDate = {};
+  const today = new Date();
+  let globalSlotId = 1; // unique slotId counter
+
+  for (let d = 0; d < 10; d++) {
+    const dateObj = new Date(today);
+    dateObj.setDate(today.getDate() + d);
+    const dateStr = dateObj.toISOString().split("T")[0]; // Format: YYYY-MM-DD
+
+    const slots: Slot[] = [];
+
+    for (let i = 0; i < 48; i++) {
+      const hour = Math.floor(i / 2);
+      const minute = i % 2 === 0 ? "00" : "30";
+      const startTime = `${String(hour).padStart(2, "0")}:${minute}`;
+      const endHour = i % 2 === 0 ? hour : (hour + 1) % 24;
+      const endMinute = i % 2 === 0 ? "30" : "00";
+      const endTime = `${String(endHour).padStart(2, "0")}:${endMinute}`;
+
+      const slot: Slot = {
+        slotId: globalSlotId++,
+        slotDate: dateStr,
+        slotAmount: Math.floor(Math.random() * 400) + 100,
+        slotAvailability:
+          availabilityOptions[
+            Math.floor(Math.random() * availabilityOptions.length)
+          ],
+        slotTime: `${startTime} - ${endTime}`,
+      };
+
+      slots.push(slot);
+    }
+
+    data[dateStr] = slots;
+  }
+
+  return data;
+}
+
+const slotData = generateSlotDataForNext10Days();
+
+
 const BookSlots: React.FC = () => {
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
     null
@@ -182,6 +232,7 @@ const BookSlots: React.FC = () => {
         />
 
         <SlotSelector
+          slotData={slotData}
           selectedActivity={selectedActivity}
           selectedFacility={selectedFacility}
           selectedSlots={selectedSlots}
