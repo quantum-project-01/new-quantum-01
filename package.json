@@ -54,5 +54,11 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "description": "Quantum is a comprehensive web platform for booking sports venues, events, and purchasing sports equipment. Built with React, TypeScript, and Tailwind CSS.",
+  "main": "postcss.config.js",
+  "devDependencies": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

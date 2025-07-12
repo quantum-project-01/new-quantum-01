@@ -8,8 +8,20 @@ export const authService = {
     return response.data;
   },
 
+  // Send OTP for login
+  sendLoginOTP: async (email: string): Promise<ApiResponse<{ message: string }>> => {
+    const response = await api.post('/auth/send-otp', { email });
+    return response.data;
+  },
+
+  // Verify OTP for login
+  verifyOTP: async (email: string, otp: string): Promise<ApiResponse<{ user: User; token: string }>> => {
+    const response = await api.post('/auth/verify-otp', { email, otp });
+    return response.data;
+  },
+
   // Register user
-  register: async (userData: RegisterForm): Promise<ApiResponse<{ user: User; token: string }>> => {
+  register: async (userData: Omit<RegisterForm, 'confirmPassword'>): Promise<ApiResponse<{ user: User; token: string }>> => {
     const response = await api.post('/auth/register', userData);
     return response.data;
   },
