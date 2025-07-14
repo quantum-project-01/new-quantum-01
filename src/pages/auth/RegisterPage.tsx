@@ -29,8 +29,41 @@ const RegisterPage: React.FC = () => {
         setError(response.message || "Registration failed");
       }
     },
-    onError: () => {
-      setError("Registration failed. Please try again.");
+    onError: (error: any) => {
+      // More detailed error handling
+      console.error('Registration mutation error:', error);
+      
+      // Check if it's an axios error with response
+      if (error.response) {
+        const errorData = error.response.data;
+        console.error('Server error details:', errorData);
+
+        // Detailed error message parsing
+        if (errorData.errors && errorData.errors.length > 0) {
+          // Handle validation errors
+          setError(errorData.errors.join(', '));
+        } else if (errorData.details) {
+          // Handle specific error details
+          if (typeof errorData.details === 'string') {
+            setError(errorData.details);
+          } else if (typeof errorData.details === 'object') {
+            // More complex error details
+            const detailMessages = Object.entries(errorData.details)
+              .map(([key, value]) => `${key}: ${value}`)
+              .join(', ');
+            setError(detailMessages || errorData.message || "Registration failed");
+          }
+        } else {
+          // Fallback error messages
+          setError(errorData.message || "Registration failed");
+        }
+      } else if (error.message) {
+        // Client-side error
+        setError(error.message);
+      } else {
+        // Generic error fallback
+        setError("Registration failed. Please try again.");
+      }
     },
   });
 
@@ -57,8 +90,22 @@ const RegisterPage: React.FC = () => {
       return;
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError("Invalid email format");
+      return;
+    }
+
     const { confirmPassword, ...userData } = formData;
-    registerMutation.mutate(userData);
+    
+    try {
+      console.log('Registering user with data:', userData);
+      registerMutation.mutate(userData);
+    } catch (error) {
+      console.error('Registration error:', error);
+      setError(error instanceof Error ? error.message : 'Registration failed');
+    }
   };
 
   return (

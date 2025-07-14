@@ -20,6 +20,28 @@ export class AuthService {
         userData.phone = data.phone;
       }
 
+      // Check if user already exists
+      const existingUser = await prisma.user.findUnique({
+        where: { email: data.email }
+      });
+
+      if (existingUser) {
+        return { 
+          success: false, 
+          error: 'Email already exists',
+          details: { email: data.email }
+        };
+      }
+
+      // Validate input data
+      if (!userData.name || userData.name.length < 2) {
+        return {
+          success: false,
+          error: 'Invalid name',
+          details: { name: userData.name }
+        };
+      }
+
       const user = await prisma.user.create({
         data: userData,
       });
@@ -37,7 +59,51 @@ export class AuthService {
         token 
       };
     } catch (error) {
-      return { success: false, error: 'Registration failed' };
+      // Comprehensive error logging
+      console.error('Registration error details:', {
+        errorType: error instanceof Error ? error.constructor.name : 'Unknown',
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorStack: error instanceof Error ? error.stack : 'No stack trace',
+        userData: {
+          name: data.name,
+          email: data.email,
+          phoneProvided: !!data.phone
+        }
+      });
+
+      // More detailed error handling
+      if (error instanceof Error) {
+        // Check for various potential error types
+        if (error.message.includes('Unique constraint')) {
+          return { 
+            success: false, 
+            error: 'Email already exists',
+            details: { email: data.email }
+          };
+        }
+
+        if (error.message.includes('Foreign key constraint')) {
+          return {
+            success: false,
+            error: 'Invalid related data',
+            details: { message: error.message }
+          };
+        }
+
+        if (error.message.includes('Validation failed')) {
+          return {
+            success: false,
+            error: 'Data validation failed',
+            details: { message: error.message }
+          };
+        }
+      }
+
+      return { 
+        success: false, 
+        error: 'Registration failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      };
     }
   }
 
