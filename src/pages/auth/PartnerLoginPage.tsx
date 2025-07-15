@@ -17,6 +17,12 @@ const PartnerLoginPage: React.FC = () => {
       authService.partnerLogin(credentials),
     onSuccess: (response) => {
       if (response.success && response.data) {
+        // Verify that the logged-in user is a partner
+        if (response.data.user.role !== 'partner') {
+          setError("Access denied. Not a partner account.");
+          return;
+        }
+        
         login(response.data.user, response.data.token);
         navigate("/partner/dashboard");
       } else {
@@ -24,7 +30,19 @@ const PartnerLoginPage: React.FC = () => {
       }
     },
     onError: (error: any) => {
-      setError(error.response?.data?.message || "Partner Login failed");
+      // More detailed error handling
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        setError(error.response.data.message || "Partner Login failed");
+      } else if (error.request) {
+        // The request was made but no response was received
+        setError("No response from server. Please check your connection.");
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        setError("An unexpected error occurred. Please try again.");
+      }
+      console.error("Partner Login Error:", error);
     }
   });
 

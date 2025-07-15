@@ -5,8 +5,13 @@ export interface User {
   email: string;
   phone?: string;
   role: 'user' | 'partner' | 'admin';
-  createdAt: string;
-  updatedAt: string;
+  partnerDetails?: {
+    id: string;
+    companyName: string;
+    subscriptionType: 'fixed' | 'revenue';
+    gstNumber?: string;
+    websiteUrl?: string;
+  };
 }
 
 export interface AuthState {

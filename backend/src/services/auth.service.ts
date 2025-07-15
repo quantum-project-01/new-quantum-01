@@ -265,14 +265,22 @@ export class AuthService {
     }
   }
 
-  static async loginUser(email: string, password: string) {
+  static async loginUser(email: string, password: string, role?: 'user' | 'partner' | 'admin') {
     try {
       const user = await prisma.user.findUnique({
         where: { email },
+        include: {
+          partnerDetails: role === 'partner' // Only include partner details if role is partner
+        }
       });
 
       if (!user) {
         throw new Error('User not found');
+      }
+
+      // If a specific role is provided, check if it matches
+      if (role && user.role !== role) {
+        throw new Error(`Access denied. User is not a ${role}`);
       }
 
       const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -281,22 +289,44 @@ export class AuthService {
       }
 
       const token = jwt.sign(
-        { userId: user.id, email: user.email },
+        { 
+          userId: user.id, 
+          email: user.email, 
+          role: user.role 
+        },
         process.env['JWT_SECRET'] || 'your-secret-key',
         { expiresIn: '24h' }
       );
 
+      // Prepare user data to return
+      const userData: any = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      };
+
+      // If it's a partner login, include partner details
+      if (user.role === 'partner' && 'partnerDetails' in user) {
+        userData.partnerDetails = user.partnerDetails;
+      }
+
       return {
         success: true,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-        },
+        user: userData,
         token,
       };
     } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : 'Login failed' };
+      console.error('Login error:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Login failed' 
+      };
     }
+  }
+
+  // Add a specific partner login method for clarity
+  static async partnerLogin(email: string, password: string) {
+    return this.loginUser(email, password, 'partner');
   }
 } 

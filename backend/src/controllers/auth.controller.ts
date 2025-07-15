@@ -322,4 +322,45 @@ export class AuthController {
       });
     }
   }
+
+  static async partnerLogin(req: Request, res: Response) {
+    try {
+      console.log('===== Partner Login Request Debug =====');
+      console.log('Request Body:', JSON.stringify(req.body, null, 2));
+
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Email and password are required' 
+        });
+      }
+
+      const result = await AuthService.partnerLogin(email, password);
+      
+      if (result.success) {
+        return res.status(200).json({
+          success: true,
+          data: {
+            user: result.user,
+            token: result.token
+          },
+          message: 'Partner login successful'
+        });
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: result.error || 'Partner login failed'
+        });
+      }
+    } catch (error) {
+      console.error('Partner Login Error:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Internal server error during partner login',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
 } 
