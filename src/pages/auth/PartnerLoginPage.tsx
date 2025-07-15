@@ -53,28 +53,43 @@ const PartnerLoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Partner Login
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Sign in to manage your sports venue
-        </p>
+    <div className="min-h-screen bg-neutral-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans">
+      <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-br from-primary-500 to-primary-700 opacity-10 -z-10"></div>
+      
+      <div className="sm:mx-auto sm:w-full sm:max-w-md animate-fade-in">
+        <div className="text-center">
+          <div className="flex justify-center mb-6">
+            {/* You can replace this with your actual logo */}
+            <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center">
+              <span className="text-3xl font-bold text-primary-700">Q</span>
+            </div>
+          </div>
+          
+          <h2 className="text-4xl font-bold text-neutral-900 tracking-tight mb-3">
+            Partner Portal
+          </h2>
+          <p className="text-base text-neutral-600">
+            Manage your sports venue with precision
+          </p>
+        </div>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md animate-fade-in">
+        <div className="bg-white py-10 px-8 shadow-large sm:rounded-3xl border border-neutral-100 relative overflow-hidden">
+          {/* Subtle decorative element */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-500 to-primary-700"></div>
+          
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+              <div className="bg-red-50 border-2 border-red-300 text-red-700 px-4 py-3 rounded-lg text-sm 
+              transition-all duration-300 ease-in-out animate-pulse">
                 {error}
               </div>
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
+              <label htmlFor="email" className="block text-sm font-semibold text-neutral-800 mb-2">
+                Email Address
               </label>
               <input
                 id="email"
@@ -84,12 +99,16 @@ const PartnerLoginPage: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="mt-1 block w-full border-2 border-neutral-200 rounded-xl shadow-soft py-3 px-4 
+                focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 
+                transition-all duration-300 ease-in-out hover:border-primary-300
+                placeholder-neutral-400"
+                placeholder="Enter your email"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-semibold text-neutral-800 mb-2">
                 Password
               </label>
               <input
@@ -100,7 +119,11 @@ const PartnerLoginPage: React.FC = () => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="mt-1 block w-full border-2 border-neutral-200 rounded-xl shadow-soft py-3 px-4 
+                focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 
+                transition-all duration-300 ease-in-out hover:border-primary-300
+                placeholder-neutral-400"
+                placeholder="Enter your password"
               />
             </div>
 
@@ -110,16 +133,20 @@ const PartnerLoginPage: React.FC = () => {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-neutral-300 rounded"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-neutral-700">
                   Remember me
                 </label>
               </div>
 
               <div className="text-sm">
-                <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
-                  Forgot your password?
+                <a 
+                  href="#" 
+                  className="font-semibold text-primary-600 hover:text-primary-700 
+                  transition-colors duration-300 ease-in-out"
+                >
+                  Forgot password?
                 </a>
               </div>
             </div>
@@ -128,21 +155,25 @@ const PartnerLoginPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={loginMutation.isPending}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-medium 
+                text-base font-bold text-white bg-primary-600 hover:bg-primary-700 
+                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500
+                transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]
+                disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loginMutation.isPending ? "Signing in..." : "Sign in as Partner"}
+                {loginMutation.isPending ? "Signing in..." : "Sign in to Partner Portal"}
               </button>
             </div>
           </form>
 
-          <div className="mt-6">
+          <div className="mt-8">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
+                <div className="w-full border-t border-neutral-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">
-                  Don't have a partner account?
+                <span className="px-3 bg-white text-neutral-500 font-semibold">
+                  New to our platform?
                 </span>
               </div>
             </div>
@@ -150,9 +181,11 @@ const PartnerLoginPage: React.FC = () => {
             <div className="mt-6">
               <Link
                 to="/partner/register"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-indigo-600 bg-white hover:bg-gray-50"
+                className="w-full flex justify-center py-3 px-4 border-2 border-primary-500 rounded-xl 
+                text-base font-bold text-primary-700 bg-white hover:bg-primary-50
+                transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
               >
-                Register as a Partner
+                Create Partner Account
               </Link>
             </div>
           </div>
