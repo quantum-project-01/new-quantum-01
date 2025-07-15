@@ -14,8 +14,18 @@ const RegisterPage: React.FC = () => {
     phone: "",
   });
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuthStore();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   // Register mutation
   const registerMutation = useMutation({
@@ -30,49 +40,9 @@ const RegisterPage: React.FC = () => {
       }
     },
     onError: (error: any) => {
-      // More detailed error handling
-      console.error('Registration mutation error:', error);
-      
-      // Check if it's an axios error with response
-      if (error.response) {
-        const errorData = error.response.data;
-        console.error('Server error details:', errorData);
-
-        // Detailed error message parsing
-        if (errorData.errors && errorData.errors.length > 0) {
-          // Handle validation errors
-          setError(errorData.errors.join(', '));
-        } else if (errorData.details) {
-          // Handle specific error details
-          if (typeof errorData.details === 'string') {
-            setError(errorData.details);
-          } else if (typeof errorData.details === 'object') {
-            // More complex error details
-            const detailMessages = Object.entries(errorData.details)
-              .map(([key, value]) => `${key}: ${value}`)
-              .join(', ');
-            setError(detailMessages || errorData.message || "Registration failed");
-          }
-        } else {
-          // Fallback error messages
-          setError(errorData.message || "Registration failed");
-        }
-      } else if (error.message) {
-        // Client-side error
-        setError(error.message);
-      } else {
-        // Generic error fallback
-        setError("Registration failed. Please try again.");
-      }
-    },
+      setError(error.response?.data?.message || "Registration failed");
+    }
   });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,7 +70,6 @@ const RegisterPage: React.FC = () => {
     const { confirmPassword, ...userData } = formData;
     
     try {
-      console.log('Registering user with data:', userData);
       registerMutation.mutate(userData);
     } catch (error) {
       console.error('Registration error:', error);
@@ -109,126 +78,173 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Or{" "}
-            <Link
-              to="/login"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              sign in to your existing account
-            </Link>
+    <div className="min-h-screen flex pt-16">  {/* Added pt-16 for top padding */}
+      {/* Left Side - Gradient Background */}
+      <div 
+        className="hidden lg:block lg:w-1/2 bg-cover bg-center relative"
+        style={{
+          backgroundImage: 'linear-gradient(135deg, rgba(30,41,59,0.9) 0%, rgba(17,24,39,0.9) 100%), url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100%25\' height=\'100%25\' viewBox=\'0 0 1600 800\' preserveAspectRatio=\'none\' xmlns:v=\'https://vecta.io/nano\'%3E%3Cpath d=\'M0 0h1600v800H0z\' fill=\'%23111827\'/%3E%3Cdefs%3E%3CradialGradient id=\'a\' cx=\'0\' cy=\'0\' r=\'1\' gradientUnits=\'userSpaceOnUse\' gradientTransform=\'translate(800 400) rotate(90) scale(400)\'%3E%3Cstop offset=\'0\' stop-color=\'%23374151\'/%3E%3Cstop offset=\'1\' stop-color=\'%23111827\' stop-opacity=\'0\'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width=\'1600\' height=\'800\' fill=\'url(%23a)\'/%3E%3C/svg%3E")',
+          backgroundBlendMode: 'multiply'
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/60 via-indigo-900/60 to-blue-900/60 opacity-90"></div>
+        <div className="absolute inset-0" style={{
+          backgroundImage: 'linear-gradient(to right, rgba(0,0,0,0.3), rgba(0,0,0,0.1))',
+          mixBlendMode: 'multiply'
+        }}></div>
+        <div className="absolute inset-0 flex flex-col justify-center items-start p-16 text-white">
+          <h1 className="text-5xl font-bold mb-6">Be a Part of Something Beautiful</h1>
+          <p className="text-xl max-w-md opacity-80">
+            Join our platform and experience a new way of connecting, booking, and exploring sports venues.
           </p>
         </div>
+      </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
+      {/* Right Side - Registration Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center bg-black px-4 py-8">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-white mb-2">Create Account</h2>
+            <p className="text-gray-400">Sign up to join Quantum</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="name" className="sr-only">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
                 Full Name
               </label>
               <input
                 id="name"
                 name="name"
                 type="text"
-                autoComplete="name"
                 required
                 value={formData.name}
                 onChange={handleChange}
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Full Name"
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter your full name"
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+                Email Address
               </label>
               <input
                 id="email"
                 name="email"
                 type="email"
-                autoComplete="email"
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter your email"
               />
             </div>
 
             <div>
-              <label htmlFor="phone" className="sr-only">
-                Phone Number
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-2">
+                Phone Number (Optional)
               </label>
               <input
                 id="phone"
                 name="phone"
                 type="tel"
-                autoComplete="tel"
                 value={formData.phone}
                 onChange={handleChange}
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Phone Number (optional)"
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter your phone number"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="sr-only">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
                 Password
               </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={formData.password}
-                onChange={handleChange}
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 pr-12"
+                  placeholder="Create a strong password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-white"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="sr-only">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
                 Confirm Password
               </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Confirm Password"
-              />
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  required
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 pr-12"
+                  placeholder="Confirm your password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-white"
+                >
+                  {showConfirmPassword ? "Hide" : "Show"}
+                </button>
+              </div>
             </div>
-          </div>
 
-          {error && (
-            <div className="text-red-600 text-sm text-center">{error}</div>
-          )}
+            {error && (
+              <div className="text-red-500 text-sm text-center">{error}</div>
+            )}
 
-          <div>
-            <button
-              type="submit"
-              disabled={registerMutation.isPending}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {registerMutation.isPending
-                ? "Creating account..."
-                : "Create account"}
-            </button>
+            <div className="flex items-center">
+              <input
+                id="terms"
+                type="checkbox"
+                required
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="terms" className="ml-2 block text-sm text-gray-300">
+                I agree to the{" "}
+                <a href="/terms" className="text-yellow-400 hover:text-yellow-300">
+                  Terms of Service
+                </a>
+              </label>
+            </div>
+
+            <div>
+              <button
+                type="submit"
+                disabled={registerMutation.isPending}
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 disabled:opacity-50"
+              >
+                {registerMutation.isPending ? "Creating Account..." : "Sign Up"}
+              </button>
+            </div>
+          </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-400">
+              Already have an account?{" "}
+              <Link to="/login" className="font-medium text-yellow-400 hover:text-yellow-300">
+                Sign in
+              </Link>
+            </p>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
