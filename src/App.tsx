@@ -25,6 +25,8 @@ import ProfilePage from "./pages/profile/ProfilePage";
 // Partner Pages
 import PartnerDashboard from "./pages/partner/PartnerDashboard";
 import PartnerVenues from "./pages/partner/PartnerVenues";
+import PartnerLoginPage from "./pages/auth/PartnerLoginPage";
+import PartnerRegisterPage from "./pages/auth/PartnerRegisterPage";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -125,7 +127,10 @@ function App() {
             />
 
             {/* Partner Routes - Nested dashboard routes */}
+            <Route path="/partner/login" element={<PartnerLoginPage />} />
+            <Route path="/partner/register" element={<PartnerRegisterPage />} />
             <Route path="/partner/dashboard" element={<PartnerDashboard />} />
+            <Route path="/partner/venues" element={<PartnerVenues />} />
             <Route
               path="/partner/dashboard/bookings"
               element={<PartnerDashboard />}
@@ -144,7 +149,7 @@ function App() {
             />
 
             {/* Legacy Partner Routes for backward compatibility */}
-            <Route path="/partner/venues" element={<PartnerVenues />} />
+            {/* <Route path="/partner/venues" element={<PartnerVenues />} /> */}
 
             {/* 404 Route */}
             <Route

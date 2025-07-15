@@ -109,6 +109,14 @@ const Header: React.FC = () => {
               </Link>
             </nav>
 
+            {/* Partner Link */}
+            <Link
+              to="/partner/register"
+              className="text-gray-900 hover:bg-gray-100 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md"
+            >
+              Join as Partner
+            </Link>
+
             {/* Desktop User Actions */}
             <div className="hidden lg:flex items-center space-x-4">
               {isAuthenticated ? (

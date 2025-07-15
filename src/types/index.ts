@@ -232,7 +232,11 @@ export interface RegisterForm {
   email: string;
   password: string;
   confirmPassword: string;
-  phone?: string;
+  phone: string;
+  companyName?: string;
+  subscriptionType?: 'fixed' | 'revenue';
+  gstNumber?: string;
+  websiteUrl?: string;
 }
 
 export interface VenueForm {

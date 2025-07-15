@@ -16,10 +16,27 @@ model User {
   email     String    @unique @db.VarChar(255)
   password  String    @db.VarChar(255)
   phone     String?   @db.VarChar(20)
+  role      String    @default("user") @db.VarChar(20)
   otp       String?   @db.VarChar(10)
   otpExpiry DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
+  partnerDetails PartnerDetails?
+
   @@map("users")
+}
+
+model PartnerDetails {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName      String   @db.VarChar(255)
+  subscriptionType String   @db.VarChar(20)
+  gstNumber        String?  @db.VarChar(20)
+  websiteUrl       String?  @db.VarChar(255)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("partner_details")
 }

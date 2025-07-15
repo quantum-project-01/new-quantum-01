@@ -107,6 +107,81 @@ export class AuthService {
     }
   }
 
+  static async registerPartner(data: { 
+    name: string; 
+    email: string; 
+    password: string; 
+    phone: string;
+    companyName: string;
+    subscriptionType: 'fixed' | 'revenue';
+    gstNumber?: string | null;
+    websiteUrl?: string | null;
+  }) {
+    try {
+      const hashedPassword = await bcrypt.hash(data.password, 10);
+      
+      // Check if user already exists
+      const existingUser = await prisma.user.findUnique({
+        where: { email: data.email }
+      });
+
+      if (existingUser) {
+        return { 
+          success: false, 
+          error: 'Email already exists',
+          details: { email: data.email }
+        };
+      }
+
+      // Create partner user
+      const user = await prisma.user.create({
+        data: {
+          name: data.name,
+          email: data.email,
+          password: hashedPassword,
+          phone: data.phone,
+          role: 'partner',
+          partnerDetails: {
+            create: {
+              companyName: data.companyName,
+              subscriptionType: data.subscriptionType,
+              gstNumber: data.gstNumber ?? null,
+              websiteUrl: data.websiteUrl ?? null
+            }
+          }
+        },
+        include: {
+          partnerDetails: true
+        }
+      });
+
+      // Generate JWT token for the newly registered partner
+      const token = jwt.sign(
+        { userId: user.id, email: user.email, role: user.role },
+        process.env['JWT_SECRET'] || 'your-secret-key',
+        { expiresIn: '24h' }
+      );
+
+      return { 
+        success: true, 
+        user: { 
+          id: user.id, 
+          name: user.name, 
+          email: user.email,
+          role: user.role,
+          partnerDetails: user.partnerDetails
+        },
+        token 
+      };
+    } catch (error) {
+      console.error('Partner Registration Error:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Partner registration failed' 
+      };
+    }
+  }
+
   static async sendLoginOTP(email: string) {
     try {
       // Check if user exists

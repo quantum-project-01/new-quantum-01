@@ -27,8 +27,19 @@ export const authService = {
   },
 
   // Register partner
-  registerPartner: async (userData: RegisterForm & { subscriptionType: 'fixed' | 'revenue' }): Promise<ApiResponse<{ user: User; token: string }>> => {
+  registerPartner: async (userData: RegisterForm & { 
+    companyName: string; 
+    subscriptionType: 'fixed' | 'revenue';
+    gstNumber?: string;
+    websiteUrl?: string;
+  }): Promise<ApiResponse<{ user: User; token: string }>> => {
     const response = await api.post('/auth/register-partner', userData);
+    return response.data;
+  },
+
+  // Partner login
+  partnerLogin: async (credentials: LoginForm): Promise<ApiResponse<{ user: User; token: string }>> => {
+    const response = await api.post('/auth/partner-login', credentials);
     return response.data;
   },
 
