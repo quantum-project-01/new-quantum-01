@@ -79,24 +79,105 @@ const RegisterPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex pt-16">  {/* Added pt-16 for top padding */}
-      {/* Left Side - Gradient Background */}
-      <div 
-        className="hidden lg:block lg:w-1/2 bg-cover bg-center relative"
-        style={{
-          backgroundImage: 'linear-gradient(135deg, rgba(30,41,59,0.9) 0%, rgba(17,24,39,0.9) 100%), url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100%25\' height=\'100%25\' viewBox=\'0 0 1600 800\' preserveAspectRatio=\'none\' xmlns:v=\'https://vecta.io/nano\'%3E%3Cpath d=\'M0 0h1600v800H0z\' fill=\'%23111827\'/%3E%3Cdefs%3E%3CradialGradient id=\'a\' cx=\'0\' cy=\'0\' r=\'1\' gradientUnits=\'userSpaceOnUse\' gradientTransform=\'translate(800 400) rotate(90) scale(400)\'%3E%3Cstop offset=\'0\' stop-color=\'%23374151\'/%3E%3Cstop offset=\'1\' stop-color=\'%23111827\' stop-opacity=\'0\'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width=\'1600\' height=\'800\' fill=\'url(%23a)\'/%3E%3C/svg%3E")',
-          backgroundBlendMode: 'multiply'
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/60 via-indigo-900/60 to-blue-900/60 opacity-90"></div>
-        <div className="absolute inset-0" style={{
-          backgroundImage: 'linear-gradient(to right, rgba(0,0,0,0.3), rgba(0,0,0,0.1))',
-          mixBlendMode: 'multiply'
-        }}></div>
-        <div className="absolute inset-0 flex flex-col justify-center items-start p-16 text-white">
-          <h1 className="text-5xl font-bold mb-6">Be a Part of Something Beautiful</h1>
-          <p className="text-xl max-w-md opacity-80">
-            Join our platform and experience a new way of connecting, booking, and exploring sports venues.
-          </p>
+      {/* Left Side - Video Background */}
+      <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
+        {/* Sports Video Background - Working Implementation */}
+        <div className="absolute inset-0 w-full h-full overflow-hidden">
+          {/* Primary Video */}
+          <video
+            className="absolute inset-0 w-full h-full object-cover"
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            onError={(e) => {
+              console.log('Video failed to load:', e);
+              // Fallback to next video or image
+              const video = e.target as HTMLVideoElement;
+              const parent = video.parentElement;
+              if (parent) {
+                parent.style.backgroundImage = `
+                  linear-gradient(135deg, rgba(30,41,59,0.9) 0%, rgba(17,24,39,0.9) 100%),
+                  url('https://images.pexels.com/photos/7991178/pexels-photo-7991178.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop')
+                `;
+                parent.style.backgroundSize = 'cover';
+                parent.style.backgroundPosition = 'center';
+              }
+            }}
+          >
+            <source
+              src="/videos/sign_up_1.mp4"
+              type="video/mp4"
+            />
+            <source
+              src="/videos/sign_up_2.mp4"
+              type="video/mp4"
+            />
+          </video>
+          
+          {/* Fallback: Try YouTube embed if video fails */}
+          <iframe
+            className="absolute inset-0 w-full h-full"
+            src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&playlist=dQw4w9WgXcQ&start=0"
+            title="Sign Up Sports Video"
+            frameBorder="0"
+            allow="autoplay; encrypted-media"
+            allowFullScreen
+            style={{ display: 'none' }}
+            onLoad={(e) => {
+              // Show iframe if video fails
+              const iframe = e.target as HTMLIFrameElement;
+              const video = iframe.parentElement?.querySelector('video');
+              if (video && video.readyState === 0) {
+                iframe.style.display = 'block';
+                video.style.display = 'none';
+              }
+            }}
+          ></iframe>
+          
+          {/* Final Fallback: Static Sports Image */}
+          <div
+            className="absolute inset-0 w-full h-full bg-cover bg-center"
+            style={{
+              backgroundImage: `
+                linear-gradient(135deg, rgba(30,41,59,0.8) 0%, rgba(17,24,39,0.8) 100%),
+                url('https://images.pexels.com/photos/7991178/pexels-photo-7991178.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop')
+              `,
+              zIndex: -1
+            }}
+          ></div>
+        </div>
+
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-black/70"></div>
+        
+        {/* Interactive gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-900/40 via-blue-900/30 to-green-900/40 mix-blend-multiply"></div>
+        
+        {/* Content */}
+        <div className="absolute top-[320px] inset-0 flex flex-col justify-center items-start p-16 text-white z-10 mt-auto">
+          <div className="transform hover:scale-105 transition-transform duration-300">
+            <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
+              Join Our Community
+            </h1>
+            <p className="text-xl max-w-md opacity-90 mb-8 leading-relaxed">
+              Create your account and unlock a world of sports opportunities. 
+              Connect, book, and play with ease.
+            </p>
+          </div>
+          
+          {/* Interactive Stats */}
+          <div className="grid grid-cols-2 gap-6 mt-8">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20 hover:bg-white/20 transition-all duration-300">
+              <div className="text-3xl font-bold text-yellow-400">500+</div>
+              <div className="text-sm text-gray-200">Venues Available</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20 hover:bg-white/20 transition-all duration-300">
+              <div className="text-3xl font-bold text-green-400">24/7</div>
+              <div className="text-sm text-gray-200">Booking Support</div>
+            </div>
+          </div>
         </div>
       </div>
 
