@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
+    "@prisma/client": "^5.22.0",
     "@tanstack/react-query": "^5.81.5",
     "@tanstack/react-query-devtools": "^5.81.5",
     "@testing-library/dom": "^10.4.0",
@@ -19,6 +20,7 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.525.0",
     "postcss": "^8.5.6",
+    "prisma": "^5.22.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hook-form": "^7.59.0",
@@ -57,7 +59,6 @@
   },
   "description": "Quantum is a comprehensive web platform for booking sports venues, events, and purchasing sports equipment. Built with React, TypeScript, and Tailwind CSS.",
   "main": "postcss.config.js",
-  "devDependencies": {},
   "keywords": [],
   "author": "",
   "license": "ISC"

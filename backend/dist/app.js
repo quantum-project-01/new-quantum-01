@@ -6,30 +6,37 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
-const database_1 = __importDefault(require("./config/database"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
-(async () => {
-    try {
-        await database_1.default.authenticate();
-        console.log('Database connection has been established successfully.');
-    }
-    catch (error) {
-        console.error('Unable to connect to the database:', error);
-        process.exit(1);
-    }
-})();
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    console.log('===== CORS Middleware Debug =====');
+    console.log('Full Request Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Request Method:', req.method);
+    console.log('Origin:', req.headers.origin);
+    console.log('Referer:', req.headers.referer);
+    console.log('Host:', req.headers.host);
+    const allowedOrigins = ['http://localhost:3000', 'http://localhost:4000'];
+    const origin = req.headers.origin;
+    const referer = req.headers.referer;
+    const isAllowedOrigin = allowedOrigins.some(allowedOrigin => (origin && origin.startsWith(allowedOrigin)) ||
+        (referer && referer.startsWith(allowedOrigin)));
+    console.log('Is Allowed Origin:', isAllowedOrigin);
+    res.header('Vary', 'Origin');
+    if (isAllowedOrigin) {
+        res.header('Access-Control-Allow-Origin', origin || referer || allowedOrigins[0]);
+    }
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, HEAD');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-client-key, x-client-token, x-client-secret, Authorization');
     res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Referrer-Policy', 'origin-when-cross-origin');
+    res.header('X-Content-Type-Options', 'nosniff');
+    res.header('X-Frame-Options', 'SAMEORIGIN');
     if (req.method === 'OPTIONS') {
+        console.log('Handling Preflight Request');
         res.sendStatus(200);
+        return;
     }
-    else {
-        next();
-    }
+    next();
 });
 app.use(express_1.default.json());
 app.use('/api/auth', auth_routes_1.default);

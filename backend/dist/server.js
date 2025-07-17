@@ -4,29 +4,28 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = __importDefault(require("./app"));
-const database_1 = __importDefault(require("./config/database"));
+const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
-const testModel_1 = __importDefault(require("./models/testModel"));
 dotenv_1.default.config();
-const PORT = process.env['PORT'] || 5000;
-database_1.default.sync({ force: true })
-    .then(async () => {
-    console.log('Database synced successfully');
-    await testModel_1.default.create({ name: 'Test Entry' });
-    console.log('Test record created');
-})
-    .catch((error) => {
-    console.error('Unable to sync database:', error);
-});
-app_1.default.listen(PORT, async () => {
+const prisma = new client_1.PrismaClient();
+const PORT = parseInt(process.env['PORT'] || '4000', 10);
+async function main() {
     try {
-        await database_1.default.authenticate();
-        console.log(`Server running on port ${PORT}`);
+        await prisma.$connect();
         console.log('Database connection established successfully.');
+        app_1.default.listen(PORT, '0.0.0.0', () => {
+            console.log(`Server running on port ${PORT}`);
+        });
     }
     catch (error) {
         console.error('Failed to start server:', error);
         process.exit(1);
     }
+}
+main()
+    .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
 });
 //# sourceMappingURL=server.js.map

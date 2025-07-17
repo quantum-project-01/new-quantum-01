@@ -40,3 +40,28 @@ model PartnerDetails {
 
   @@map("partner_details")
 }
+
+model Venue {
+  id                   String   @id @default(uuid())
+  name                 String   @db.VarChar(255)
+  location             String   @db.VarChar(255)
+  description          String?   @db.Text
+  highlight            String   @db.VarChar(255)
+  main                 String   @db.VarChar(255)
+  rating               Decimal? @db.Decimal(2, 1)
+  start_price_per_hour Decimal  @db.Decimal(10, 2)
+  createdOn            DateTime @default(now())
+  updatedOn            DateTime @updatedAt
+  partnerId            String   @db.VarChar(255)
+  detailDescription    String?   @db.Text
+  features             String[] @db.VarChar(255)
+  city                 String   @db.VarChar(100)
+  state                String   @db.VarChar(100)
+  country              String   @db.VarChar(100)
+  zip                  String   @db.VarChar(20)
+  phone                String   @db.VarChar(20)
+  mapLocationLink      String   @db.Text
+  cancellationPolicy   String[] @db.VarChar(255)
+
+  @@map("venues")
+}
