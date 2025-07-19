@@ -1,23 +1,11 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
-import { PrismaClient } from '@prisma/client';
+import venueRoutes from './routes/venue.routes';
 
 dotenv.config();
 
 const app = express();
-const prisma = new PrismaClient();
-
-// Database connection
-(async () => {
-  try {
-    await prisma.$connect();
-    console.log('Database connection has been established successfully.');
-  } catch (error) {
-    console.error('Unable to connect to the database:', error);
-    process.exit(1);
-  }
-})();
 
 // CORS middleware
 app.use((req, res, next) => {
@@ -61,7 +49,8 @@ app.use((req, res, next) => {
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
     console.log('Handling Preflight Request');
-    return res.sendStatus(200);
+    res.sendStatus(200);
+    return;
   }
 
   next();
@@ -70,6 +59,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
+app.use('/api/venue', venueRoutes);
 
 app.get('/', (_req, res) => {
   res.send('Backend is running');

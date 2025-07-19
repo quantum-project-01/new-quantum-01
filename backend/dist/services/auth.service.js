@@ -21,6 +21,23 @@ class AuthService {
             if (data.phone) {
                 userData.phone = data.phone;
             }
+            const existingUser = await prisma.user.findUnique({
+                where: { email: data.email }
+            });
+            if (existingUser) {
+                return {
+                    success: false,
+                    error: 'Email already exists',
+                    details: { email: data.email }
+                };
+            }
+            if (!userData.name || userData.name.length < 2) {
+                return {
+                    success: false,
+                    error: 'Invalid name',
+                    details: { name: userData.name }
+                };
+            }
             const user = await prisma.user.create({
                 data: userData,
             });
@@ -32,7 +49,98 @@ class AuthService {
             };
         }
         catch (error) {
-            return { success: false, error: 'Registration failed' };
+            console.error('Registration error details:', {
+                errorType: error instanceof Error ? error.constructor.name : 'Unknown',
+                errorMessage: error instanceof Error ? error.message : 'Unknown error',
+                errorStack: error instanceof Error ? error.stack : 'No stack trace',
+                userData: {
+                    name: data.name,
+                    email: data.email,
+                    phoneProvided: !!data.phone
+                }
+            });
+            if (error instanceof Error) {
+                if (error.message.includes('Unique constraint')) {
+                    return {
+                        success: false,
+                        error: 'Email already exists',
+                        details: { email: data.email }
+                    };
+                }
+                if (error.message.includes('Foreign key constraint')) {
+                    return {
+                        success: false,
+                        error: 'Invalid related data',
+                        details: { message: error.message }
+                    };
+                }
+                if (error.message.includes('Validation failed')) {
+                    return {
+                        success: false,
+                        error: 'Data validation failed',
+                        details: { message: error.message }
+                    };
+                }
+            }
+            return {
+                success: false,
+                error: 'Registration failed',
+                details: error instanceof Error ? error.message : 'Unknown error'
+            };
+        }
+    }
+    static async registerPartner(data) {
+        try {
+            const hashedPassword = await bcryptjs_1.default.hash(data.password, 10);
+            const existingUser = await prisma.user.findUnique({
+                where: { email: data.email }
+            });
+            if (existingUser) {
+                return {
+                    success: false,
+                    error: 'Email already exists',
+                    details: { email: data.email }
+                };
+            }
+            const user = await prisma.user.create({
+                data: {
+                    name: data.name,
+                    email: data.email,
+                    password: hashedPassword,
+                    phone: data.phone,
+                    role: 'partner',
+                    partnerDetails: {
+                        create: {
+                            companyName: data.companyName,
+                            subscriptionType: data.subscriptionType,
+                            gstNumber: data.gstNumber ?? null,
+                            websiteUrl: data.websiteUrl ?? null
+                        }
+                    }
+                },
+                include: {
+                    partnerDetails: true
+                }
+            });
+            const token = jsonwebtoken_1.default.sign({ userId: user.id, email: user.email, role: user.role }, process.env['JWT_SECRET'] || 'your-secret-key', { expiresIn: '24h' });
+            return {
+                success: true,
+                user: {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    partnerDetails: user.partnerDetails
+                },
+                token
+            };
+        }
+        catch (error) {
+            console.error('Partner Registration Error:', error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Partner registration failed'
+            };
         }
     }
     static async sendLoginOTP(email) {
@@ -96,32 +204,54 @@ class AuthService {
             return { success: false, error: 'OTP verification failed' };
         }
     }
-    static async loginUser(email, password) {
+    static async loginUser(email, password, role) {
         try {
             const user = await prisma.user.findUnique({
                 where: { email },
+                include: {
+                    partnerDetails: role === 'partner'
+                }
             });
             if (!user) {
                 throw new Error('User not found');
+            }
+            if (role && user.role !== role) {
+                throw new Error(`Access denied. User is not a ${role}`);
             }
             const isPasswordValid = await bcryptjs_1.default.compare(password, user.password);
             if (!isPasswordValid) {
                 throw new Error('Invalid password');
             }
-            const token = jsonwebtoken_1.default.sign({ userId: user.id, email: user.email }, process.env['JWT_SECRET'] || 'your-secret-key', { expiresIn: '24h' });
+            const token = jsonwebtoken_1.default.sign({
+                userId: user.id,
+                email: user.email,
+                role: user.role
+            }, process.env['JWT_SECRET'] || 'your-secret-key', { expiresIn: '24h' });
+            const userData = {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            };
+            if (user.role === 'partner' && 'partnerDetails' in user) {
+                userData.partnerDetails = user.partnerDetails;
+            }
             return {
                 success: true,
-                user: {
-                    id: user.id,
-                    name: user.name,
-                    email: user.email,
-                },
+                user: userData,
                 token,
             };
         }
         catch (error) {
-            return { success: false, error: error instanceof Error ? error.message : 'Login failed' };
+            console.error('Login error:', error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Login failed'
+            };
         }
+    }
+    static async partnerLogin(email, password) {
+        return this.loginUser(email, password, 'partner');
     }
 }
 exports.AuthService = AuthService;

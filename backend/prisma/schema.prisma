@@ -28,15 +28,61 @@ model User {
 }
 
 model PartnerDetails {
-  id               String   @id @default(uuid())
-  userId           String   @unique
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  companyName      String   @db.VarChar(255)
-  subscriptionType String   @db.VarChar(20)
-  gstNumber        String?  @db.VarChar(20)
-  websiteUrl       String?  @db.VarChar(255)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id               String             @id @default(uuid())
+  userId           String             @unique
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName      String             @db.VarChar(255)
+  subscriptionType String             @db.VarChar(20)
+  gstNumber        String?            @db.VarChar(20)
+  websiteUrl       String?            @db.VarChar(255)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  // Add relation name to match PartnerVenueMap
+  mappings         PartnerVenueMap[]  @relation("PartnerDetailUser")
 
   @@map("partner_details")
+}
+
+
+model Venue {
+  id                   String            @id @default(uuid())
+  name                 String            @db.VarChar(255)
+  location             String            @db.VarChar(255)
+  description          String?           @db.Text
+  highlight            String            @db.VarChar(255)
+  main                 String            @db.VarChar(255)
+  rating               Decimal?          @db.Decimal(2, 1)
+  start_price_per_hour Decimal           @db.Decimal(10, 2)
+  createdOn            DateTime          @default(now())
+  updatedOn            DateTime          @updatedAt
+  partnerId            String            @db.VarChar(255)
+  detailDescription    String?           @db.Text
+  features             String[]          @db.VarChar(255)
+  city                 String            @db.VarChar(100)
+  state                String            @db.VarChar(100)
+  country              String            @db.VarChar(100)
+  zip                  String            @db.VarChar(20)
+  phone                String            @db.VarChar(20)
+  mapLocationLink      String            @db.Text
+  cancellationPolicy   String[]          @db.VarChar(255)
+  PartnerVenueMap      PartnerVenueMap[]
+
+  @@map("venues")
+}
+
+model PartnerVenueMap {
+  id              String @id @default(uuid())
+  partnerDetailId String
+  venueId         String
+
+  // Reference the `userId` in PartnerDetails
+  partnerDetails PartnerDetails @relation("PartnerDetailUser", fields: [partnerDetailId], references: [userId], onDelete: Cascade)
+  venue          Venue          @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([partnerDetailId, venueId])
+  @@map("partner_venue_map")
 }
