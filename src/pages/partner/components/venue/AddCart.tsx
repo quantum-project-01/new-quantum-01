@@ -53,22 +53,6 @@ const AddCart: React.FC<AddCartProps> = ({
   const [imageMode, setImageMode] = useState<"upload" | "link">("upload");
   const [isDragOver, setIsDragOver] = useState(false);
 
-  // Add global drag prevention when component mounts
-  React.useEffect(() => {
-    const preventDefault = (e: DragEvent) => {
-      e.preventDefault();
-    };
-
-    // Prevent default drag behavior globally
-    document.addEventListener("dragover", preventDefault);
-    document.addEventListener("drop", preventDefault);
-
-    return () => {
-      document.removeEventListener("dragover", preventDefault);
-      document.removeEventListener("drop", preventDefault);
-    };
-  }, []);
-
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -309,53 +293,65 @@ const AddCart: React.FC<AddCartProps> = ({
   };
 
   const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.dataTransfer.dropEffect = "copy";
-    setIsDragOver(true);
+    // Only prevent default if there are files being dragged
+    if (e.dataTransfer.types.includes("Files")) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.dataTransfer.dropEffect = "copy";
+      setIsDragOver(true);
+    }
   };
 
   const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.dataTransfer.dropEffect = "copy";
-    setIsDragOver(true);
+    // Only prevent default if there are files being dragged
+    if (e.dataTransfer.types.includes("Files")) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.dataTransfer.dropEffect = "copy";
+      setIsDragOver(true);
+    }
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    // Only set drag over to false if we're leaving the drop zone entirely
-    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-      setIsDragOver(false);
+    // Only prevent default if there are files being dragged
+    if (e.dataTransfer.types.includes("Files")) {
+      e.preventDefault();
+      e.stopPropagation();
+      // Only set drag over to false if we're leaving the drop zone entirely
+      if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+        setIsDragOver(false);
+      }
     }
   };
 
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.dataTransfer.dropEffect = "copy";
-    setIsDragOver(false);
+    // Only handle drop if there are files
+    if (e.dataTransfer.files.length > 0) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.dataTransfer.dropEffect = "copy";
+      setIsDragOver(false);
 
-    const files = Array.from(e.dataTransfer.files);
-    const imageFiles = files.filter((file) => file.type.startsWith("image/"));
+      const files = Array.from(e.dataTransfer.files);
+      const imageFiles = files.filter((file) => file.type.startsWith("image/"));
 
-    if (imageFiles.length > 0) {
-      setImageFiles((prev) => [...prev, ...imageFiles]);
+      if (imageFiles.length > 0) {
+        setImageFiles((prev) => [...prev, ...imageFiles]);
 
-      // Create preview URLs
-      imageFiles.forEach((file) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const url = e.target?.result as string;
-          setImageUrls((prev) => [...prev, url]);
-          setFormData((prev) => ({ ...prev, images: [...prev.images, url] }));
-        };
-        reader.onerror = (error) => {
-          console.error("Error reading file:", error);
-        };
-        reader.readAsDataURL(file);
-      });
+        // Create preview URLs
+        imageFiles.forEach((file) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const url = e.target?.result as string;
+            setImageUrls((prev) => [...prev, url]);
+            setFormData((prev) => ({ ...prev, images: [...prev.images, url] }));
+          };
+          reader.onerror = (error) => {
+            console.error("Error reading file:", error);
+          };
+          reader.readAsDataURL(file);
+        });
+      }
     }
   };
 
@@ -710,10 +706,7 @@ const AddCart: React.FC<AddCartProps> = ({
                   onDragEnter={handleDragEnter}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
-                  onClick={() =>
-                    document.getElementById("image-upload")?.click()
-                  }
-                  className={`border-2 border-dashed border-gray-600 rounded-lg p-6 text-center transition-colors cursor-pointer ${
+                  className={`border-2 border-dashed border-gray-600 rounded-lg p-6 text-center transition-colors ${
                     isDragOver
                       ? "border-blue-500 bg-blue-500/10"
                       : "border-gray-600"
