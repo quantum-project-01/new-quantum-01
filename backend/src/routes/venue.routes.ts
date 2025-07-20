@@ -8,7 +8,7 @@ const router = Router();
 
 router.post('/create-venue', CreateVenueController.createVenue);
 router.get('/get-venue/:id', GetVenueController.getVenue);
-router.get('/get-all-venues-by-partner', GetVenueController.getAllVenuesByPartner);
+router.get('/get-all-venues-by-partner/', GetVenueController.getAllVenuesByPartner);
 router.put('/update-venue/:id', UpdateVenueController.updateVenue);
 router.delete('/delete-venue/:id', DeleteVenueController.deleteVenue);
 

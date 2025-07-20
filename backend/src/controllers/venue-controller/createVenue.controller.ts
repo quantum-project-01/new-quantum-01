@@ -13,33 +13,36 @@ export class CreateVenueController {
       const {
         name,
         highlight,
-        main,
         start_price_per_hour,
         partnerId,
         city,
         state,
+        images,
         country,
         zip,
         phone,
         mapLocationLink,
+        lat,
+        lang
       } = req.body as {
         name: string;
         highlight: string;
-        main: string;
         start_price_per_hour: number;
         partnerId: string;
         city: string;
+        images: string[];
         state: string;
         country: string;
         zip: string;
         phone: string;
         mapLocationLink: string;
+        lat: number;
+        lang: number;
       };
 
       if (
         !name ||
         !highlight ||
-        !main ||
         !start_price_per_hour ||
         !partnerId ||
         !city ||
@@ -47,27 +50,43 @@ export class CreateVenueController {
         !country ||
         !zip ||
         !phone ||
-        !mapLocationLink
+        !mapLocationLink ||
+        !lat ||
+        !lang
       ) {
         return res.status(400).json({ error: "Missing required fields" });
       }
 
       // Compose the address field from city, state, country, and zip
-      const location = `${city}, ${state}, ${country}, ${zip}`;
+      const address = `${city}, ${state}, ${country}, ${zip}`;
 
       const venueData: Venue = {
         name,
-        location,
+        location: {
+          address,
+          city,
+          state,
+          country,
+          pincode: zip,
+          coordinates:{
+            lat,
+            lang
+          }
+        },
         highlight,
-        main,
         start_price_per_hour,
         partnerId,
-        city,
-        state,
-        country,
-        zip,
         phone,
         mapLocationLink,
+        details:{},
+        cancellationPolicy:{},
+        images:images,
+        features:[],
+        approved:false,
+        rating:0,
+        totalReviews:0,
+        createdAt:new Date(),
+        updatedAt:new Date()
       };
 
       const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {

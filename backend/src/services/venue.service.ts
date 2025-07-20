@@ -7,26 +7,20 @@ export class VenueService {
   static async createVenue(venue: Venue,tx:Prisma.TransactionClient) {
     try {
       const newVenue = await tx.venue.create({
-        data: {
+        data: { 
           name: venue.name,
-          location: venue.location,
-          description: venue.description ?? "",
-          highlight: venue.highlight ?? "",
-          rating: venue.rating || 0,
-          main: venue.main,
+          location: venue.location as unknown as Prisma.InputJsonValue,
+          highlight: venue.highlight || null,
           start_price_per_hour: venue.start_price_per_hour,
           partnerId: venue.partnerId,
-          detailDescription: venue.detailDescription ?? "",
-          features: venue.features ?? [],
-          city: venue.city,
-          state: venue.state,
-          country: venue.country,
-          zip: venue.zip,
           phone: venue.phone,
           mapLocationLink: venue.mapLocationLink,
-          createdOn: new Date(),
-          updatedOn: new Date(),
-          cancellationPolicy: venue.cancellationPolicy ?? [],
+          cancellationPolicy: venue.cancellationPolicy || {},
+          images: venue.images || [],
+          features: venue.features || [],
+          approved: venue.approved || false,
+          rating: venue.rating || null,
+          totalReviews: venue.totalReviews || 0,
         },
       });
       return newVenue;
@@ -52,7 +46,23 @@ export class VenueService {
     try {
       const updatedVenue = await prisma.venue.update({
         where: { id },
-        data: venue,
+        data: {
+          name: venue.name,
+          location: venue.location as unknown as Prisma.InputJsonValue,
+          highlight: venue.highlight || null,
+          start_price_per_hour: venue.start_price_per_hour,
+          partnerId: venue.partnerId,
+          phone: venue.phone,
+          mapLocationLink: venue.mapLocationLink,
+          cancellationPolicy: venue.cancellationPolicy || {},
+          images: venue.images || [],
+          features: venue.features || [],
+          approved: venue.approved || false,
+          rating: venue.rating || null,
+          totalReviews: venue.totalReviews || 0,
+          createdAt: venue.createdAt,
+          updatedAt: new Date(),
+        },
       });
       return updatedVenue;
     } catch (error) {

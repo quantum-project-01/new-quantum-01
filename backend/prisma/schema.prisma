@@ -38,7 +38,6 @@ model PartnerDetails {
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
 
-  // Add relation name to match PartnerVenueMap
   mappings         PartnerVenueMap[]  @relation("PartnerDetailUser")
 
   @@map("partner_details")
@@ -48,24 +47,22 @@ model PartnerDetails {
 model Venue {
   id                   String            @id @default(uuid())
   name                 String            @db.VarChar(255)
-  location             String            @db.VarChar(255)
   description          String?           @db.Text
-  highlight            String            @db.VarChar(255)
-  main                 String            @db.VarChar(255)
-  rating               Decimal?          @db.Decimal(2, 1)
+  highlight            String?           @db.VarChar(255)
+  location             Json              @db.JsonB
   start_price_per_hour Decimal           @db.Decimal(10, 2)
-  createdOn            DateTime          @default(now())
-  updatedOn            DateTime          @updatedAt
-  partnerId            String            @db.VarChar(255)
-  detailDescription    String?           @db.Text
+  details              Json?             @db.JsonB
+  cancellationPolicy   Json?             @db.JsonB
+  images               String[]          
   features             String[]          @db.VarChar(255)
-  city                 String            @db.VarChar(100)
-  state                String            @db.VarChar(100)
-  country              String            @db.VarChar(100)
-  zip                  String            @db.VarChar(20)
+  approved             Boolean           @default(false)
+  mapLocationLink      String?           @db.Text
   phone                String            @db.VarChar(20)
-  mapLocationLink      String            @db.Text
-  cancellationPolicy   String[]          @db.VarChar(255)
+  rating               Decimal?          @db.Decimal(2, 1)
+  totalReviews         Int?              @default(0)
+  partnerId            String            @db.VarChar(255)
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
   PartnerVenueMap      PartnerVenueMap[]
 
   @@map("venues")

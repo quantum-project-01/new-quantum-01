@@ -130,14 +130,13 @@ function App() {
             <Route path="/partner/login" element={<PartnerLoginPage />} />
             <Route path="/partner/register" element={<PartnerRegisterPage />} />
             <Route path="/partner/dashboard" element={<PartnerDashboard />} />
-            <Route path="/partner/venues" element={<PartnerVenues />} />
             <Route
               path="/partner/dashboard/bookings"
               element={<PartnerDashboard />}
             />
             <Route
               path="/partner/dashboard/venues"
-              element={<PartnerDashboard />}
+              element={<PartnerVenues />}
             />
             <Route
               path="/partner/dashboard/analytics"

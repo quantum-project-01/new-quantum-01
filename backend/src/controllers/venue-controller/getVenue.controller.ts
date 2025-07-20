@@ -24,17 +24,11 @@ export class GetVenueController {
         location: venue.location,
         description: venue.description,
         highlight: venue.highlight,
-        main: venue.main,
         rating: venue.rating,
         start_price_per_hour: venue.start_price_per_hour,
-        createdOn: venue.createdOn,
-        updatedOn: venue.updatedOn,
-        detailDescription: venue.detailDescription,
+        createdAt: venue.createdAt,
+        updatedAt: venue.updatedAt,
         features: venue.features,
-        city: venue.city,
-        state: venue.state,
-        country: venue.country,
-        zip: venue.zip,
         phone: venue.phone,
         mapLocationLink: venue.mapLocationLink,
         cancellationPolicy: venue.cancellationPolicy,
@@ -57,6 +51,7 @@ export class GetVenueController {
   static async getAllVenuesByPartner(req: Request, res: Response) {
     try {
       const partnerId = req.query["partnerId"] as string;
+      console.log(partnerId);
       const { page = 1, limit = 10 } = req.body as {
         page: number;
         limit: number;
@@ -71,6 +66,8 @@ export class GetVenueController {
         page,
         limit
       );
+
+      console.log(venues);
       if (!venues || venues.length === 0) {
         return res.status(404).json({ message: "No venues found" });
       }
@@ -81,17 +78,12 @@ export class GetVenueController {
         location: venue.location,
         description: venue.description,
         highlight: venue.highlight,
-        main: venue.main,
         rating: venue.rating,
+        images: venue.images,
         start_price_per_hour: venue.start_price_per_hour,
-        createdOn: venue.createdOn,
-        updatedOn: venue.updatedOn,
-        detailDescription: venue.detailDescription,
+        createdAt: venue.createdAt,
+        updatedAt: venue.updatedAt,
         features: venue.features,
-        city: venue.city,
-        state: venue.state,
-        country: venue.country,
-        zip: venue.zip,
         phone: venue.phone,
         mapLocationLink: venue.mapLocationLink,
         cancellationPolicy: venue.cancellationPolicy,
