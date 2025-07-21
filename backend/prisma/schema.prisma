@@ -64,6 +64,7 @@ model Venue {
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @updatedAt
   PartnerVenueMap      PartnerVenueMap[]
+  activities           Activity[]
 
   @@map("venues")
 }
@@ -82,4 +83,60 @@ model PartnerVenueMap {
 
   @@unique([partnerDetailId, venueId])
   @@map("partner_venue_map")
+}
+
+model Activity {
+  id                   String     @id @default(uuid())
+  name                 String     @db.VarChar(255)
+  tags                 String[]   @db.VarChar(100)
+  venueId              String
+  start_price_per_hour Decimal    @db.Decimal(10, 2)
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+
+  venue                Venue      @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  facilities           Facility[]
+
+  @@map("activities")
+}
+
+model Facility {
+  id                   String   @id @default(uuid())
+  name                 String   @db.VarChar(255)
+  activityId           String
+  start_price_per_hour Decimal  @db.Decimal(10, 2)
+  startTime            String   @db.VarChar(10)
+  endTime              String   @db.VarChar(10)
+  isAvailable          Boolean  @default(true)
+  isFillingFast        Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  activity             Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  slots                Slot[]
+
+  @@map("facilities")
+}
+
+enum SlotAvailability {
+  available
+  not_available
+  booked
+  filling_fast
+}
+
+model Slot {
+  id           String            @id @default(uuid())
+  date         DateTime          @db.Date
+  amount       Decimal           @db.Decimal(10, 2)
+  availability SlotAvailability  @default(available)
+  startTime    String            @db.VarChar(10)
+  endTime      String            @db.VarChar(10)
+  facilityId   String
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  facility     Facility          @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@map("slots")
 }

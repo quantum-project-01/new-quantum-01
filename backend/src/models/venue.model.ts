@@ -4,10 +4,10 @@ export interface Venue {
   name: string;
   description?: string;
   highlight?: string;
-  location: Location
+  location: Location;
   start_price_per_hour: number;
-  details:{},
-  cancellationPolicy:{};
+  details: {};
+  cancellationPolicy: {};
   images?: string[];
   features?: string[];
   approved?: boolean;
@@ -15,9 +15,9 @@ export interface Venue {
   phone: string;
   rating?: number;
   reviews?: {
-    userId:string,
-    text:string,
-    createdAt:string
+    userId: string;
+    text: string;
+    createdAt: string;
   };
   totalReviews?: number;
   createdAt: Date;
@@ -36,22 +36,43 @@ export interface Location {
   };
 }
 export interface Activity {
-    id: number;
-    name: string;
-    tags: string[];
-    createdOn: Date;
-    updatedOn: Date;
-    start_price_per_hour:number
+  id?: string;
+  name: string;
+  tags: string[];
+  createdAt?: Date;
+  updatedAt?: Date;
+  venueId?: string;
+  start_price_per_hour: number;
 }
 
 export interface Facility {
-    id: number;
-    name: string;
-    createdOn: Date;
-    updatedOn: Date;
-    start_price_per_hour:number
-    startTime: string;
-    endTime: string;
-    isAvailable: boolean;
-    isFillingFast: boolean;
+  id?: string;
+  name: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  activityId: string;
+  start_price_per_hour: number;
+  startTime: string; // Format: "HH:MM:SS" (e.g., "09:00:00")
+  endTime: string;   // Format: "HH:MM:SS" (e.g., "17:00:00")
+  isAvailable?: boolean;
+  isFillingFast?: boolean;
+}
+
+// Slot Model
+export type SlotAvailability =
+  | "available"
+  | "not_available"
+  | "booked"
+  | "filling_fast";
+
+export interface Slot {
+  id?: string;
+  date: string;
+  amount: number;
+  availability: SlotAvailability;
+  startTime: string; 
+  endTime: string;  
+  facilityId?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
