@@ -17,7 +17,7 @@ export class BookingService {
             activityId: booking.activityId,
             facilityId: booking.facilityId,
             amount: booking.amount,
-            duaration: booking.duration, // Note: matches schema typo "duaration"
+            duration: booking.duration, // Note: matches schema typo "duaration"
             startTime: booking.startTime,
             endTime: booking.endTime,
             numberOfSlots: booking.numberOfSlots,
@@ -112,7 +112,7 @@ export class BookingService {
     }
   }
 
-  static async cancelBooking(id: string, cancellationReason?: string) {
+  static async cancelBooking(id: string, _cancellationReason?: string) {
     try {
       const result = await prisma.$transaction(async (tx) => {
         // Update booking status
