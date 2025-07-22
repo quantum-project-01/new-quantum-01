@@ -6,6 +6,7 @@ interface ChartProps {
   title?: string;
   color?: 'blue' | 'green' | 'purple' | 'orange';
   type?: 'line' | 'bar';
+  height?: number;
 }
 
 const Chart: React.FC<ChartProps> = ({
@@ -14,6 +15,7 @@ const Chart: React.FC<ChartProps> = ({
   title,
   color = 'blue',
   type = 'line',
+  height = 160, // Default height in pixels
 }) => {
   const maxValue = Math.max(...data);
   const colorClasses = {
@@ -28,7 +30,7 @@ const Chart: React.FC<ChartProps> = ({
       {title && <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>}
       
       {type === 'bar' ? (
-        <div className="flex items-end justify-between h-40 space-x-2">
+        <div className="flex items-end justify-between space-x-2" style={{ height: `${height}px` }}>
           {data.map((value, index) => (
             <div key={index} className="flex flex-col items-center flex-1">
               <div
@@ -42,7 +44,7 @@ const Chart: React.FC<ChartProps> = ({
           ))}
         </div>
       ) : (
-        <div className="relative h-40">
+        <div className="relative" style={{ height: `${height}px` }}>
           <svg className="w-full h-full">
             <defs>
               <linearGradient id={`gradient-${color}`} x1="0%" y1="0%" x2="0%" y2="100%">
@@ -95,11 +97,9 @@ const Chart: React.FC<ChartProps> = ({
           </svg>
           
           {/* Labels */}
-          <div className="flex justify-between mt-2">
+          <div className="flex justify-between text-xs text-gray-600 mt-2">
             {labels.map((label, index) => (
-              <span key={index} className="text-xs text-gray-600">
-                {label}
-              </span>
+              <span key={index}>{label}</span>
             ))}
           </div>
         </div>

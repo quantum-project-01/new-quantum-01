@@ -5,8 +5,13 @@ export interface User {
   email: string;
   phone?: string;
   role: 'user' | 'partner' | 'admin';
-  createdAt: string;
-  updatedAt: string;
+  partnerDetails?: {
+    id: string;
+    companyName: string;
+    subscriptionType: 'fixed' | 'revenue';
+    gstNumber?: string;
+    websiteUrl?: string;
+  };
 }
 
 export interface AuthState {
@@ -18,29 +23,41 @@ export interface AuthState {
 
 // Venue Types
 export interface Venue {
-  id: string;
-  ownerId: string;
+  id?: string;
+  partnerId: string;
   name: string;
-  description: string;
-  location: {
-    address: string;
-    city: string;
-    state: string;
-    pincode: string;
-    coordinates?: {
-      lat: number;
-      lng: number;
-    };
+  description?: string;
+  highlight?: string;
+  location: Location;
+  start_price_per_hour: number;
+  details:{},
+  cancellationPolicy:{};
+  images?: string[];
+  features?: string[];
+  approved?: boolean;
+  mapLocationLink: string;
+  phone: string;
+  rating?: number;
+  reviews?: {
+    userId:string,
+    text:string,
+    createdAt:string
   };
-  sportType: string[];
-  pricePerHour: number;
-  images: string[];
-  amenities: string[];
-  approved: boolean;
-  rating: number;
-  totalReviews: number;
-  createdAt: string;
-  updatedAt: string;
+  totalReviews?: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Location {
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  pincode: string;
+  coordinates: {
+    lat: number;
+    lang: number;
+  };
 }
 
 // Slot Types
@@ -232,7 +249,11 @@ export interface RegisterForm {
   email: string;
   password: string;
   confirmPassword: string;
-  phone?: string;
+  phone: string;
+  companyName?: string;
+  subscriptionType?: 'fixed' | 'revenue';
+  gstNumber?: string;
+  websiteUrl?: string;
 }
 
 export interface VenueForm {

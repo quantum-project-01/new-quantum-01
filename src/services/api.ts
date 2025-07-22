@@ -2,8 +2,8 @@ import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 
 import { useAuthStore } from '../store/authStore';
 
 // Create axios instance
-const api: AxiosInstance = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
+const axiosInstance: AxiosInstance = axios.create({
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:4000/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -11,7 +11,7 @@ const api: AxiosInstance = axios.create({
 });
 
 // Request interceptor to add auth token
-api.interceptors.request.use(
+axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = useAuthStore.getState().token;
     if (token) {
@@ -25,7 +25,7 @@ api.interceptors.request.use(
 );
 
 // Response interceptor to handle errors
-api.interceptors.response.use(
+axiosInstance.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
   },
@@ -39,4 +39,4 @@ api.interceptors.response.use(
   }
 );
 
-export default api; 
+export default axiosInstance; 
