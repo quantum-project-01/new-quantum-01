@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { Slot } from "../../../models/venue.model";
 import { SlotService } from "../../../services/slot.service";
+import { validateTimeSlot } from "../../../utils/timeValidation";
 
 export class SlotController {
   static async createSlot(req: Request, res: Response) {
@@ -19,6 +20,12 @@ export class SlotController {
         return res.status(400).json({ message: "All fields are required" });
       }
 
+      // Validate time slot intervals
+      const timeValidation = validateTimeSlot(startTime, endTime);
+      if (!timeValidation.isValid) {
+        return res.status(400).json({ message: timeValidation.error });
+      }
+      
       const newSlot: Slot = {
         date,
         amount,
@@ -41,10 +48,11 @@ export class SlotController {
   static async createSlots(req: Request, res: Response) {
     try {
       const { facilityId } = req.params;
-      const { date, startTime, endTime, amount, availability } = req.body;
+      const { startDate, endDate, startTime, endTime, amount, availability } = req.body;
       if (
         !facilityId ||
-        !date ||
+        !startDate ||
+        !endDate ||
         !startTime ||
         !endTime ||
         !amount ||
@@ -54,7 +62,8 @@ export class SlotController {
       }
 
       const createdSlots = await SlotService.createMultipleSlots(
-        date,
+        new Date(startDate),
+        new Date(endDate),
         startTime,
         endTime,
         facilityId,
@@ -65,7 +74,7 @@ export class SlotController {
     } catch (error) {
       return res
         .status(500)
-        .json({ message: "Failed to create slots for day" });
+        .json({ message: "Failed to create slots" });
     }
   }
 
@@ -125,12 +134,23 @@ export class SlotController {
         return res.status(404).json({ message: "Slot not found" });
       }
 
+      const startTime = req.body.startTime || existingSlot.startTime;
+      const endTime = req.body.endTime || existingSlot.endTime;
+
+      // Validate time slot intervals if times are being updated
+      if (req.body.startTime || req.body.endTime) {
+        const timeValidation = validateTimeSlot(startTime, endTime);
+        if (!timeValidation.isValid) {
+          return res.status(400).json({ message: timeValidation.error });
+        }
+      }
+
       const newSlot: Slot = {
         date: req.body.date || existingSlot.date,
         amount: req.body.amount || existingSlot.amount,
         availability: req.body.availability || existingSlot.availability,
-        startTime: req.body.startTime || existingSlot.startTime,
-        endTime: req.body.endTime || existingSlot.endTime,
+        startTime,
+        endTime,
       };
 
       const updatedSlot = await SlotService.updateSlot(id, newSlot);

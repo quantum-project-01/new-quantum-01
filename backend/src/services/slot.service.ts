@@ -19,14 +19,13 @@ export class SlotService {
   static async createMultipleSlots(
     startDate: Date,
     endDate: Date, 
-    startTime: string, // "09:00:00"
-    endTime: string,   // "17:00:00"
+    startTime: string, // "09:00"
+    endTime: string,   // "17:00"
     facilityId: string,
     amount: number,
     availability: SlotAvailability = "available"
   ) {
     try {
-      // Use raw SQL with PostgreSQL's generate_series for efficiency
       const result = await prisma.$executeRaw`
         INSERT INTO slots (id, date, "startTime", "endTime", "facilityId", amount, availability, "createdAt", "updatedAt")
         SELECT 
@@ -41,7 +40,11 @@ export class SlotService {
           NOW() as "updatedAt"
         FROM 
           generate_series(${startDate}::date, ${endDate}::date, interval '1 day') as date_series,
-          generate_series(${startTime}::time, ${endTime}::time - interval '30 minutes', interval '30 minutes') as time_series
+          generate_series(
+            ('2024-01-01 ' || ${startTime} || ':00')::timestamp,
+            ('2024-01-01 ' || ${endTime} || ':00')::timestamp - interval '30 minutes',
+            interval '30 minutes'
+          ) as time_series
       `;
 
       return { count: Number(result) };
