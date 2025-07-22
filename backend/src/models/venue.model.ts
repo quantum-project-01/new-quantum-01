@@ -72,6 +72,7 @@ export interface Slot {
   availability: SlotAvailability;
   startTime: string; 
   endTime: string;  
+  bookingId?: string;
   facilityId?: string;
   createdAt?: Date;
   updatedAt?: Date;

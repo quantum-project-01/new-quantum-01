@@ -25,7 +25,7 @@ export class SlotController {
       if (!timeValidation.isValid) {
         return res.status(400).json({ message: timeValidation.error });
       }
-      
+
       const newSlot: Slot = {
         date,
         amount,
@@ -48,7 +48,8 @@ export class SlotController {
   static async createSlots(req: Request, res: Response) {
     try {
       const { facilityId } = req.params;
-      const { startDate, endDate, startTime, endTime, amount, availability } = req.body;
+      const { startDate, endDate, startTime, endTime, amount, availability } =
+        req.body;
       if (
         !facilityId ||
         !startDate ||
@@ -72,9 +73,7 @@ export class SlotController {
       );
       return res.status(201).json({ data: createdSlots.count });
     } catch (error) {
-      return res
-        .status(500)
-        .json({ message: "Failed to create slots" });
+      return res.status(500).json({ message: "Failed to create slots" });
     }
   }
 
@@ -160,8 +159,6 @@ export class SlotController {
     }
   }
 
-  
-
   static async deleteSlot(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -206,6 +203,81 @@ export class SlotController {
       return res.status(200).json({ success: true });
     } catch (error) {
       return res.status(500).json({ message: "Failed to update slots" });
+    }
+  }
+
+  static async checkSlotAvailability(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+
+      if (!id) {
+        return res.status(400).json({ message: "Slot ID is required" });
+      }
+
+      const slot = await SlotService.getSlotById(id);
+
+      if (!slot) {
+        return res.status(404).json({ message: "Slot not found" });
+      }
+
+      const isAvailable = slot.availability === "available" && !slot.bookingId;
+
+      return res.status(200).json({
+        status: isAvailable,
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ message: "Failed to check slot availability" });
+    }
+  }
+
+  static async checkMultipleSlotsAvailability(req: Request, res: Response) {
+    try {
+      const { slotIds } = req.body;
+
+      if (!slotIds || !Array.isArray(slotIds) || slotIds.length === 0) {
+        return res.status(400).json({ message: "slotIds array is required" });
+      }
+
+      const isAvailable = await SlotService.areAllSlotsAvailable(slotIds);
+
+      return res.status(200).json({ data: isAvailable });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ message: "Failed to check slots availability" });
+    }
+  }
+
+  static async getAvailableSlotsByFacilityAndDate(req: Request, res: Response) {
+    try {
+      const { facilityId } = req.params;
+      const { startDate, endDate, sortType = "asc" } = req.body;
+
+      if (!facilityId) {
+        return res.status(400).json({ message: "Facility ID is required" });
+      }
+
+      if (!startDate || !endDate) {
+        return res
+          .status(400)
+          .json({ message: "Start date and end date are required" });
+      }
+
+      const slots = await SlotService.getAvailableSlotsByFacilityAndDate(
+        facilityId,
+        startDate,
+        endDate,
+        sortType
+      );
+
+      return res.status(200).json({
+        data: slots,
+        total: slots.length,
+      });
+    } catch (error) {
+      return res.status(500).json({ message: "Failed to get available slots" });
     }
   }
 }

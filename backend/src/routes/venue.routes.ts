@@ -39,4 +39,9 @@ router.delete('/delete-slot/:id', SlotController.deleteSlot);
 router.put('/update-slots/:facilityId', SlotController.updateSlots);
 router.post('/create-multiple-slots/:facilityId', SlotController.createSlots);
 
+// Slot Availability Routes
+router.get('/check-slot-availability/:id', SlotController.checkSlotAvailability);
+router.post('/check-multiple-slots-availability', SlotController.checkMultipleSlotsAvailability);
+router.get('/get-available-slots-by-facility-and-date/:facilityId', SlotController.getAvailableSlotsByFacilityAndDate);
+
 export default router; 

@@ -92,6 +92,30 @@ export class SlotService {
     }
   }
 
+  static async getAvailableSlotsByFacilityAndDate(facilityId: string, startDate: string, endDate: string, sortType: "asc" | "desc") {
+    try {
+      const slots = await prisma.slot.findMany({
+        where: {
+          facilityId,
+          date: {
+            gte: startDate,
+            lte: endDate,
+          },
+          availability: "available",
+          bookingId: null,
+        },
+        orderBy: {
+          date: sortType,
+        },
+      });
+
+      return slots;
+    } catch (error) {
+      console.error("Error getting available slots by facility and date:", error);
+      throw error;
+    }
+  }
+
   static async updateSlot(id: string, slot: Slot) {
     try {
       const updatedSlot = await prisma.slot.update({
@@ -129,6 +153,26 @@ export class SlotService {
     }
   }
 
+  static async areAllSlotsAvailable(slotIds: string[]): Promise<boolean> {
+    try {
+      const availableSlots = await prisma.slot.count({
+        where: {
+          id: {
+            in: slotIds
+          },
+          availability: 'available',
+          bookingId: null
+        }
+      });
+
+      // Return true if all requested slots are available
+      return availableSlots === slotIds.length;
+    } catch (error) {
+      console.error("Error checking slot availability:", error);
+      throw error;
+    }
+  }
+  
   static async updateSlots(slots: Slot[]) {
     try {
       const updatedSlots = await prisma.slot.updateMany({
