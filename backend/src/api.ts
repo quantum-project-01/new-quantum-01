@@ -1,23 +1,13 @@
 import app from "./app";
 import { connectDatabase } from "./config/db";
-import { Request, Response } from 'express';
 
-// Create handler for serverless function
-const handler = async (req: Request, res: Response) => {
-  try {
-    // Ensure database connection
+// Ensure DB connection before handling requests
+let isConnected = false;
+
+export default async (req, res) => {
+  if (!isConnected) {
     await connectDatabase();
-    
-    // Return the Express app as middleware
-    return app(req, res);
-
-  } catch (error: unknown) {
-    console.error('Serverless function error:', error);
-    return res.status(500).json({ 
-      error: 'Internal Server Error',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    });
+    isConnected = true;
   }
+  return app(req, res);
 };
-
-export default handler;
