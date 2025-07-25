@@ -118,8 +118,49 @@ const Header: React.FC = () => {
             </Link>
 
             {/* Desktop User Actions */}
-            <div className="hidden lg:flex items-center space-x-4">
-              {isAuthenticated ? (
+            {isAuthenticated ? (
+              <div className="hidden lg:flex items-center space-x-4">
+                <div className="flex items-center space-x-4">
+                  <Link
+                    to="/contact"
+                    className={`relative px-4 py-2 font-medium transition-all duration-200 ${
+                      isActivePath('/contact')
+                        ? 'text-blue-400'
+                        : 'text-gray-300 hover:text-white'
+                    }`}
+                  >
+                    Contact Us
+                    {isActivePath('/contact') && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"></div>
+                    )}
+                  </Link>
+                  <Link
+                    to="/wallet"
+                    className={`relative px-4 py-2 font-medium transition-all duration-200 ${
+                      isActivePath('/wallet')
+                        ? 'text-blue-400'
+                        : 'text-gray-300 hover:text-white'
+                    }`}
+                  >
+                    Wallet
+                    {isActivePath('/wallet') && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"></div>
+                    )}
+                  </Link>
+                  <Link
+                    to="/bookings"
+                    className={`relative px-4 py-2 font-medium transition-all duration-200 ${
+                      isActivePath('/bookings')
+                        ? 'text-blue-400'
+                        : 'text-gray-300 hover:text-white'
+                    }`}
+                  >
+                    My Bookings
+                    {isActivePath('/bookings') && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"></div>
+                    )}
+                  </Link>
+                </div>
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-3 px-4 py-2 bg-gray-800/50 backdrop-blur-md rounded-xl border border-gray-700/50">
                     <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
@@ -164,23 +205,23 @@ const Header: React.FC = () => {
                     <LogOut className="h-5 w-5" />
                   </button>
                 </div>
-              ) : (
-                <div className="flex items-center space-x-3">
-                  <Link
-                    to="/login"
-                    className="px-6 py-2 text-gray-300 hover:text-white font-medium transition-all duration-200"
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    to="/register"
-                    className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
-                  >
-                    Sign Up
-                  </Link>
-                </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-3">
+                <Link
+                  to="/login"
+                  className="px-6 py-2 text-gray-300 hover:text-white font-medium transition-all duration-200"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
 
             {/* Mobile Menu Button */}
             <button
@@ -210,6 +251,43 @@ const Header: React.FC = () => {
             <div className="max-w-7xl mx-auto px-4 py-6">
               {/* Mobile Navigation */}
               <nav className="space-y-4 mb-6">
+                {isAuthenticated && (
+                  <>
+                    <Link
+                      to="/contact"
+                      onClick={closeMenu}
+                      className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                        isActivePath('/contact')
+                          ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
+                          : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
+                      }`}
+                    >
+                      Contact Us
+                    </Link>
+                    <Link
+                      to="/wallet"
+                      onClick={closeMenu}
+                      className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                        isActivePath('/wallet')
+                          ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
+                          : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
+                      }`}
+                    >
+                      Wallet
+                    </Link>
+                    <Link
+                      to="/bookings"
+                      onClick={closeMenu}
+                      className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                        isActivePath('/bookings')
+                          ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
+                          : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
+                      }`}
+                    >
+                      My Bookings
+                    </Link>
+                  </>
+                )}
                 <Link
                   to="/venues"
                   onClick={closeMenu}

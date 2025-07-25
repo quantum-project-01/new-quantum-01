@@ -38,6 +38,14 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import VenueDetailsPage from "./pages/booking/VenueDetailsPage";
 
+// Import CheckoutPage
+import CheckoutPage from "./pages/booking/CheckoutPage";
+
+// Import new page components
+import ContactPage from "./pages/ContactPage";
+import WalletPage from "./pages/WalletPage";
+import MyBookingsPage from "./pages/MyBookingsPage";
+
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -97,11 +105,36 @@ function App() {
             {/* Protected User Routes */}
             <Route path="/booking" element={<BookingPage />} />
             <Route path="/booking/:venueId" element={<VenueDetailsPage />} />
+            <Route path="/booking/:venueId/checkout" element={<CheckoutPage />} />
             <Route
               path="/profile"
               element={
                 <ProtectedRoute>
                   <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/contact"
+              element={
+                <ProtectedRoute>
+                  <ContactPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/wallet"
+              element={
+                <ProtectedRoute>
+                  <WalletPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/bookings"
+              element={
+                <ProtectedRoute>
+                  <MyBookingsPage />
                 </ProtectedRoute>
               }
             />
