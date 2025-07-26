@@ -15,6 +15,7 @@ import AddCart, { VenueFormData } from "./components/venue/AddCart";
 const PartnerVenues: React.FC = () => {
   const [isAddCartOpen, setIsAddCartOpen] = useState(false);
   const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const {
@@ -51,7 +52,7 @@ const PartnerVenues: React.FC = () => {
       return updateVenue(venue.id, venue);
     },
     onSuccess: () => {
-      setEditingVenue(null);
+      handleCloseEditModal();
       queryClient.invalidateQueries({ queryKey: ["venues"] });
     },
     onError: (error: any) => {
@@ -75,13 +76,15 @@ const PartnerVenues: React.FC = () => {
 
   const handleEditVenue = (venue: Venue) => {
     setEditingVenue(venue);
+    setIsEditModalOpen(true);
   };
 
   const handleSaveVenue = (updatedVenue: Venue) => {
     updateVenueMutation.mutate(updatedVenue);
   };
 
-  const handleCancelEdit = () => {
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
     setEditingVenue(null);
   };
 
@@ -144,18 +147,11 @@ const PartnerVenues: React.FC = () => {
         {!isLoading && !error && venues && venues.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {venues.map((venue: Venue) => (
-              editingVenue?.id === venue.id ? (
-                <EditableVenueCard
-                  key={venue.id}
-                  venue={venue}
-                  onSave={handleSaveVenue}
-                  onCancel={handleCancelEdit}
-                />
-              ) : (
-                <div key={venue.id} onClick={() => handleEditVenue(venue)}>
-                  <VenueCard venue={venue} />
-                </div>
-              )
+              <VenueCard 
+                key={venue.id} 
+                venue={venue} 
+                onEdit={() => handleEditVenue(venue)}
+              />
             ))}
           </div>
         )}
@@ -182,12 +178,24 @@ const PartnerVenues: React.FC = () => {
           </div>
         )}
 
+        {/* Add Venue Modal */}
         <AddCart
           isOpen={isAddCartOpen}
           onClose={handleCloseAddCart}
           onSubmit={handleAddVenue}
           isLoading={createVenueMutation.isPending}
         />
+
+        {/* Edit Venue Modal */}
+        {editingVenue && (
+          <EditableVenueCard
+            venue={editingVenue}
+            onSave={handleSaveVenue}
+            onCancel={handleCloseEditModal}
+            isOpen={isEditModalOpen}
+            isLoading={updateVenueMutation.isPending}
+          />
+        )}
       </div>
     </DashboardLayout>
   );
