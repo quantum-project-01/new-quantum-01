@@ -13,6 +13,7 @@ import { Venue } from "../../types";
 import { Plus, Loader2, AlertTriangle } from "lucide-react";
 import AddCart, { VenueFormData } from "./components/venue/AddCart";
 import { useAuthStore } from "../../store/authStore";
+import DeleteConfirmationModal from "../../components/common/DeleteConfirmationModal";
 
 const UnauthorizedView: React.FC = () => (
   <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
@@ -36,6 +37,7 @@ const PartnerVenues: React.FC = () => {
   const [isAddCartOpen, setIsAddCartOpen] = useState(false);
   const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [deletingVenue, setDeletingVenue] = useState<{ id: string; name: string } | null>(null);
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
 
@@ -120,6 +122,7 @@ const PartnerVenues: React.FC = () => {
 
   const handleDeleteVenue = (venueId: string) => {
     deleteVenueMutation.mutate(venueId);
+    setDeletingVenue(null);
   };
 
   const handleSaveVenue = (updatedVenue: Venue) => {
@@ -175,16 +178,23 @@ const PartnerVenues: React.FC = () => {
 
         {/* Error State */}
         {error && (
-          <div className="text-center py-8">
-            <p className="text-red-400">
-              Error loading venues: {error instanceof Error ? error.message : 'Unknown error'}
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Retry
-            </button>
+          <div className="bg-red-900/10 border border-red-900/20 rounded-xl p-6 max-w-2xl mx-auto text-center">
+            <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-red-500 mb-2">Failed to Load Venues or No Venues</h3>
+            {/* <p className="text-gray-400 mb-4">
+              {error instanceof Error ? error.message : 'There was an error loading your venues. Please try again.'}
+            </p> */}
+            <div className="space-y-2">
+              <button
+                onClick={() => window.location.reload()}
+                className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                <span>Try Again or Add Venues</span>
+              </button>
+              <p className="text-sm text-gray-500">
+                If the problem persists, please contact support.
+              </p>
+            </div>
           </div>
         )}
 
@@ -196,7 +206,7 @@ const PartnerVenues: React.FC = () => {
                 key={venue.id} 
                 venue={venue} 
                 onEdit={() => handleEditVenue(venue)}
-                onDelete={() => venue.id && handleDeleteVenue(venue.id)}
+                onDelete={() => venue.id && setDeletingVenue({ id: venue.id, name: venue.name })}
               />
             ))}
           </div>
@@ -204,23 +214,31 @@ const PartnerVenues: React.FC = () => {
 
         {/* Empty State */}
         {!isLoading && !error && (!venues || venues.length === 0) && (
-          <div className="text-center py-8">
-            <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Plus className="h-8 w-8 text-gray-400" />
+          <div className="bg-gray-800 border border-gray-700 rounded-xl p-8 max-w-md mx-auto text-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Plus className="h-8 w-8 text-white" />
             </div>
-            <h3 className="text-lg font-medium text-white mb-2">
-              No venues found
+            <h3 className="text-2xl font-bold text-white mb-4">
+              No Venues Yet
             </h3>
-            <p className="text-gray-400 mb-4">
-              Get started by creating your first venue
+            <p className="text-gray-400 mb-6 leading-relaxed">
+              Start by adding your first venue. Add details like location, pricing, and images to attract more bookings.
             </p>
-            <button
-              onClick={handleOpenAddCart}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 mx-auto"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Create Your First Venue</span>
-            </button>
+            <div className="space-y-4">
+              <button
+                onClick={handleOpenAddCart}
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center space-x-2"
+              >
+                <Plus className="h-5 w-5" />
+                <span>Create Your First Venue</span>
+              </button>
+              <a
+                href="/help/venues"
+                className="block text-blue-400 hover:text-blue-300 transition-colors text-sm"
+              >
+                Learn more about managing venues →
+              </a>
+            </div>
           </div>
         )}
 
@@ -242,6 +260,16 @@ const PartnerVenues: React.FC = () => {
             isLoading={updateVenueMutation.isPending}
           />
         )}
+
+        {/* Delete Confirmation Modal */}
+        <DeleteConfirmationModal
+          isOpen={!!deletingVenue}
+          onClose={() => setDeletingVenue(null)}
+          onConfirm={() => deletingVenue?.id && handleDeleteVenue(deletingVenue.id)}
+          title="Delete Venue"
+          message={`Are you sure you want to delete "${deletingVenue?.name}"? This action cannot be undone and will remove all associated data including bookings, activities, and facilities.`}
+          isLoading={deleteVenueMutation.isPending}
+        />
       </div>
     </DashboardLayout>
   );

@@ -41,9 +41,7 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue, onEdit, onDelete }) => {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (window.confirm('Are you sure you want to delete this venue? This action cannot be undone.')) {
-                      onDelete?.();
-                    }
+                    onDelete?.();
                   }}
                   className="p-2 hover:bg-red-100 rounded-full transition-colors"
                   title="Delete venue"
