@@ -14,22 +14,29 @@ const LoginPage: React.FC = () => {
   const { login } = useAuthStore();
 
   // Determine the redirect path from location state
-  const from = location.state?.from?.pathname || '/dashboard';
+  const from = location.state?.from?.pathname || "/dashboard";
   const loginIntent = location.state?.intent;
 
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: (credentials: { email: string; password: string }) =>
       authService.login(credentials),
-    onSuccess: (response) => {
+    onSuccess: (response: {
+      success: boolean;
+      data?: {
+        user: any;
+        token: string;
+      };
+      message?: string;
+    }) => {
       if (response.success && response.data) {
         login(response.data.user, response.data.token);
-        
+
         // Handle different login intents
         switch (loginIntent) {
-          case 'proceed_to_payment':
+          case "proceed_to_payment":
             // Redirect to a payment or checkout page
-            navigate('/booking/checkout', { replace: true });
+            navigate("/booking/checkout", { replace: true });
             break;
           default:
             // Default redirect
@@ -52,7 +59,7 @@ const LoginPage: React.FC = () => {
 
   // Optional: Show a context-aware message based on login intent
   useEffect(() => {
-    if (loginIntent === 'proceed_to_payment') {
+    if (loginIntent === "proceed_to_payment") {
       setError("Please log in to proceed with your booking.");
     }
   }, [loginIntent]);
@@ -111,14 +118,14 @@ const LoginPage: React.FC = () => {
           </div>
 
           <div className="flex items-center justify-between">
-            <Link 
-              to="/login-otp" 
+            <Link
+              to="/login-otp"
               className="text-blue-400 hover:text-blue-300 text-sm"
             >
               Login with OTP
             </Link>
-            <Link 
-              to="/forgot-password" 
+            <Link
+              to="/forgot-password"
               className="text-blue-400 hover:text-blue-300 text-sm"
             >
               Forgot Password?
@@ -137,10 +144,7 @@ const LoginPage: React.FC = () => {
         <div className="mt-6 text-center">
           <p className="text-gray-400">
             Don't have an account?{" "}
-            <Link 
-              to="/register" 
-              className="text-blue-400 hover:text-blue-300"
-            >
+            <Link to="/register" className="text-blue-400 hover:text-blue-300">
               Sign Up
             </Link>
           </p>
