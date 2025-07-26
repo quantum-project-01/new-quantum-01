@@ -9,6 +9,7 @@ interface CheckoutCardProps {
   selectedFacility: Facility | null;
   selectedSlots: Slot[];
   onProceed: () => void;
+  onProceedToCheckout?: () => void; // Add optional prop
 }
 
 const CheckoutCard: React.FC<CheckoutCardProps> = ({
@@ -16,6 +17,7 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
   selectedFacility,
   selectedSlots,
   onProceed,
+  onProceedToCheckout, // Add prop
 }) => {
   const [userInfo, setUserInfo] = useState({
     email: "",
@@ -47,6 +49,15 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
     const ampm = hour >= 12 ? "PM" : "AM";
     const displayHour = hour % 12 || 12;
     return `${displayHour}:${minutes} ${ampm}`;
+  };
+
+  const handleProceed = () => {
+    // If onProceedToCheckout is provided, use it; otherwise, use onProceed
+    if (onProceedToCheckout) {
+      onProceedToCheckout();
+    } else {
+      onProceed();
+    }
   };
 
   return (
@@ -206,13 +217,13 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
         </div>
 
         <button
-          onClick={onProceed}
+          onClick={handleProceed}
           disabled={selectedSlots.length === 0}
           className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors duration-200 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
         >
           <span>₹{total.toFixed(2)}</span>
           <span className="mx-2">•</span>
-          <span>PROCEED</span>
+          <span>{onProceedToCheckout ? "CHECKOUT" : "PROCEED"}</span>
           <ArrowRight className="w-4 h-4 ml-2" />
         </button>
       </div>

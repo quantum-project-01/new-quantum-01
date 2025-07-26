@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import ActivitySelector from "./BookSlots/ActivitySelector";
 import FacilitySelector from "./BookSlots/FacilitySelector";
 import SlotSelector, {
@@ -157,6 +158,9 @@ const slotData = generateSlotDataForNext10Days();
 console.log(slotData);
 
 const BookSlots: React.FC = () => {
+  const navigate = useNavigate();
+  const { venueId } = useParams(); // Get the venue ID from the URL
+
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
     null
   );
@@ -198,11 +202,19 @@ const BookSlots: React.FC = () => {
   };
 
   const handleProceed = () => {
-    console.log("Proceeding with booking:", {
-      activity: selectedActivity,
-      facility: selectedFacility,
-      slots: selectedSlots,
-    });
+    // Navigate to checkout page with selected booking details
+    if (selectedActivity && selectedFacility && selectedSlots.length > 0) {
+      navigate(`/booking/${venueId}/checkout`, {
+        state: {
+          activity: selectedActivity,
+          facility: selectedFacility,
+          slots: selectedSlots,
+        },
+      });
+    } else {
+      // Optional: Show an error or alert
+      alert("Please select an activity, facility, and at least one slot.");
+    }
   };
 
   return (

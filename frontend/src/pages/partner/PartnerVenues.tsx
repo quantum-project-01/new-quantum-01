@@ -3,15 +3,18 @@ import DashboardLayout from "../../components/layout/DashboardLayout";
 import {
   createVenue,
   getAllVenuesByPartner,
+  updateVenue,
 } from "../../services/partner-service/venue-service/venueService";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import VenueCard from "../../components/common/venue/venueCard";
+import EditableVenueCard from "../../components/common/venue/EditableVenueCard";
 import { Venue } from "../../types";
 import { Plus, Loader2 } from "lucide-react";
 import AddCart, { VenueFormData } from "./components/venue/AddCart";
 
 const PartnerVenues: React.FC = () => {
   const [isAddCartOpen, setIsAddCartOpen] = useState(false);
+  const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
   const queryClient = useQueryClient();
 
   const {
@@ -21,7 +24,7 @@ const PartnerVenues: React.FC = () => {
   } = useQuery({
     queryKey: ["venues"],
     queryFn: () =>
-      getAllVenuesByPartner("317d9df4-965f-4c91-97e5-d4ad4d80dab5"),
+      getAllVenuesByPartner("7a79fb37-3f7c-40a6-969d-2087643dde8c"),
   });
 
   // Create venue mutation
@@ -41,6 +44,22 @@ const PartnerVenues: React.FC = () => {
     },
   });
 
+  // Update venue mutation
+  const updateVenueMutation = useMutation({
+    mutationFn: async (venue: Venue) => {
+      if (!venue.id) throw new Error("Venue ID is required for update");
+      return updateVenue(venue.id, venue);
+    },
+    onSuccess: () => {
+      setEditingVenue(null);
+      queryClient.invalidateQueries({ queryKey: ["venues"] });
+    },
+    onError: (error: any) => {
+      console.error("Error updating venue:", error);
+      alert(error?.response?.data?.message || "Failed to update venue");
+    },
+  });
+
   const handleAddVenue = (data: VenueFormData) => {
     console.log("data", data);
     createVenueMutation.mutate(data);
@@ -52,6 +71,18 @@ const PartnerVenues: React.FC = () => {
 
   const handleCloseAddCart = () => {
     setIsAddCartOpen(false);
+  };
+
+  const handleEditVenue = (venue: Venue) => {
+    setEditingVenue(venue);
+  };
+
+  const handleSaveVenue = (updatedVenue: Venue) => {
+    updateVenueMutation.mutate(updatedVenue);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingVenue(null);
   };
 
   return (
@@ -113,7 +144,18 @@ const PartnerVenues: React.FC = () => {
         {!isLoading && !error && venues && venues.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {venues.map((venue: Venue) => (
-              <VenueCard key={venue.id} venue={venue} />
+              editingVenue?.id === venue.id ? (
+                <EditableVenueCard
+                  key={venue.id}
+                  venue={venue}
+                  onSave={handleSaveVenue}
+                  onCancel={handleCancelEdit}
+                />
+              ) : (
+                <div key={venue.id} onClick={() => handleEditVenue(venue)}>
+                  <VenueCard venue={venue} />
+                </div>
+              )
             ))}
           </div>
         )}

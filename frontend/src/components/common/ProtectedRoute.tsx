@@ -5,15 +5,28 @@ import { useAuthStore } from '../../store/authStore';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requiredRole?: 'user' | 'partner' | 'admin';
+  redirectTo?: string;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
+  children, 
+  requiredRole, 
+  redirectTo = '/login' 
+}) => {
   const { isAuthenticated, user } = useAuthStore();
   const location = useLocation();
 
   if (!isAuthenticated) {
-    // Redirect to login page with return url
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    // Redirect to login page with the current location as state
+    // This allows us to send the user back to their intended destination after login
+    return <Navigate 
+      to={redirectTo} 
+      state={{ 
+        from: location, 
+        intent: 'proceed_to_payment' 
+      }} 
+      replace 
+    />;
   }
 
   if (requiredRole && user?.role !== requiredRole) {
