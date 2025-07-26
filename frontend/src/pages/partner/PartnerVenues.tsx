@@ -7,6 +7,7 @@ import {
   deleteVenue,
 } from "../../services/partner-service/venue-service/venueService";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-hot-toast";
 import VenueCard from "../../components/common/venue/venueCard";
 import EditableVenueCard from "../../components/common/venue/EditableVenueCard";
 import { Venue } from "../../types";
@@ -64,13 +65,13 @@ const PartnerVenues: React.FC = () => {
       return createVenue(dataWithPartnerId);
     },
     onSuccess: (data) => {
-      console.log("Venue created successfully!", data);
       setIsAddCartOpen(false);
       queryClient.invalidateQueries({ queryKey: ["venues", partnerId] });
+      toast.success("Venue created successfully!");
     },
     onError: (error: any) => {
       console.error("Error creating venue:", error);
-      alert(error?.response?.data?.message || "Failed to create venue");
+      toast.error(error?.response?.data?.message || "Failed to create venue");
     },
   });
 
@@ -82,10 +83,11 @@ const PartnerVenues: React.FC = () => {
     onSuccess: () => {
       handleCloseEditModal();
       queryClient.invalidateQueries({ queryKey: ["venues", partnerId] });
+      toast.success("Venue updated successfully!");
     },
     onError: (error: any) => {
       console.error("Error updating venue:", error);
-      alert(error?.response?.data?.message || "Failed to update venue");
+      toast.error(error?.response?.data?.message || "Failed to update venue");
     },
   });
 
@@ -94,11 +96,12 @@ const PartnerVenues: React.FC = () => {
       return deleteVenue(venueId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["venues", partnerId] });
+      queryClient.invalidateQueries({ queryKey: ["venues", partnerId], exact: true });
+      toast.success("Venue deleted successfully!");
     },
     onError: (error: any) => {
       console.error("Error deleting venue:", error);
-      alert(error?.response?.data?.message || "Failed to delete venue");
+      toast.error(error?.response?.data?.message || "Failed to delete venue");
     },
   });
 
