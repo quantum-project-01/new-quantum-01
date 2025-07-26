@@ -9,35 +9,62 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import VenueCard from "../../components/common/venue/venueCard";
 import EditableVenueCard from "../../components/common/venue/EditableVenueCard";
 import { Venue } from "../../types";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, Loader2, AlertTriangle } from "lucide-react";
 import AddCart, { VenueFormData } from "./components/venue/AddCart";
+import { useAuthStore } from "../../store/authStore";
+
+const UnauthorizedView: React.FC = () => (
+  <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+    <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 max-w-md w-full text-center">
+      <AlertTriangle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+      <h2 className="text-xl font-bold text-white mb-2">Access Denied</h2>
+      <p className="text-gray-400 mb-4">
+        You must be logged in as a partner to view this page.
+      </p>
+      <button
+        onClick={() => window.location.href = '/partner/login'}
+        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+      >
+        Go to Partner Login
+      </button>
+    </div>
+  </div>
+);
 
 const PartnerVenues: React.FC = () => {
   const [isAddCartOpen, setIsAddCartOpen] = useState(false);
   const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+
+  const isAuthorized = user && user.role === 'partner' && user.partnerDetails?.id;
+  const partnerId = user?.id;
 
   const {
     data: venues,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["venues"],
-    queryFn: () =>
-      getAllVenuesByPartner("7a79fb37-3f7c-40a6-969d-2087643dde8c"),
+    queryKey: ["venues", partnerId],
+    queryFn: () => partnerId ? getAllVenuesByPartner(partnerId) : Promise.resolve([]),
+    enabled: !!partnerId, // Only run query if we have a partnerId
   });
 
   // Create venue mutation
   const createVenueMutation = useMutation({
     mutationFn: async (venueData: VenueFormData) => {
-      return createVenue(venueData);
+      if (!partnerId) throw new Error("No partner ID available");
+      const dataWithPartnerId = {
+        ...venueData,
+        partnerId,
+      };
+      return createVenue(dataWithPartnerId);
     },
     onSuccess: (data) => {
       console.log("Venue created successfully!", data);
       setIsAddCartOpen(false);
-      // Invalidate and refetch venues
-      queryClient.invalidateQueries({ queryKey: ["venues"] });
+      queryClient.invalidateQueries({ queryKey: ["venues", partnerId] });
     },
     onError: (error: any) => {
       console.error("Error creating venue:", error);
@@ -53,7 +80,7 @@ const PartnerVenues: React.FC = () => {
     },
     onSuccess: () => {
       handleCloseEditModal();
-      queryClient.invalidateQueries({ queryKey: ["venues"] });
+      queryClient.invalidateQueries({ queryKey: ["venues", partnerId] });
     },
     onError: (error: any) => {
       console.error("Error updating venue:", error);
@@ -88,14 +115,16 @@ const PartnerVenues: React.FC = () => {
     setEditingVenue(null);
   };
 
+  if (!isAuthorized) {
+    return <UnauthorizedView />;
+  }
+
   return (
     <DashboardLayout userRole="partner">
       <div className="p-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">
-              {"Partner Venues"}
-            </h1>
+            <h1 className="text-2xl font-bold text-white">Partner Venues</h1>
             <p className="text-gray-400 mt-1">
               Monitor your venue performance and bookings
             </p>
@@ -132,7 +161,7 @@ const PartnerVenues: React.FC = () => {
         {error && (
           <div className="text-center py-8">
             <p className="text-red-400">
-              Error loading venues: {error.message}
+              Error loading venues: {error instanceof Error ? error.message : 'Unknown error'}
             </p>
             <button
               onClick={() => window.location.reload()}

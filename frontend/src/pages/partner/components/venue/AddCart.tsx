@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { X, Upload, Phone, Globe, Navigation, Loader2 } from "lucide-react";
+import { X, Upload, Phone, Globe, Navigation, Loader2, AlertTriangle } from "lucide-react";
+import { useAuthStore } from "../../../../store/authStore";
 
 interface AddCartProps {
   isOpen: boolean;
@@ -30,11 +31,14 @@ const AddCart: React.FC<AddCartProps> = ({
   onSubmit,
   isLoading = false,
 }) => {
+  const { user } = useAuthStore();
+  const partnerId = user?.partnerDetails?.id;
+
   const [formData, setFormData] = useState<VenueFormData>({
     name: "",
     highlight: "",
     start_price_per_hour: null,
-    partnerId: "7a79fb37-3f7c-40a6-969d-2087643dde8c", // Set the partner ID
+    partnerId: partnerId || "", // Get partnerId from auth store
     city: "",
     state: "",
     country: "",
