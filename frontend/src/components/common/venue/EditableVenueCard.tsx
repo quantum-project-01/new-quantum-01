@@ -1,4 +1,4 @@
-import { Star, X, Loader2 } from "lucide-react";
+import {  X, Upload, Loader2 } from "lucide-react";
 import { Venue } from "../../../types";
 import { useState } from "react";
 
@@ -17,7 +17,13 @@ const EditableVenueCard: React.FC<EditableVenueCardProps> = ({
   isOpen,
   isLoading = false 
 }) => {
-  const [editedVenue, setEditedVenue] = useState<Venue>(venue);
+  const [editedVenue, setEditedVenue] = useState<Venue>({
+    ...venue,
+    images: venue.images || []  // Ensure images is initialized as an array
+  });
+  const [imageLink, setImageLink] = useState<string>("");
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [imageMode, setImageMode] = useState<"upload" | "link">("upload");
 
   const handleInputChange = (field: keyof Venue, value: any) => {
     setEditedVenue(prev => ({
@@ -39,6 +45,133 @@ const EditableVenueCard: React.FC<EditableVenueCardProps> = ({
   const handleSave = () => {
     onSave(editedVenue);
   };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    const imageFiles = files.filter((file) => file.type.startsWith("image/"));
+
+    // Create preview URLs
+    imageFiles.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const url = e.target?.result as string;
+        setEditedVenue(prev => ({
+          ...prev,
+          images: [...(prev.images || []), url]
+        }));
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    if (e.dataTransfer.types.includes("Files")) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.dataTransfer.dropEffect = "copy";
+      setIsDragOver(true);
+    }
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    if (e.dataTransfer.types.includes("Files")) {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragOver(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    if (e.dataTransfer.types.includes("Files")) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+        setIsDragOver(false);
+      }
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    if (e.dataTransfer.files.length > 0) {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragOver(false);
+
+      const files = Array.from(e.dataTransfer.files);
+      const imageFiles = files.filter((file) => file.type.startsWith("image/"));
+
+      imageFiles.forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const url = e.target?.result as string;
+          setEditedVenue(prev => ({
+            ...prev,
+            images: [...(prev.images || []), url]
+          }));
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+
+  const handleAddImageLink = () => {
+    if (imageLink.trim()) {
+      const isValidImageUrl = (url: string): boolean => {
+        const imageExtensions = [
+          ".jpg",
+          ".jpeg",
+          ".png",
+          ".gif",
+          ".webp",
+          ".svg",
+        ];
+        const hasImageExtension = imageExtensions.some((ext) =>
+          url.toLowerCase().includes(ext)
+        );
+
+        const isDataUrl = url.startsWith("data:image");
+
+        const imageHostingServices = [
+          "unsplash.com",
+          "pexels.com",
+          "pixabay.com",
+          "imgur.com",
+          "cloudinary.com",
+        ];
+        const isFromImageHosting = imageHostingServices.some((service) =>
+          url.toLowerCase().includes(service)
+        );
+
+        const hasImageParams = url.includes("w=") || url.includes("h=") || url.includes("fit=");
+        const isValidUrl = url.startsWith("http://") || url.startsWith("https://");
+
+        return isValidUrl && (hasImageExtension || isDataUrl || isFromImageHosting || hasImageParams);
+      };
+
+      if (isValidImageUrl(imageLink)) {
+        setEditedVenue(prev => ({
+          ...prev,
+          images: [...(prev.images || []), imageLink]
+        }));
+        setImageLink("");
+      }
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setEditedVenue(prev => ({
+      ...prev,
+      images: (prev.images || []).filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleImageModeChange = (mode: "upload" | "link") => {
+    setImageMode(mode);
+    setImageLink("");
+  };
+
+  // Add this helper to safely access images array
+  const getImages = () => editedVenue.images || [];
 
   if (!isOpen) return null;
 
@@ -184,7 +317,7 @@ const EditableVenueCard: React.FC<EditableVenueCardProps> = ({
           </div>
 
           {/* Rating */}
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <h3 className="text-lg font-medium text-white">Rating</h3>
             <div className="flex items-center bg-gray-700/50 rounded-lg px-4 py-3">
               <Star className="w-5 h-5 text-yellow-400 mr-2" />
@@ -199,7 +332,135 @@ const EditableVenueCard: React.FC<EditableVenueCardProps> = ({
               />
               <span className="text-gray-400 ml-2">/ 5</span>
             </div>
+          </div> */}
+
+          {/* Images Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium text-white">Venue Images</h3>
+            
+            {/* Image Mode Toggle */}
+            <div className="flex items-center space-x-4">
+              <button
+                type="button"
+                onClick={() => handleImageModeChange("upload")}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  imageMode === "upload"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                }`
+              }
+              >
+                Upload Files
+              </button>
+              <button
+                type="button"
+                onClick={() => handleImageModeChange("link")}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  imageMode === "link"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                }`
+              }
+              >
+                Add Image Links
+              </button>
+            </div>
+
+            {/* Upload or Link Input */}
+            {imageMode === "upload" ? (
+              <div>
+                <div
+                  onDragOver={handleDragOver}
+                  onDragEnter={handleDragEnter}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={`border-2 border-dashed border-gray-600 rounded-lg p-6 text-center transition-colors ${
+                    isDragOver ? "border-blue-500 bg-blue-500/10" : ""
+                  }`}
+                >
+                  <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-gray-400 mb-2">
+                    {isDragOver ? "Drop images here" : "Click to upload or drag and drop"}
+                  </p>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    disabled={isLoading}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <label
+                    htmlFor="image-upload"
+                    className={`bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer disabled:opacity-50 ${
+                      isLoading ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    Choose Images
+                  </label>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex space-x-2">
+                  <input
+                    type="url"
+                    value={imageLink}
+                    onChange={(e) => setImageLink(e.target.value)}
+                    disabled={isLoading}
+                    className="flex-1 bg-gray-700 text-white border border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddImageLink}
+                    disabled={isLoading || !imageLink.trim()}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  >
+                    Add
+                  </button>
+                </div>
+                <p className="text-gray-500 text-sm">
+                  Supported formats: JPG, PNG, GIF, WebP, SVG. Also supports
+                  Unsplash, Pexels, Pixabay, and other image hosting services.
+                </p>
+              </div>
+            )}
+
+            {/* Image Preview Grid */}
+            {getImages().length > 0 && (
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium text-gray-300">
+                  Images ({getImages().length})
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {getImages().map((url, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={url}
+                        alt={`Venue ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-lg"
+                        onError={(e) => {
+                          e.currentTarget.src = "/api/placeholder/300/200";
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        disabled={isLoading}
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* Other Fields */}
         </div>
 
         {/* Action Buttons */}
