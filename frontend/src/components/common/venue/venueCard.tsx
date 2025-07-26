@@ -1,4 +1,4 @@
-import { MapPin, Star, Pencil, Trash2 } from "lucide-react";
+import { MapPin, Star, Pencil, Trash2, Eye } from "lucide-react";
 import { Venue } from "../../../types";
 import ImageCarousel from "./ImageCaraousal";
 
@@ -6,9 +6,11 @@ interface VenueCardProps {
   venue: Venue;
   onEdit?: () => void;
   onDelete?: () => void;
+  onView?: () => void;
+  showViewButton?: boolean;
 }
 
-const VenueCard: React.FC<VenueCardProps> = ({ venue, onEdit, onDelete }) => {
+const VenueCard: React.FC<VenueCardProps> = ({ venue, onEdit, onDelete, onView, showViewButton = false }) => {
     return (
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-md">
         {/* Image Carousel */}
@@ -28,6 +30,18 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue, onEdit, onDelete }) => {
             </div>
             <div className="flex flex-col items-end space-y-2">
               <div className="flex items-center space-x-2">
+                {showViewButton && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onView?.();
+                    }}
+                    className="p-2 hover:bg-blue-100 rounded-full transition-colors"
+                    title="Manage venue details"
+                  >
+                    <Eye className="w-4 h-4 text-blue-600" />
+                  </button>
+                )}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -62,7 +76,7 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue, onEdit, onDelete }) => {
           </p>
   
           {/* Price and Offer */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <div>
               <span className="text-xs text-gray-500">Starting from</span>
               <div className="text-lg font-bold text-gray-900">
@@ -71,6 +85,19 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue, onEdit, onDelete }) => {
               </div>
             </div>
           </div>
+
+          {/* Action Button for Partner View */}
+          {showViewButton && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onView?.();
+              }}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+            >
+              Manage Activities & Slots
+            </button>
+          )}
         </div>
       </div>
     );

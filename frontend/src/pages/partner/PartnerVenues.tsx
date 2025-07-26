@@ -15,6 +15,7 @@ import { Plus, Loader2, AlertTriangle } from "lucide-react";
 import AddCart, { VenueFormData } from "./components/venue/AddCart";
 import { useAuthStore } from "../../store/authStore";
 import DeleteConfirmationModal from "../../components/common/DeleteConfirmationModal";
+import VenueDetailsManagement from "./components/venue/VenueDetailsManagement";
 
 const UnauthorizedView: React.FC = () => (
   <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
@@ -39,6 +40,7 @@ const PartnerVenues: React.FC = () => {
   const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [deletingVenue, setDeletingVenue] = useState<{ id: string; name: string } | null>(null);
+  const [selectedVenueForDetails, setSelectedVenueForDetails] = useState<Venue | null>(null);
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
 
@@ -137,8 +139,28 @@ const PartnerVenues: React.FC = () => {
     setEditingVenue(null);
   };
 
+  const handleViewVenueDetails = (venue: Venue) => {
+    setSelectedVenueForDetails(venue);
+  };
+
+  const handleCloseVenueDetails = () => {
+    setSelectedVenueForDetails(null);
+  };
+
   if (!isAuthorized) {
     return <UnauthorizedView />;
+  }
+
+  // Show venue details management if a venue is selected
+  if (selectedVenueForDetails) {
+    return (
+      <DashboardLayout userRole="partner">
+        <VenueDetailsManagement 
+          venue={selectedVenueForDetails}
+          onBack={handleCloseVenueDetails}
+        />
+      </DashboardLayout>
+    );
   }
 
   return (
@@ -210,6 +232,8 @@ const PartnerVenues: React.FC = () => {
                 venue={venue} 
                 onEdit={() => handleEditVenue(venue)}
                 onDelete={() => venue.id && setDeletingVenue({ id: venue.id, name: venue.name })}
+                onView={() => handleViewVenueDetails(venue)}
+                showViewButton={true}
               />
             ))}
           </div>
