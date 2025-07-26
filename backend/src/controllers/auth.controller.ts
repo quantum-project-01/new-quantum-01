@@ -53,7 +53,7 @@ export class AuthController {
           return res.status(201).json({
             success: true,
             data: {
-              user: result.user,
+              user: result.user?.id,
               token: result.token
             },
             message: 'User registered successfully'
