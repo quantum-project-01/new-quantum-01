@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { X, Upload, Phone, Globe, Navigation, Loader2, AlertTriangle } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { X, Upload, Phone, Globe, Navigation, Loader2 } from "lucide-react";
 import { useAuthStore } from "../../../../store/authStore";
 
 interface AddCartProps {
@@ -34,11 +34,12 @@ const AddCart: React.FC<AddCartProps> = ({
   const { user } = useAuthStore();
   const partnerId = user?.id;
 
-  const [formData, setFormData] = useState<VenueFormData>({
+  // Initial form data using useCallback to fix dependency issue
+  const getInitialFormData = useCallback((): VenueFormData => ({
     name: "",
     highlight: "",
     start_price_per_hour: null,
-    partnerId: partnerId || "", // Get partnerId from auth store
+    partnerId: partnerId || "",
     city: "",
     state: "",
     country: "",
@@ -48,14 +49,29 @@ const AddCart: React.FC<AddCartProps> = ({
     lat: null,
     lang: null,
     images: [],
-  });
+  }), [partnerId]);
 
+  const [formData, setFormData] = useState<VenueFormData>(getInitialFormData());
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [, setImageFiles] = useState<File[]>([]);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [imageLink, setImageLink] = useState<string>("");
   const [imageMode, setImageMode] = useState<"upload" | "link">("upload");
   const [isDragOver, setIsDragOver] = useState(false);
+
+  // Reset form when modal opens or closes
+  useEffect(() => {
+    if (isOpen) {
+      // Reset all form states when modal opens
+      setFormData(getInitialFormData());
+      setErrors({});
+      setImageFiles([]);
+      setImageUrls([]);
+      setImageLink("");
+      setImageMode("upload");
+      setIsDragOver(false);
+    }
+  }, [isOpen, getInitialFormData]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
