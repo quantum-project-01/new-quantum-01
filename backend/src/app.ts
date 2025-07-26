@@ -17,7 +17,13 @@ app.use((req, res, next) => {
   console.log('Referer:', req.headers.referer);
   console.log('Host:', req.headers.host);
 
-  const allowedOrigins = ['http://localhost:3000', 'http://localhost:4000'];
+  const allowedOrigins = [
+    'http://localhost:3000', 
+    'http://localhost:4000', 
+    'https://your-vercel-frontend-url.vercel.app',
+    process.env['FRONTEND_URL'] || ''
+  ].filter(Boolean);
+
   const origin = req.headers.origin;
   const referer = req.headers.referer;
   
@@ -34,6 +40,9 @@ app.use((req, res, next) => {
   
   if (isAllowedOrigin) {
     res.header('Access-Control-Allow-Origin', origin || referer || allowedOrigins[0]);
+  } else {
+    // Fallback to first allowed origin if no match
+    res.header('Access-Control-Allow-Origin', allowedOrigins[0]);
   }
   
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, HEAD');
