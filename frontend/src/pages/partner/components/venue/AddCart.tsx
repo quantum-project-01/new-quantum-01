@@ -32,7 +32,7 @@ const AddCart: React.FC<AddCartProps> = ({
   isLoading = false,
 }) => {
   const { user } = useAuthStore();
-  const partnerId = user?.partnerDetails?.id;
+  const partnerId = user?.id;
 
   const [formData, setFormData] = useState<VenueFormData>({
     name: "",

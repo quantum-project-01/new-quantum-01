@@ -4,6 +4,7 @@ import {
   createVenue,
   getAllVenuesByPartner,
   updateVenue,
+  deleteVenue,
 } from "../../services/partner-service/venue-service/venueService";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import VenueCard from "../../components/common/venue/venueCard";
@@ -48,10 +49,9 @@ const PartnerVenues: React.FC = () => {
   } = useQuery({
     queryKey: ["venues", partnerId],
     queryFn: () => partnerId ? getAllVenuesByPartner(partnerId) : Promise.resolve([]),
-    enabled: !!partnerId, // Only run query if we have a partnerId
+    enabled: !!partnerId,
   });
 
-  // Create venue mutation
   const createVenueMutation = useMutation({
     mutationFn: async (venueData: VenueFormData) => {
       if (!partnerId) throw new Error("No partner ID available");
@@ -72,7 +72,6 @@ const PartnerVenues: React.FC = () => {
     },
   });
 
-  // Update venue mutation
   const updateVenueMutation = useMutation({
     mutationFn: async (venue: Venue) => {
       if (!venue.id) throw new Error("Venue ID is required for update");
@@ -85,6 +84,19 @@ const PartnerVenues: React.FC = () => {
     onError: (error: any) => {
       console.error("Error updating venue:", error);
       alert(error?.response?.data?.message || "Failed to update venue");
+    },
+  });
+
+  const deleteVenueMutation = useMutation({
+    mutationFn: async (venueId: string) => {
+      return deleteVenue(venueId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["venues", partnerId] });
+    },
+    onError: (error: any) => {
+      console.error("Error deleting venue:", error);
+      alert(error?.response?.data?.message || "Failed to delete venue");
     },
   });
 
@@ -104,6 +116,10 @@ const PartnerVenues: React.FC = () => {
   const handleEditVenue = (venue: Venue) => {
     setEditingVenue(venue);
     setIsEditModalOpen(true);
+  };
+
+  const handleDeleteVenue = (venueId: string) => {
+    deleteVenueMutation.mutate(venueId);
   };
 
   const handleSaveVenue = (updatedVenue: Venue) => {
@@ -180,6 +196,7 @@ const PartnerVenues: React.FC = () => {
                 key={venue.id} 
                 venue={venue} 
                 onEdit={() => handleEditVenue(venue)}
+                onDelete={() => venue.id && handleDeleteVenue(venue.id)}
               />
             ))}
           </div>
