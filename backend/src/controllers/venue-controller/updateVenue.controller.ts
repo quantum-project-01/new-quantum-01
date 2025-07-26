@@ -31,6 +31,7 @@ export class UpdateVenueController {
           pincode: req.body.zip ?? location.pincode,
           coordinates: req.body.coordinates ?? location.coordinates,
         },
+        images: req.body.images ?? venueData.images,
         rating : req.body.rating ?? venueData.rating,
         start_price_per_hour : req.body.start_price_per_hour ?? venueData.start_price_per_hour,
         features : req.body.features ?? venueData.features,
