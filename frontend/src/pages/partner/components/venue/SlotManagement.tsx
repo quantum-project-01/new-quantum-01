@@ -4,42 +4,27 @@ import { Plus, Edit3, Trash2, Calendar, DollarSign, Loader2, RotateCcw, AlertCir
 import { Venue } from "../../../../types";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
+import {
+  Activity,
+  getActivitiesByVenue,
+} from "../../../../services/partner-service/activityService";
+import {
+  Facility,
+  getFacilitiesByVenue,
+} from "../../../../services/partner-service/facilityService";
+import {
+  Slot,
+  SlotFormData,
+  BulkSlotFormData,
+  createSlot,
+  createMultipleSlots,
+  getSlotsByVenue,
+  updateSlot,
+  deleteSlot,
+  generateBulkSlots,
+} from "../../../../services/partner-service/slotService";
 
-interface Activity {
-  id: string;
-  name: string;
-  tags: string[];
-  start_price_per_hour: number;
-  venueId: string;
-}
-
-interface Facility {
-  id: string;
-  name: string;
-  activityId: string;
-  activityName?: string;
-  start_price_per_hour: number;
-  startTime: string;
-  endTime: string;
-  isAvailable: boolean;
-  isFillingFast: boolean;
-}
-
-interface Slot {
-  id: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  amount: number;
-  availability: 'available' | 'not_available' | 'booked' | 'filling_fast';
-  facilityId: string;
-  facilityName?: string;
-  activityName?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-interface SlotFormData {
+interface SlotModalFormData {
   facilityId: string;
   startDate: string;
   endDate: string;
@@ -53,6 +38,26 @@ interface SlotManagementProps {
   venue: Venue;
 }
 
+// Helper function to validate 30-minute intervals
+const isValidThirtyMinuteInterval = (time: string): boolean => {
+  if (!time) return false;
+  const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+  if (!timeRegex.test(time)) return false;
+  
+  const minutes = parseInt(time.split(':')[1], 10);
+  return minutes === 0 || minutes === 30;
+};
+
+// Helper function to round time to nearest 30-minute interval
+const roundToThirtyMinutes = (time: string): string => {
+  if (!time) return time;
+  const [hours, minutes] = time.split(':').map(Number);
+  const roundedMinutes = minutes < 15 ? 0 : minutes < 45 ? 30 : 0;
+  const adjustedHours = minutes >= 45 ? (hours + 1) % 24 : hours;
+  
+  return `${adjustedHours.toString().padStart(2, '0')}:${roundedMinutes.toString().padStart(2, '0')}`;
+};
+
 const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isBulkCreateModalOpen, setIsBulkCreateModalOpen] = useState(false);
@@ -65,138 +70,124 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
   });
   const queryClient = useQueryClient();
 
-  // Mock data - replace with actual API calls
-  const facilities: Facility[] = [
-    {
-      id: '1',
-      name: 'Court 1',
-      activityId: '1',
-      activityName: 'Football',
-      start_price_per_hour: 399,
-      startTime: '06:00',
-      endTime: '23:00',
-      isAvailable: true,
-      isFillingFast: false,
-    },
-    {
-      id: '2',
-      name: 'Court 2',
-      activityId: '1',
-      activityName: 'Football',
-      start_price_per_hour: 449,
-      startTime: '06:00',
-      endTime: '23:00',
-      isAvailable: true,
-      isFillingFast: true,
-    },
-    {
-      id: '3',
-      name: 'Cricket Ground',
-      activityId: '2',
-      activityName: 'Cricket',
-      start_price_per_hour: 599,
-      startTime: '05:00',
-      endTime: '22:00',
-      isAvailable: true,
-      isFillingFast: false,
-    }
-  ];
+  // Helper function to ensure time format is HH:MM:SS
+  const formatTime = (time: string): string => {
+    if (!time) return time;
+    return time.includes(':') && time.split(':').length === 2 ? `${time}:00` : time;
+  };
 
-  // Mock slots data - replace with actual API calls
+
+
+  // Fetch facilities from backend API
+  const { data: facilities = [], isLoading: facilitiesLoading } = useQuery({
+    queryKey: ['facilities', venue.id],
+    queryFn: () => venue.id ? getFacilitiesByVenue(venue.id) : Promise.resolve([]),
+    enabled: !!venue.id,
+  });
+
+  // Fetch slots from backend API
   const { data: slots = [], isLoading } = useQuery({
     queryKey: ['slots', venue.id, selectedFacility, selectedDateRange],
-    queryFn: async () => {
-      // Generate mock slots for the next 7 days
-      const mockSlots: Slot[] = [];
-      const startDate = new Date(selectedDateRange.start);
-      const endDate = new Date(selectedDateRange.end);
-      
-      for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-        const dateStr = d.toISOString().split('T')[0];
-        
-        // Generate slots for each facility
-        facilities.forEach(facility => {
-          if (selectedFacility !== 'all' && facility.id !== selectedFacility) return;
-          
-          // Generate 30-minute slots from 6 AM to 11 PM
-          for (let hour = 6; hour < 23; hour++) {
-            for (let minute = 0; minute < 60; minute += 30) {
-              const startTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-              const endHour = minute === 30 ? hour + 1 : hour;
-              const endMinute = minute === 30 ? 0 : 30;
-              const endTime = `${endHour.toString().padStart(2, '0')}:${endMinute.toString().padStart(2, '0')}`;
-              
-              const availabilityOptions: Slot['availability'][] = ['available', 'not_available', 'booked', 'filling_fast'];
-              const randomAvailability = availabilityOptions[Math.floor(Math.random() * availabilityOptions.length)];
-              
-              mockSlots.push({
-                id: `${facility.id}-${dateStr}-${startTime}`,
-                date: dateStr,
-                startTime,
-                endTime,
-                amount: facility.start_price_per_hour,
-                availability: randomAvailability,
-                facilityId: facility.id,
-                facilityName: facility.name,
-                activityName: facility.activityName,
-              });
-            }
-          }
-        });
-      }
-      
-      return mockSlots;
-    }
+    queryFn: () => {
+      if (!venue.id) return Promise.resolve([]);
+      return getSlotsByVenue(venue.id, selectedDateRange.start, selectedDateRange.end);
+    },
+    enabled: !!venue.id,
   });
 
   const createSlotMutation = useMutation({
-    mutationFn: async (data: SlotFormData) => {
-      // Replace with actual API call
-      const facility = facilities.find(f => f.id === data.facilityId);
-      const newSlot: Slot = {
-        id: Date.now().toString(),
+    mutationFn: async (data: SlotModalFormData) => {
+      // Validate required fields
+      if (!data.startDate || !data.facilityId || !data.startTime || !data.endTime || !data.amount) {
+        throw new Error('All fields are required');
+      }
+
+      // Validate 30-minute intervals
+      if (!isValidThirtyMinuteInterval(data.startTime)) {
+        throw new Error('Start time must be in 30-minute intervals (e.g., 09:00, 09:30, 10:00)');
+      }
+      if (!isValidThirtyMinuteInterval(data.endTime)) {
+        throw new Error('End time must be in 30-minute intervals (e.g., 09:00, 09:30, 10:00)');
+      }
+
+      const slotData: SlotFormData = {
         date: data.startDate,
-        startTime: data.startTime,
-        endTime: data.endTime,
+        startTime: formatTime(data.startTime),
+        endTime: formatTime(data.endTime),
         amount: data.amount,
         availability: data.availability,
         facilityId: data.facilityId,
-        facilityName: facility?.name,
-        activityName: facility?.activityName,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
       };
-      return newSlot;
+      return createSlot(slotData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['slots', venue.id] });
       setIsAddModalOpen(false);
       toast.success('Slot created successfully!');
     },
-    onError: () => {
-      toast.error('Failed to create slot');
+    onError: (error: any) => {
+      console.error('Error creating slot:', error);
+      toast.error(error?.response?.data?.message || 'Failed to create slot');
     }
   });
 
   const createBulkSlotsMutation = useMutation({
-    mutationFn: async (data: SlotFormData) => {
-      // Replace with actual API call to create multiple slots
-      return { count: 48 }; // Mock response
+    mutationFn: async (data: SlotModalFormData) => {
+      // Validate required fields for bulk creation
+      if (!data.startDate || !data.endDate || !data.facilityId || !data.startTime || !data.endTime || !data.amount) {
+        throw new Error('All fields are required for bulk creation');
+      }
+
+      // Validate 30-minute intervals for bulk creation
+      if (!isValidThirtyMinuteInterval(data.startTime)) {
+        throw new Error('Start time must be in 30-minute intervals (e.g., 09:00, 09:30, 10:00)');
+      }
+      if (!isValidThirtyMinuteInterval(data.endTime)) {
+        throw new Error('End time must be in 30-minute intervals (e.g., 09:00, 09:30, 10:00)');
+      }
+
+      // Format time to HH:MM format (remove seconds if present)
+      const formatTimeForBulk = (time: string): string => {
+        if (!time) return time;
+        const timeParts = time.split(':');
+        return `${timeParts[0]}:${timeParts[1]}`;
+      };
+
+      const bulkData: BulkSlotFormData = {
+        startDate: data.startDate,
+        endDate: data.endDate,
+        startTime: formatTimeForBulk(data.startTime),
+        endTime: formatTimeForBulk(data.endTime),
+        amount: data.amount,
+        availability: data.availability,
+        facilityId: data.facilityId,
+      };
+      
+      console.log('Bulk creation data:', bulkData);
+      return createMultipleSlots(data.facilityId, bulkData);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['slots', venue.id] });
       setIsBulkCreateModalOpen(false);
-      toast.success(`${data.count} slots created successfully!`);
+      toast.success(`Successfully created ${data?.data?.count || 'multiple'} slots!`);
     },
-    onError: () => {
-      toast.error('Failed to create bulk slots');
+    onError: (error: any) => {
+      console.error('Error creating bulk slots:', error);
+      toast.error(error?.response?.data?.message || 'Failed to create bulk slots');
     }
   });
 
   const updateSlotMutation = useMutation({
-    mutationFn: async (data: { id: string; slot: Partial<SlotFormData> }) => {
-      // Replace with actual API call
-      return { ...data.slot, id: data.id };
+    mutationFn: async (data: { id: string; slot: Partial<SlotModalFormData> }) => {
+      const slotData: Partial<SlotFormData> = {
+        date: data.slot.startDate,
+        startTime: data.slot.startTime ? formatTime(data.slot.startTime) : undefined,
+        endTime: data.slot.endTime ? formatTime(data.slot.endTime) : undefined,
+        amount: data.slot.amount,
+        availability: data.slot.availability,
+        facilityId: data.slot.facilityId,
+      };
+      return updateSlot(data.id, slotData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['slots', venue.id] });
@@ -204,40 +195,46 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
       setEditingSlot(null);
       toast.success('Slot updated successfully!');
     },
-    onError: () => {
-      toast.error('Failed to update slot');
+    onError: (error: any) => {
+      console.error('Error updating slot:', error);
+      toast.error(error?.response?.data?.message || 'Failed to update slot');
     }
   });
 
   const deleteSlotMutation = useMutation({
     mutationFn: async (id: string) => {
-      // Replace with actual API call
-      return id;
+      return deleteSlot(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['slots', venue.id] });
       toast.success('Slot deleted successfully!');
     },
-    onError: () => {
-      toast.error('Failed to delete slot');
+    onError: (error: any) => {
+      console.error('Error deleting slot:', error);
+      toast.error(error?.response?.data?.message || 'Failed to delete slot');
     }
   });
 
-  const handleCreateSlot = (data: SlotFormData) => {
+  const handleCreateSlot = (data: SlotModalFormData) => {
+    console.log('handleCreateSlot called with data:', data);
+    console.log('This should trigger single slot creation mutation');
     createSlotMutation.mutate(data);
   };
 
-  const handleCreateBulkSlots = (data: SlotFormData) => {
+  const handleCreateBulkSlots = (data: SlotModalFormData) => {
+    console.log('handleCreateBulkSlots called with data:', data);
+    console.log('This should trigger bulk creation mutation');
     createBulkSlotsMutation.mutate(data);
   };
 
-  const handleUpdateSlot = (data: Partial<SlotFormData>) => {
-    if (editingSlot) {
+  const handleUpdateSlot = (data: Partial<SlotModalFormData>) => {
+    if (editingSlot?.id) {
       updateSlotMutation.mutate({ id: editingSlot.id, slot: data });
     }
   };
 
-  const handleDeleteSlot = (id: string) => {
+  const handleDeleteSlot = (id: string | undefined) => {
+    if (!id) return;
     if (window.confirm('Are you sure you want to delete this slot?')) {
       deleteSlotMutation.mutate(id);
     }
@@ -286,7 +283,7 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
     return acc;
   }, {} as Record<string, Slot[]>);
 
-  if (isLoading) {
+  if (isLoading || facilitiesLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -498,10 +495,10 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
 interface SlotModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: SlotFormData) => void;
+  onSubmit: (data: SlotModalFormData) => void;
   title: string;
   facilities: Facility[];
-  initialData?: SlotFormData;
+  initialData?: SlotModalFormData;
   isLoading?: boolean;
   isBulk?: boolean;
 }
@@ -516,13 +513,13 @@ const SlotModal: React.FC<SlotModalProps> = ({
   isLoading = false,
   isBulk = false,
 }) => {
-  const [formData, setFormData] = useState<SlotFormData>(
+  const [formData, setFormData] = useState<SlotModalFormData>(
     initialData || {
       facilityId: '',
       startDate: new Date().toISOString().split('T')[0],
       endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      startTime: '06:00',
-      endTime: '23:00',
+      startTime: '09:00',
+      endTime: '10:00',
       amount: 0,
       availability: 'available',
     }
@@ -536,7 +533,51 @@ const SlotModal: React.FC<SlotModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.facilityId || formData.amount <= 0) return;
+    
+    console.log('SlotModal handleSubmit called');
+    console.log('isBulk:', isBulk);
+    console.log('Form data:', formData);
+    
+    // Validate required fields
+    if (!formData.facilityId) {
+      alert('Please select a facility');
+      return;
+    }
+    if (!formData.startDate) {
+      alert('Please select a start date');
+      return;
+    }
+    if (isBulk && !formData.endDate) {
+      alert('Please select an end date for bulk creation');
+      return;
+    }
+    if (isBulk && formData.startDate > formData.endDate) {
+      alert('End date must be after or equal to start date');
+      return;
+    }
+    if (!formData.startTime || !formData.endTime) {
+      alert('Please select start and end times');
+      return;
+    }
+    if (!isValidThirtyMinuteInterval(formData.startTime)) {
+      alert('Start time must be in 30-minute intervals (e.g., 09:00, 09:30, 10:00)');
+      return;
+    }
+    if (!isValidThirtyMinuteInterval(formData.endTime)) {
+      alert('End time must be in 30-minute intervals (e.g., 09:00, 09:30, 10:00)');
+      return;
+    }
+    if (formData.startTime >= formData.endTime) {
+      alert('End time must be after start time');
+      return;
+    }
+    if (formData.amount <= 0) {
+      alert('Please enter a valid amount');
+      return;
+    }
+    
+    console.log('Submitting form data:', { ...formData, isBulk });
+    console.log('About to call onSubmit with mode:', isBulk ? 'BULK' : 'SINGLE');
     onSubmit(formData);
   };
 
@@ -581,10 +622,11 @@ const SlotModal: React.FC<SlotModalProps> = ({
               <div className="flex items-start space-x-2">
                 <AlertCircle className="h-5 w-5 text-blue-400 mt-1 flex-shrink-0" />
                 <div>
-                  <h4 className="text-blue-400 font-medium mb-1">Bulk Creation</h4>
+                  <h4 className="text-blue-400 font-medium mb-1">Bulk Creation Mode</h4>
                   <p className="text-blue-300 text-sm">
                     This will create 30-minute slots for all days between the selected date range 
-                    during the specified time period.
+                    during the specified time period. For example: 09:00-17:00 will create slots 
+                    from 09:00-09:30, 09:30-10:00, 10:00-10:30, etc.
                   </p>
                 </div>
               </div>
@@ -629,10 +671,15 @@ const SlotModal: React.FC<SlotModalProps> = ({
               <input
                 type="time"
                 value={formData.startTime}
-                onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
+                onChange={(e) => {
+                  const roundedTime = roundToThirtyMinutes(e.target.value);
+                  setFormData(prev => ({ ...prev, startTime: roundedTime }));
+                }}
+                step="1800"
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
                 required
               />
+              <p className="text-xs text-gray-400 mt-1">Only 30-minute intervals (e.g., 09:00, 09:30)</p>
             </div>
 
             <div>
@@ -642,10 +689,15 @@ const SlotModal: React.FC<SlotModalProps> = ({
               <input
                 type="time"
                 value={formData.endTime}
-                onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
+                onChange={(e) => {
+                  const roundedTime = roundToThirtyMinutes(e.target.value);
+                  setFormData(prev => ({ ...prev, endTime: roundedTime }));
+                }}
+                step="1800"
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
                 required
               />
+              <p className="text-xs text-gray-400 mt-1">Only 30-minute intervals (e.g., 09:00, 09:30)</p>
             </div>
           </div>
 
@@ -671,7 +723,7 @@ const SlotModal: React.FC<SlotModalProps> = ({
               </label>
               <select
                 value={formData.availability}
-                onChange={(e) => setFormData(prev => ({ ...prev, availability: e.target.value as SlotFormData['availability'] }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, availability: e.target.value as SlotModalFormData['availability'] }))}
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
                 required
               >

@@ -74,18 +74,34 @@ export class SlotService {
     sortType: "asc" | "desc"
   ) {
     try {
+      // Convert date strings to Date objects for proper comparison
+      const startDateTime = new Date(startDate);
+      const endDateTime = new Date(endDate);
+      
+      // Set end date to end of day to include all slots on the end date
+      endDateTime.setHours(23, 59, 59, 999);
+      
+      console.log('Querying slots with:', {
+        facilityId,
+        startDate: startDateTime.toISOString(),
+        endDate: endDateTime.toISOString(),
+        sortType
+      });
+
       const slots = await prisma.slot.findMany({
         where: {
           facilityId,
           date: {
-            gte: startDate,
-            lte: endDate,
+            gte: startDateTime,
+            lte: endDateTime,
           },
         },
         orderBy: {
           date: sortType,
         },
       });
+      
+      console.log(`Found ${slots.length} slots for facility ${facilityId}`);
       return slots;
     } catch (error) {
       console.error("Error getting slots by date range and facilityId:", error);
@@ -95,12 +111,26 @@ export class SlotService {
 
   static async getAvailableSlotsByFacilityAndDate(facilityId: string, startDate: string, endDate: string, sortType: "asc" | "desc") {
     try {
+      // Convert date strings to Date objects for proper comparison
+      const startDateTime = new Date(startDate);
+      const endDateTime = new Date(endDate);
+      
+      // Set end date to end of day to include all slots on the end date
+      endDateTime.setHours(23, 59, 59, 999);
+      
+      console.log('Querying available slots with:', {
+        facilityId,
+        startDate: startDateTime.toISOString(),
+        endDate: endDateTime.toISOString(),
+        sortType
+      });
+
       const slots = await prisma.slot.findMany({
         where: {
           facilityId,
           date: {
-            gte: startDate,
-            lte: endDate,
+            gte: startDateTime,
+            lte: endDateTime,
           },
           availability: "available",
           bookingId: null,
@@ -110,6 +140,7 @@ export class SlotService {
         },
       });
 
+      console.log(`Found ${slots.length} available slots for facility ${facilityId}`);
       return slots;
     } catch (error) {
       console.error("Error getting available slots by facility and date:", error);

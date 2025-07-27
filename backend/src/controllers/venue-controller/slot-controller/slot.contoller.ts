@@ -105,7 +105,8 @@ export class SlotController {
         return res.status(400).json({ message: "Facility ID is required" });
       }
 
-      const { startDate, endDate, sortType = "asc" } = req.body;
+      // For GET requests, use query parameters instead of body
+      const { startDate, endDate, sortType = "asc" } = req.query;
 
       if (!startDate || !endDate || !facilityId) {
         return res.status(400).json({
@@ -113,15 +114,27 @@ export class SlotController {
         });
       }
 
-      const slots = await SlotService.getSlotsByDateRangeAndFacilityId(
+      console.log('Controller received params:', {
+        facilityId,
         startDate,
         endDate,
-        facilityId,
         sortType
+      });
+
+      const slots = await SlotService.getSlotsByDateRangeAndFacilityId(
+        startDate as string,
+        endDate as string,
+        facilityId,
+        sortType as "asc" | "desc"
       );
       return res.status(200).json({ data: slots });
-    } catch (error) {
-      return res.status(500).json({ message: "Failed to get slots" });
+    } catch (error: any) {
+      console.error("Controller error getting slots:", error);
+      return res.status(500).json({ 
+        message: "Failed to get slots",
+        error: error.message || "Unknown error",
+        stack: process.env['NODE_ENV'] === 'development' ? error.stack : undefined
+      });
     }
   }
 
@@ -259,7 +272,8 @@ export class SlotController {
   static async getAvailableSlotsByFacilityAndDate(req: Request, res: Response) {
     try {
       const { facilityId } = req.params;
-      const { startDate, endDate, sortType = "asc" } = req.body;
+      // For GET requests, use query parameters instead of body
+      const { startDate, endDate, sortType = "asc" } = req.query;
 
       if (!facilityId) {
         return res.status(400).json({ message: "Facility ID is required" });
@@ -273,9 +287,9 @@ export class SlotController {
 
       const slots = await SlotService.getAvailableSlotsByFacilityAndDate(
         facilityId,
-        startDate,
-        endDate,
-        sortType
+        startDate as string,
+        endDate as string,
+        sortType as "asc" | "desc"
       );
 
       return res.status(200).json({

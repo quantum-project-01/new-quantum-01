@@ -3,40 +3,18 @@ import { Plus, Edit3, Trash2, Settings, Clock, DollarSign, Loader2, Image as Ima
 import { Venue } from "../../../../types";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
-
-interface Activity {
-  id: string;
-  name: string;
-  tags: string[];
-  start_price_per_hour: number;
-  venueId: string;
-}
-
-interface Facility {
-  id: string;
-  name: string;
-  activityId: string;
-  activityName?: string;
-  start_price_per_hour: number;
-  startTime: string;
-  endTime: string;
-  isAvailable: boolean;
-  isFillingFast: boolean;
-  images: string[];
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-interface FacilityFormData {
-  name: string;
-  activityId: string;
-  start_price_per_hour: number;
-  startTime: string;
-  endTime: string;
-  isAvailable: boolean;
-  isFillingFast: boolean;
-  images: string[];
-}
+import {
+  Activity,
+  getActivitiesByVenue,
+} from "../../../../services/partner-service/activityService";
+import {
+  Facility,
+  FacilityFormData,
+  createFacility,
+  getFacilitiesByVenue,
+  updateFacility,
+  deleteFacility,
+} from "../../../../services/partner-service/facilityService";
 
 interface FacilityManagementProps {
   venue: Venue;
@@ -49,107 +27,38 @@ const FacilityManagement: React.FC<FacilityManagementProps> = ({ venue }) => {
   const [selectedActivity, setSelectedActivity] = useState<string>('all');
   const queryClient = useQueryClient();
 
-  // Mock activities data - in real app, this would come from ActivityManagement
-  const activities: Activity[] = [
-    {
-      id: '1',
-      name: 'Football',
-      tags: ['Outdoor', 'Equipment Required', 'Professional Turf'],
-      start_price_per_hour: 399,
-      venueId: venue.id!,
-    },
-    {
-      id: '2',
-      name: 'Cricket',
-      tags: ['Outdoor', 'Pitch Available', 'Floodlights'],
-      start_price_per_hour: 599,
-      venueId: venue.id!,
-    }
-  ];
+  // Fetch activities from backend API
+  const { data: activities = [], isLoading: activitiesLoading } = useQuery({
+    queryKey: ['activities', venue.id],
+    queryFn: () => venue.id ? getActivitiesByVenue(venue.id) : Promise.resolve([]),
+    enabled: !!venue.id,
+  });
 
-  // Mock facilities data - replace with actual API calls
+  // Fetch facilities from backend API
   const { data: facilities = [], isLoading } = useQuery({
     queryKey: ['facilities', venue.id],
-    queryFn: async () => {
-      return [
-        {
-          id: '1',
-          name: 'Court 1',
-          activityId: '1',
-          activityName: 'Football',
-          start_price_per_hour: 399,
-          startTime: '06:00',
-          endTime: '23:00',
-          isAvailable: true,
-          isFillingFast: false,
-          images: [
-            'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop',
-            'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&h=300&fit=crop'
-          ],
-        },
-        {
-          id: '2',
-          name: 'Court 2',
-          activityId: '1',
-          activityName: 'Football',
-          start_price_per_hour: 449,
-          startTime: '06:00',
-          endTime: '23:00',
-          isAvailable: true,
-          isFillingFast: true,
-          images: [
-            'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&h=300&fit=crop'
-          ],
-        },
-        {
-          id: '3',
-          name: 'Cricket Ground',
-          activityId: '2',
-          activityName: 'Cricket',
-          start_price_per_hour: 599,
-          startTime: '05:00',
-          endTime: '22:00',
-          isAvailable: true,
-          isFillingFast: false,
-          images: [
-            'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop'
-          ],
-        }
-      ] as Facility[];
-    }
+    queryFn: () => venue.id ? getFacilitiesByVenue(venue.id) : Promise.resolve([]),
+    enabled: !!venue.id,
   });
 
   const createFacilityMutation = useMutation({
     mutationFn: async (data: FacilityFormData) => {
-      const activity = activities.find(a => a.id === data.activityId);
-      const newFacility: Facility = {
-        id: Date.now().toString(),
-        ...data,
-        activityName: activity?.name,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      return newFacility;
+      return createFacility(data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['facilities', venue.id] });
       setIsAddModalOpen(false);
       toast.success('Facility created successfully!');
     },
-    onError: () => {
-      toast.error('Failed to create facility');
+    onError: (error: any) => {
+      console.error('Error creating facility:', error);
+      toast.error(error?.response?.data?.message || 'Failed to create facility');
     }
   });
 
   const updateFacilityMutation = useMutation({
     mutationFn: async (data: { id: string; facility: FacilityFormData }) => {
-      const activity = activities.find(a => a.id === data.facility.activityId);
-      return { 
-        ...data.facility, 
-        id: data.id, 
-        activityName: activity?.name,
-        updatedAt: new Date().toISOString()
-      };
+      return updateFacility(data.id, data.facility);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['facilities', venue.id] });
@@ -157,21 +66,23 @@ const FacilityManagement: React.FC<FacilityManagementProps> = ({ venue }) => {
       setEditingFacility(null);
       toast.success('Facility updated successfully!');
     },
-    onError: () => {
-      toast.error('Failed to update facility');
+    onError: (error: any) => {
+      console.error('Error updating facility:', error);
+      toast.error(error?.response?.data?.message || 'Failed to update facility');
     }
   });
 
   const deleteFacilityMutation = useMutation({
     mutationFn: async (id: string) => {
-      return id;
+      return deleteFacility(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['facilities', venue.id] });
       toast.success('Facility deleted successfully!');
     },
-    onError: () => {
-      toast.error('Failed to delete facility');
+    onError: (error: any) => {
+      console.error('Error deleting facility:', error);
+      toast.error(error?.response?.data?.message || 'Failed to delete facility');
     }
   });
 
@@ -180,12 +91,13 @@ const FacilityManagement: React.FC<FacilityManagementProps> = ({ venue }) => {
   };
 
   const handleUpdateFacility = (data: FacilityFormData) => {
-    if (editingFacility) {
+    if (editingFacility?.id) {
       updateFacilityMutation.mutate({ id: editingFacility.id, facility: data });
     }
   };
 
-  const handleDeleteFacility = (id: string) => {
+  const handleDeleteFacility = (id: string | undefined) => {
+    if (!id) return;
     if (window.confirm('Are you sure you want to delete this facility? This will also delete all associated time slots.')) {
       deleteFacilityMutation.mutate(id);
     }
@@ -195,7 +107,7 @@ const FacilityManagement: React.FC<FacilityManagementProps> = ({ venue }) => {
     ? facilities 
     : facilities.filter(f => f.activityId === selectedActivity);
 
-  if (isLoading) {
+  if (isLoading || activitiesLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -220,7 +132,7 @@ const FacilityManagement: React.FC<FacilityManagementProps> = ({ venue }) => {
             className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
           >
             <option value="all">All Activities</option>
-            {activities.map((activity) => (
+            {activities.map((activity: Activity) => (
               <option key={activity.id} value={activity.id}>
                 {activity.name}
               </option>
@@ -242,10 +154,10 @@ const FacilityManagement: React.FC<FacilityManagementProps> = ({ venue }) => {
           <Settings className="h-12 w-12 text-gray-500 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-white mb-2">No Facilities Yet</h3>
           <p className="text-gray-400 mb-4">
-            {selectedActivity === 'all' 
-              ? 'Add facilities like Court 1, Court 2, Cricket Ground, etc.'
-              : `No facilities found for ${activities.find(a => a.id === selectedActivity)?.name}`
-            }
+                      {selectedActivity === 'all' 
+            ? 'Add facilities like Court 1, Court 2, Cricket Ground, etc.'
+            : `No facilities found for ${activities.find((a: Activity) => a.id === selectedActivity)?.name}`
+          }
           </p>
           <button
             onClick={() => setIsAddModalOpen(true)}
@@ -261,19 +173,9 @@ const FacilityManagement: React.FC<FacilityManagementProps> = ({ venue }) => {
               key={facility.id}
               className="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden hover:border-gray-600 transition-colors"
             >
-              {/* Facility Image */}
-              <div className="relative h-48 bg-gray-700">
-                {facility.images.length > 0 ? (
-                  <img
-                    src={facility.images[0]}
-                    alt={facility.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <ImageIcon className="h-12 w-12 text-gray-500" />
-                  </div>
-                )}
+              {/* Facility Header */}
+              <div className="relative h-48 bg-gray-700 flex items-center justify-center">
+                <ImageIcon className="h-12 w-12 text-gray-500" />
                 {facility.isFillingFast && (
                   <div className="absolute top-2 right-2 bg-yellow-500 text-black px-2 py-1 rounded-full text-xs font-bold">
                     Filling Fast
@@ -367,7 +269,6 @@ const FacilityManagement: React.FC<FacilityManagementProps> = ({ venue }) => {
           endTime: editingFacility.endTime,
           isAvailable: editingFacility.isAvailable,
           isFillingFast: editingFacility.isFillingFast,
-          images: editingFacility.images,
         } : undefined}
         isLoading={updateFacilityMutation.isPending}
       />
@@ -404,11 +305,8 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
       endTime: '23:00',
       isAvailable: true,
       isFillingFast: false,
-      images: [],
     }
   );
-  const [newImageUrl, setNewImageUrl] = useState('');
-
   React.useEffect(() => {
     if (initialData) {
       setFormData(initialData);
@@ -419,23 +317,6 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
     e.preventDefault();
     if (!formData.name || !formData.activityId || formData.start_price_per_hour <= 0) return;
     onSubmit(formData);
-  };
-
-  const addImage = () => {
-    if (newImageUrl.trim() && !formData.images.includes(newImageUrl.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, newImageUrl.trim()]
-      }));
-      setNewImageUrl('');
-    }
-  };
-
-  const removeImage = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }));
   };
 
   if (!isOpen) return null;
@@ -472,7 +353,7 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
                 required
               >
                 <option value="">Select Activity</option>
-                {activities.map((activity) => (
+                {activities.map((activity: Activity) => (
                   <option key={activity.id} value={activity.id}>
                     {activity.name}
                   </option>
@@ -552,48 +433,7 @@ const FacilityModal: React.FC<FacilityModalProps> = ({
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Images
-            </label>
-            <div className="flex space-x-2 mb-2">
-              <input
-                type="url"
-                value={newImageUrl}
-                onChange={(e) => setNewImageUrl(e.target.value)}
-                className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                placeholder="https://example.com/image.jpg"
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addImage())}
-              />
-              <button
-                type="button"
-                onClick={addImage}
-                className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Add
-              </button>
-            </div>
-            {formData.images.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {formData.images.map((image, index) => (
-                  <div key={index} className="relative group">
-                    <img
-                      src={image}
-                      alt={`Facility ${index + 1}`}
-                      className="w-full h-20 object-cover rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+
 
           <div className="flex space-x-3 pt-4">
             <button
