@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from 'react';
 import { Wallet as WalletIcon, CreditCard, RefreshCw } from 'lucide-react';
 
 const WalletPage: React.FC = () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [balance, setBalance] = useState(1250.75);
   const [transactions, setTransactions] = useState([
     { id: 1, date: '2024-01-15', description: 'Venue Booking', amount: -350.00, type: 'debit' },

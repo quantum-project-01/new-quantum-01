@@ -46,3 +46,13 @@ export const updateVenue = async (id: string, venue: Venue) => {
     throw error;
   }
 };
+
+export const deleteVenue = async (id: string) => {
+  try {
+    const response = await axiosInstance.delete(`/venue/delete-venue/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting venue:", error);
+    throw error;
+  }
+};

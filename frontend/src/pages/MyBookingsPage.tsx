@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Calendar, MapPin, Clock, MoreHorizontal } from 'lucide-react';
 
 const MyBookingsPage: React.FC = () => {
-  const [bookings, setBookings] = useState([
+  const [bookings] = useState([
     {
       id: 1,
       venue: 'Grand Conference Hall',
