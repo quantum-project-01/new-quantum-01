@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { Slot } from "../../../models/venue.model";
-import { SlotService } from "../../../services/slot.service";
 import { validateTimeSlot } from "../../../utils/timeValidation";
+import { AppError } from "../../../types";
+import { SlotService } from "../../../services/venue-services/slot.service";
 
 export class SlotController {
   static async createSlot(req: Request, res: Response) {
@@ -41,7 +42,12 @@ export class SlotController {
 
       return res.status(201).json({ data: slot.id });
     } catch (error) {
-      return res.status(500).json({ message: "Failed to create slot" });
+      console.error("Error creating slot:", error);
+      const appError = error as AppError;
+      return res.status(500).json({
+        message: "Failed to create slot",
+        error: appError.message || "Unknown error",
+      });
     }
   }
 
@@ -276,8 +282,55 @@ export class SlotController {
         data: slots,
         total: slots.length,
       });
-    } catch (error) {
-      return res.status(500).json({ message: "Failed to get available slots" });
+    } catch (error: any) {
+      return res.status(500).json({
+        message: "Failed to get available slots",
+        error: error.message,
+      });
+    }
+  }
+
+  static async updateSlotsWithDifferentData(req: Request, res: Response) {
+    try {
+      const { facilityId } = req.params;
+      const { slots } = req.body;
+
+      if (!facilityId) {
+        return res.status(400).json({ message: "Facility ID is required" });
+      }
+
+      if (!Array.isArray(slots) || slots.length === 0) {
+        return res
+          .status(400)
+          .json({ message: "Slots array is required and should not be empty" });
+      }
+
+      // Optional: Validate each slot object
+      for (const slot of slots) {
+        if (!slot.id) {
+          return res.status(400).json({ message: "Each slot must have an id" });
+        }
+      }
+
+      const slotsObj: Slot[] = slots.map((s) => ({
+        id: s.id,
+        date: s.date,
+        amount: s.amount,
+        availability: s.availability,
+        startTime: s.startTime,
+        endTime: s.endTime
+      }));
+
+      await SlotService.updateSlots(slotsObj);
+
+      return res.status(200).json({
+        message: "Slots updated successfully",
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        message: "Failed to update slots",
+        error: error.message,
+      });
     }
   }
 }

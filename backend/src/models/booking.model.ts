@@ -12,12 +12,12 @@ export interface Booking {
   endTime: string;
   numberOfSlots: number;
   bookedDate: Date;
-  confirmedAt?: Date;
-  cancelledAt?: Date;
+  confirmedAt?: Date | null;
+  cancelledAt?: Date | null;
   bookingStatus: BookingStatus;
   paymentStatus: PaymentStatus;
   customerDetails: customerDetails;
-  paymentDetails: paymentDetails;
+  paymentDetails?: paymentDetails;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -27,14 +27,18 @@ export enum BookingStatus {
   Confirmed = "confirmed",
   Cancelled = "cancelled",
   Refunded = "refunded",
+  Failed = "failed",
 }
 
 export enum PaymentStatus {
+  Initiated = "initiated",
   Paid = "paid",
+  Failed = "failed",
   Refunded = "refunded",
 }
 
 export interface customerDetails {
+  customerId: string;
   customerName: string;
   customerPhone?: string;
   customerEmail?: string;

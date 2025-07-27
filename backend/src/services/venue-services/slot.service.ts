@@ -1,5 +1,6 @@
-import { Slot, SlotAvailability } from "../models/venue.model";
+
 import { PrismaClient } from "@prisma/client";
+import { Slot, SlotAvailability } from "../../models/venue.model";
 
 const prisma = new PrismaClient();
 
@@ -23,7 +24,7 @@ export class SlotService {
     endTime: string,   // "17:00"
     facilityId: string,
     amount: number,
-    availability: SlotAvailability = "available"
+    availability: SlotAvailability = SlotAvailability.Available
   ) {
     try {
       const result = await prisma.$executeRaw`
@@ -184,4 +185,5 @@ export class SlotService {
       throw error;
     }
   }
+
 }

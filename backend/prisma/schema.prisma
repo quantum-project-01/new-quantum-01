@@ -120,6 +120,7 @@ model Facility {
 }
 
 enum SlotAvailability {
+  locked
   available
   not_available
   booked
@@ -131,10 +132,13 @@ enum BookingStatus {
   confirmed
   cancelled
   refunded
+  failed
 }
 
 enum PaymentStatus {
+  initiated
   paid
+  failed
   refunded
 }
 
@@ -172,15 +176,36 @@ model Booking {
   confirmedAt     DateTime?      @db.Date
   cancelledAt     DateTime?      @db.Date
   paymentDetails  Json?          @db.JsonB
-  bookingStatus   BookingStatus  @default(pending)
-  paymentStatus   PaymentStatus  @default(paid)
-  customerDetails Json?          @db.JsonB
+  bookingStatus   BookingStatus  
+  paymentStatus   PaymentStatus  
+  customerDetails Json           @db.JsonB
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
   user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   slots           Slot[]         // One booking has many slots
+  transaction     TransactionHistory?
 
   @@map("bookings")
 }
 
+
+model TransactionHistory {
+  orderId           String    @db.VarChar(255) @id
+  bookingId         String    @unique
+  paymentAmount     Decimal   @db.Decimal(10, 2)
+  paymentCurrency   String    @db.VarChar(3)
+  paymentMethod     String    @db.VarChar(50)
+  paymentDate       DateTime
+  isRefunded        Boolean   @default(false)
+  refundDate        DateTime?
+  captured          Boolean?
+  capturedAt        DateTime?
+  razorpayPaymentId String?   @db.VarChar(255)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("transaction_history")
+}

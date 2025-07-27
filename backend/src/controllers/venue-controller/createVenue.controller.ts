@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { VenueService } from "../../services/venue.service";
 import { Venue } from "../../models/venue.model";
 import { AppError } from "../../types";
-import { PartnerVenueMapService } from "../../services/partnerVenueMap.service";
+import { PartnerVenueMapService } from "../../services/venue-services/partnerVenueMap.service";
 import { Prisma, PrismaClient } from "@prisma/client";
+import { VenueService } from "../../services/venue-services/venue.service";
 
 const prisma = new PrismaClient();
 

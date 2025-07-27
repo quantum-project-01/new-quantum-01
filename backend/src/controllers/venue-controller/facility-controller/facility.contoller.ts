@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { Facility } from "../../../models/venue.model";
-import { FacilityService } from "../../../services/facility.service";
+import { FacilityService } from "../../../services/venue-services/facility.service";
+
 
 export class FacilityController {
   static async createFacility(req: Request, res: Response) {
