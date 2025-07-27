@@ -11,6 +11,7 @@ import { Currency, Order, PaymentMethod } from "../../models/payment.model";
 import { PaymentService } from "../../services/booking-services/payment.service";
 import { SlotService } from "../../services/venue-services/slot.service";
 import { AuthService } from "../../services/auth-services/auth.service";
+import { AppError } from "../../types";
 
 export class BookingController {
   static async createBookingBeforePayment(req: Request, res: Response) {
@@ -119,8 +120,9 @@ export class BookingController {
 
       return res.status(201).json({
         message: "Booking created successfully",
-        data: createdBooking,
+        data: createdBooking.id,
       });
+
     } catch (error: any) {
       console.error("Error creating booking:", error);
       return res.status(500).json({
@@ -144,12 +146,14 @@ export class BookingController {
         return res.status(404).json({ message: "Booking not found" });
       }
 
-      if (booking.paymentStatus !== PaymentStatus.Initiated) {
+      if (
+        booking.paymentStatus !== PaymentStatus.Initiated ||
+        booking.bookingStatus === BookingStatus.Pending
+      ) {
         return res.status(400).json({
           message: "Payment has already been initiated for this booking",
         });
       }
-
 
       //wallet flow
       // razorpay flow
@@ -179,9 +183,9 @@ export class BookingController {
         paymentMethod: PaymentMethod.Razorpay,
       });
 
-      if(!transaction) {
-       //transaction is not created
-       // inform on whatsapp
+      if (!transaction) {
+        //transaction is not created
+        // inform on whatsapp
       }
 
       return res.status(200).json({ data: orderData });
@@ -194,31 +198,69 @@ export class BookingController {
     }
   }
 
-  // static async confirmBookingAfterPayment(req: Request, res: Response) {
-  //   try {
-  //     const { id } = req.params;
+  static async verifyPaymentAndBooking(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
 
-  //     if (!id) {
-  //       return res.status(400).json({ message: "Booking ID is required" });
-  //     }
+      const { paymentId, signature, orderId } = req.body as {
+        paymentId: string;
+        signature: string;
+        orderId: string;
+      };
 
-  //     // if (!confirmedBooking) {
-  //     //   return res.status(404).json({ message: "Booking not found" });
-  //     // }
+      if (!id) {
+        return res.status(400).json({ message: "Booking ID is required" });
+      }
 
-  //     // return res.status(200).json({
-  //     //   message: "Booking confirmed successfully",
-  //     //   data: confirmedBooking,
-  //     // });
-  //   } catch (error) {
-  //     console.error("Error confirming booking:", error);
-  //     const appError = error as AppError;
-  //     return res.status(500).json({
-  //       message: "Failed to confirm booking",
-  //       error: appError.message || "Unknown error",
-  //     });
-  //   }
-  // }
+      if (!paymentId || !signature || !orderId) {
+        return res.status(400).json({ message: "Payment details are missing" });
+      }
+
+      const booking = await BookingService.getBookingById(id);
+
+      if (
+        !booking ||
+        booking.paymentStatus === PaymentStatus.Initiated ||
+        booking.bookingStatus === BookingStatus.Pending
+      ) {
+        return res.status(400).json({ message: "Payment details are missing" });
+      }
+
+      const verified = await PaymentService.verifyPaymentSignature({
+        paymentId,
+        signature,
+        orderId,
+      });
+
+      if (!verified) {
+        PaymentService.handleBooking({
+          success: false,
+          bookingId: id,
+          amount: booking.amount,
+          orderId,
+          paymentId,
+        });
+        throw new Error("Payment verification failed");
+      }
+
+      PaymentService.handleBooking({
+        success: true,
+        bookingId: id,
+        amount: booking.amount,
+        orderId,
+        paymentId,
+      });
+
+      return res.status(200).json({ message: "Payment verified successfully" });
+    } catch (error) {
+      console.error("Error confirming booking:", error);
+      const appError = error as AppError;
+      return res.status(500).json({
+        message: "Failed to confirm booking",
+        error: appError.message || "Unknown error",
+      });
+    }
+  }
 
   static async getBookingById(req: Request, res: Response) {
     try {
