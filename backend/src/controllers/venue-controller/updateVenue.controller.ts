@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { AppError } from "../../types";
-import { VenueService } from "../../services/venue.service";
 import { Location, Venue } from "../../models/venue.model";
+import { VenueService } from "../../services/venue-services/venue.service";
 
 export class UpdateVenueController {
   static async updateVenue(req: Request, res: Response) {

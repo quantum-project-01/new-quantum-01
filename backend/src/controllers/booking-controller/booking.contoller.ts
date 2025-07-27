@@ -1,7 +1,16 @@
 import { Request, Response } from "express";
-import { BookingService } from "../../services/booking.service";
-import { Booking } from "../../models/booking.model";
-import { SlotService } from "../../services/slot.service";
+import { BookingService } from "../../services/booking-services/booking.service";
+import {
+  Booking,
+  BookingStatus,
+  PaymentStatus,
+} from "../../models/booking.model";
+import { customerDetails } from "../../models/booking.model";
+import { User } from "../../models/user.model";
+import { Currency, Order, PaymentMethod } from "../../models/payment.model";
+import { PaymentService } from "../../services/booking-services/payment.service";
+import { SlotService } from "../../services/venue-services/slot.service";
+import { AuthService } from "../../services/auth-services/auth.service";
 
 export class BookingController {
   static async createBookingBeforePayment(req: Request, res: Response) {
@@ -18,7 +27,8 @@ export class BookingController {
         !bookingData.activityId ||
         !bookingData.amount ||
         !bookingData.startTime ||
-        !bookingData.endTime
+        !bookingData.endTime ||
+        !bookingData.bookedDate
       ) {
         return res.status(400).json({ message: "Required fields are missing" });
       }
@@ -26,20 +36,20 @@ export class BookingController {
       const startTime = Number(bookingData.startTime);
       const endTime = Number(bookingData.endTime);
       const duration = endTime - startTime;
-      
-      if (
-        isNaN(startTime) ||
-        isNaN(endTime)
-      ) {
-        return res.status(400).json({ message: "Invalid startTime, endTime, or duration" });
+
+      if (isNaN(startTime) || isNaN(endTime)) {
+        return res
+          .status(400)
+          .json({ message: "Invalid startTime, endTime, or duration" });
       }
 
-      if(duration % 30 !== 0) {
-        return res.status(400).json({ message: "Duration must be a multiple of 30" });
+      if (duration % 30 !== 0) {
+        return res
+          .status(400)
+          .json({ message: "Duration must be a multiple of 30" });
       }
 
-      const durationInMinutes = endTime - startTime;
-      const numberOfSlots = durationInMinutes / 30;
+      const numberOfSlots = duration / 30;
 
       if (
         !Array.isArray(bookingData.slotIds) ||
@@ -51,9 +61,17 @@ export class BookingController {
       }
 
       // Check slot availability
-      const allSlotsAvailable = await SlotService.areAllSlotsAvailable(
-        bookingData.slotIds
-      );
+      let allSlotsAvailable = false;
+      let partner: User | null = null;
+      let user: User | null = null;
+
+      await Promise.all([
+        (allSlotsAvailable = await SlotService.areAllSlotsAvailable(
+          bookingData.slotIds
+        )),
+        (partner = await AuthService.getUserById(bookingData.partnerId)),
+        (user = await AuthService.getUserById(bookingData.userId)),
+      ]);
 
       if (!allSlotsAvailable) {
         return res.status(400).json({
@@ -61,8 +79,23 @@ export class BookingController {
         });
       }
 
+      if (!partner || partner.role !== "partner") {
+        return res.status(404).json({ message: "Partner not found" });
+      }
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const customerDetails: customerDetails = {
+        customerId: user.id,
+        customerName: user.name,
+        customerEmail: user.email,
+        customerPhone: user.phone ?? "",
+      };
+
       // Create booking object
-      const booking = {
+      const booking: Booking = {
         userId: bookingData.userId,
         partnerId: bookingData.partnerId,
         venueId: bookingData.venueId,
@@ -75,21 +108,13 @@ export class BookingController {
         startTime: bookingData.startTime,
         endTime: bookingData.endTime,
         bookedDate: new Date(bookingData.bookedDate),
-        confirmedAt: bookingData.confirmedAt
-          ? new Date(bookingData.confirmedAt)
-          : undefined,
-        cancelledAt: bookingData.cancelledAt
-          ? new Date(bookingData.cancelledAt)
-          : undefined,
-        bookingStatus: bookingData.bookingStatus,
-        paymentStatus: bookingData.paymentStatus,
-        customerDetails: bookingData.customerDetails,
-        paymentDetails: bookingData.paymentDetails,
-      } as Booking;
+        bookingStatus: BookingStatus.Pending,
+        paymentStatus: PaymentStatus.Initiated,
+        customerDetails: customerDetails,
+      };
 
-      const createdBooking = await BookingService.createBooking(
-        booking,
-        bookingData.slotIds
+      const createdBooking = await BookingService.createBookingBeforePayment(
+        booking
       );
 
       return res.status(201).json({
@@ -105,6 +130,96 @@ export class BookingController {
     }
   }
 
+  static async bookingPayment(req: Request, res: Response) {
+    try {
+      const { bookingId } = req.params;
+
+      if (!bookingId) {
+        return res.status(400).json({ message: "Booking ID is required" });
+      }
+
+      const booking = await BookingService.getBookingById(bookingId);
+
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+
+      if (booking.paymentStatus !== PaymentStatus.Initiated) {
+        return res.status(400).json({
+          message: "Payment has already been initiated for this booking",
+        });
+      }
+
+
+      //wallet flow
+      // razorpay flow
+      const order = await PaymentService.createPaymentRazorpay({
+        amount: booking.amount,
+        bookingId: bookingId,
+        venueId: booking.venueId,
+        customerId: booking.customerDetails.customerId,
+        partnerId: booking.partnerId,
+        currency: Currency.INR,
+      });
+
+      const orderData: Order = {
+        id: order.id,
+        receipt: order.receipt as string,
+      };
+
+      if (!orderData) {
+        throw new Error("Failed to create Razorpay order");
+      }
+
+      const transaction = await PaymentService.createTransaction({
+        orderId: order.id,
+        bookingId: bookingId,
+        amount: booking.amount,
+        currency: Currency.INR,
+        paymentMethod: PaymentMethod.Razorpay,
+      });
+
+      if(!transaction) {
+       //transaction is not created
+       // inform on whatsapp
+      }
+
+      return res.status(200).json({ data: orderData });
+    } catch (error: any) {
+      console.error("Error creating Razorpay order:", error);
+      return res.status(500).json({
+        message: "Failed to create Razorpay order ",
+        error: error.message,
+      });
+    }
+  }
+
+  // static async confirmBookingAfterPayment(req: Request, res: Response) {
+  //   try {
+  //     const { id } = req.params;
+
+  //     if (!id) {
+  //       return res.status(400).json({ message: "Booking ID is required" });
+  //     }
+
+  //     // if (!confirmedBooking) {
+  //     //   return res.status(404).json({ message: "Booking not found" });
+  //     // }
+
+  //     // return res.status(200).json({
+  //     //   message: "Booking confirmed successfully",
+  //     //   data: confirmedBooking,
+  //     // });
+  //   } catch (error) {
+  //     console.error("Error confirming booking:", error);
+  //     const appError = error as AppError;
+  //     return res.status(500).json({
+  //       message: "Failed to confirm booking",
+  //       error: appError.message || "Unknown error",
+  //     });
+  //   }
+  // }
+
   static async getBookingById(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -114,10 +229,6 @@ export class BookingController {
       }
 
       const booking = await BookingService.getBookingById(id);
-
-      if (!booking) {
-        return res.status(404).json({ message: "Booking not found" });
-      }
 
       return res.status(200).json({ data: booking });
     } catch (error: any) {

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { Activity } from "../../../models/venue.model";
-import ActivityService from "../../../services/activity.service";
+import ActivityService from "../../../services/venue-services/activity.service";
 
 export class ActivityController {
   static async createActivity(req: Request, res: Response) {

@@ -1,5 +1,6 @@
-import { Activity } from "../models/venue.model";
+
 import { PrismaClient } from "@prisma/client";
+import { Activity } from "../../models/venue.model";
 
 const prisma = new PrismaClient();
 

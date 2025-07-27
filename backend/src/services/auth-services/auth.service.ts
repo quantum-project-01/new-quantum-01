@@ -1,15 +1,21 @@
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { EmailService } from './email.service';
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { EmailService } from "./email.service";
+import { User, UserRole } from "../../models/user.model";
 
 const prisma = new PrismaClient();
 
 export class AuthService {
-  static async registerUser(data: { name: string; email: string; password: string; phone?: string }) {
+  static async registerUser(data: {
+    name: string;
+    email: string;
+    password: string;
+    phone?: string;
+  }) {
     try {
       const hashedPassword = await bcrypt.hash(data.password, 10);
-      
+
       const userData: any = {
         name: data.name,
         email: data.email,
@@ -22,14 +28,14 @@ export class AuthService {
 
       // Check if user already exists
       const existingUser = await prisma.user.findUnique({
-        where: { email: data.email }
+        where: { email: data.email },
       });
 
       if (existingUser) {
-        return { 
-          success: false, 
-          error: 'Email already exists',
-          details: { email: data.email }
+        return {
+          success: false,
+          error: "Email already exists",
+          details: { email: data.email },
         };
       }
 
@@ -37,8 +43,8 @@ export class AuthService {
       if (!userData.name || userData.name.length < 2) {
         return {
           success: false,
-          error: 'Invalid name',
-          details: { name: userData.name }
+          error: "Invalid name",
+          details: { name: userData.name },
         };
       }
 
@@ -49,87 +55,87 @@ export class AuthService {
       // Generate JWT token for the newly registered user
       const token = jwt.sign(
         { userId: user.id, email: user.email },
-        process.env['JWT_SECRET'] || 'your-secret-key',
-        { expiresIn: '24h' }
+        process.env["JWT_SECRET"] || "your-secret-key",
+        { expiresIn: "24h" }
       );
 
-      return { 
-        success: true, 
+      return {
+        success: true,
         user: { id: user.id, name: user.name, email: user.email },
-        token 
+        token,
       };
     } catch (error) {
       // Comprehensive error logging
-      console.error('Registration error details:', {
-        errorType: error instanceof Error ? error.constructor.name : 'Unknown',
-        errorMessage: error instanceof Error ? error.message : 'Unknown error',
-        errorStack: error instanceof Error ? error.stack : 'No stack trace',
+      console.error("Registration error details:", {
+        errorType: error instanceof Error ? error.constructor.name : "Unknown",
+        errorMessage: error instanceof Error ? error.message : "Unknown error",
+        errorStack: error instanceof Error ? error.stack : "No stack trace",
         userData: {
           name: data.name,
           email: data.email,
-          phoneProvided: !!data.phone
-        }
+          phoneProvided: !!data.phone,
+        },
       });
 
       // More detailed error handling
       if (error instanceof Error) {
         // Check for various potential error types
-        if (error.message.includes('Unique constraint')) {
-          return { 
-            success: false, 
-            error: 'Email already exists',
-            details: { email: data.email }
+        if (error.message.includes("Unique constraint")) {
+          return {
+            success: false,
+            error: "Email already exists",
+            details: { email: data.email },
           };
         }
 
-        if (error.message.includes('Foreign key constraint')) {
+        if (error.message.includes("Foreign key constraint")) {
           return {
             success: false,
-            error: 'Invalid related data',
-            details: { message: error.message }
+            error: "Invalid related data",
+            details: { message: error.message },
           };
         }
 
-        if (error.message.includes('Validation failed')) {
+        if (error.message.includes("Validation failed")) {
           return {
             success: false,
-            error: 'Data validation failed',
-            details: { message: error.message }
+            error: "Data validation failed",
+            details: { message: error.message },
           };
         }
       }
 
-      return { 
-        success: false, 
-        error: 'Registration failed',
-        details: error instanceof Error ? error.message : 'Unknown error'
+      return {
+        success: false,
+        error: "Registration failed",
+        details: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
 
-  static async registerPartner(data: { 
-    name: string; 
-    email: string; 
-    password: string; 
+  static async registerPartner(data: {
+    name: string;
+    email: string;
+    password: string;
     phone: string;
     companyName: string;
-    subscriptionType: 'fixed' | 'revenue';
+    subscriptionType: "fixed" | "revenue";
     gstNumber?: string | null;
     websiteUrl?: string | null;
   }) {
     try {
       const hashedPassword = await bcrypt.hash(data.password, 10);
-      
+
       // Check if user already exists
       const existingUser = await prisma.user.findUnique({
-        where: { email: data.email }
+        where: { email: data.email },
       });
 
       if (existingUser) {
-        return { 
-          success: false, 
-          error: 'Email already exists',
-          details: { email: data.email }
+        return {
+          success: false,
+          error: "Email already exists",
+          details: { email: data.email },
         };
       }
 
@@ -140,44 +146,47 @@ export class AuthService {
           email: data.email,
           password: hashedPassword,
           phone: data.phone,
-          role: 'partner',
+          role: "partner",
           partnerDetails: {
             create: {
               companyName: data.companyName,
               subscriptionType: data.subscriptionType,
               gstNumber: data.gstNumber ?? null,
-              websiteUrl: data.websiteUrl ?? null
-            }
-          }
+              websiteUrl: data.websiteUrl ?? null,
+            },
+          },
         },
         include: {
-          partnerDetails: true
-        }
+          partnerDetails: true,
+        },
       });
 
       // Generate JWT token for the newly registered partner
       const token = jwt.sign(
         { userId: user.id, email: user.email, role: user.role },
-        process.env['JWT_SECRET'] || 'your-secret-key',
-        { expiresIn: '24h' }
+        process.env["JWT_SECRET"] || "your-secret-key",
+        { expiresIn: "24h" }
       );
 
-      return { 
-        success: true, 
-        user: { 
-          id: user.id, 
-          name: user.name, 
+      return {
+        success: true,
+        user: {
+          id: user.id,
+          name: user.name,
           email: user.email,
           role: user.role,
-          partnerDetails: user.partnerDetails
+          partnerDetails: user.partnerDetails,
         },
-        token 
+        token,
       };
     } catch (error) {
-      console.error('Partner Registration Error:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Partner registration failed' 
+      console.error("Partner Registration Error:", error);
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Partner registration failed",
       };
     }
   }
@@ -190,7 +199,7 @@ export class AuthService {
       });
 
       if (!user) {
-        return { success: false, error: 'User not found' };
+        return { success: false, error: "User not found" };
       }
 
       // Generate OTP
@@ -208,14 +217,14 @@ export class AuthService {
 
       // Send OTP via email
       const emailSent = await EmailService.sendOTP(email, otp);
-      
+
       if (!emailSent) {
-        return { success: false, error: 'Failed to send OTP email' };
+        return { success: false, error: "Failed to send OTP email" };
       }
 
-      return { success: true, message: 'OTP sent successfully' };
+      return { success: true, message: "OTP sent successfully" };
     } catch (error) {
-      return { success: false, error: 'Failed to send OTP' };
+      return { success: false, error: "Failed to send OTP" };
     }
   }
 
@@ -226,13 +235,17 @@ export class AuthService {
       });
 
       if (!user) {
-        return { success: false, error: 'User not found' };
+        return { success: false, error: "User not found" };
       }
 
       // Check if OTP matches and is not expired
       const userWithOTP = user as any;
-      if (userWithOTP.otp !== otp || !userWithOTP.otpExpiry || userWithOTP.otpExpiry < new Date()) {
-        return { success: false, error: 'Invalid or expired OTP' };
+      if (
+        userWithOTP.otp !== otp ||
+        !userWithOTP.otpExpiry ||
+        userWithOTP.otpExpiry < new Date()
+      ) {
+        return { success: false, error: "Invalid or expired OTP" };
       }
 
       // Clear OTP after successful verification
@@ -247,8 +260,8 @@ export class AuthService {
       // Generate JWT token
       const token = jwt.sign(
         { userId: user.id, email: user.email },
-        process.env['JWT_SECRET'] || 'your-secret-key',
-        { expiresIn: '24h' }
+        process.env["JWT_SECRET"] || "your-secret-key",
+        { expiresIn: "24h" }
       );
 
       return {
@@ -261,21 +274,25 @@ export class AuthService {
         token,
       };
     } catch (error) {
-      return { success: false, error: 'OTP verification failed' };
+      return { success: false, error: "OTP verification failed" };
     }
   }
 
-  static async loginUser(email: string, password: string, role?: 'user' | 'partner' | 'admin') {
+  static async loginUser(
+    email: string,
+    password: string,
+    role?: "user" | "partner" | "admin"
+  ) {
     try {
       const user = await prisma.user.findUnique({
         where: { email },
         include: {
-          partnerDetails: role === 'partner' // Only include partner details if role is partner
-        }
+          partnerDetails: role === "partner", // Only include partner details if role is partner
+        },
       });
 
       if (!user) {
-        throw new Error('User not found');
+        throw new Error("User not found");
       }
 
       // If a specific role is provided, check if it matches
@@ -285,17 +302,17 @@ export class AuthService {
 
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
-        throw new Error('Invalid password');
+        throw new Error("Invalid password");
       }
 
       const token = jwt.sign(
-        { 
-          userId: user.id, 
-          email: user.email, 
-          role: user.role 
+        {
+          userId: user.id,
+          email: user.email,
+          role: user.role,
         },
-        process.env['JWT_SECRET'] || 'your-secret-key',
-        { expiresIn: '24h' }
+        process.env["JWT_SECRET"] || "your-secret-key",
+        { expiresIn: "24h" }
       );
 
       // Prepare user data to return
@@ -303,11 +320,11 @@ export class AuthService {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
       };
 
       // If it's a partner login, include partner details
-      if (user.role === 'partner' && 'partnerDetails' in user) {
+      if (user.role === "partner" && user.partnerDetails) {
         userData.partnerDetails = user.partnerDetails;
       }
 
@@ -317,16 +334,44 @@ export class AuthService {
         token,
       };
     } catch (error) {
-      console.error('Login error:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Login failed' 
+      console.error("Login error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Login failed",
       };
     }
   }
 
   // Add a specific partner login method for clarity
   static async partnerLogin(email: string, password: string) {
-    return this.loginUser(email, password, 'partner');
+    return this.loginUser(email, password, "partner");
   }
-} 
+
+  static async getUserById(userId: string): Promise<User | null> {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+          partnerDetails: true, // Include partner details if available
+        },
+      });
+
+      if (!user) {
+        throw new Error("User not found for userId: " + userId);
+      }
+
+      const userData: User = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user?.phone ?? "",
+        role: user.role === "partner" ? UserRole.PARTNER : UserRole.USER,
+      };
+
+      return userData;
+    } catch (error) {
+      console.error("Get User By ID Error:", error);
+      throw new Error("Failed to retrieve user: " + error);
+    }
+  }
+}

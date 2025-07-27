@@ -1,10 +1,17 @@
-import { PrismaClient } from "@prisma/client";
-import { Booking } from "../models/booking.model";
+import { Prisma, PrismaClient } from "@prisma/client";
+import {
+  Booking,
+  BookingStatus,
+  customerDetails,
+  paymentDetails,
+  PaymentStatus,
+} from "../../models/booking.model";
+import { SlotAvailability } from "../../models/venue.model";
 
 const prisma = new PrismaClient();
 
 export class BookingService {
-  static async createBooking(booking: Booking, slotIds: string[]) {
+  static async createBookingBeforePayment(booking: Booking) {
     try {
       // Create booking using transaction to ensure data consistency
       const result = await prisma.$transaction(async (tx) => {
@@ -24,10 +31,10 @@ export class BookingService {
             bookedDate: booking.bookedDate,
             confirmedAt: booking.confirmedAt || null,
             cancelledAt: booking.cancelledAt || null,
-            bookingStatus: booking.bookingStatus as any,
-            paymentStatus: booking.paymentStatus as any,
-            customerDetails: booking.customerDetails as any,
-            paymentDetails: booking.paymentDetails as any,
+            bookingStatus: booking.bookingStatus,
+            paymentStatus: booking.paymentStatus,
+            customerDetails:
+              booking.customerDetails as unknown as Prisma.InputJsonValue,
           },
         });
 
@@ -35,13 +42,13 @@ export class BookingService {
         await tx.slot.updateMany({
           where: {
             id: {
-              in: slotIds
-            }
+              in: booking.slotIds,
+            },
           },
           data: {
             bookingId: newBooking.id,
-            availability: 'booked'
-          }
+            availability: SlotAvailability.Locked,
+          },
         });
 
         return newBooking;
@@ -54,7 +61,7 @@ export class BookingService {
     }
   }
 
-  static async getBookingById(id: string) {
+  static async getBookingById(id: string): Promise<Booking> {
     try {
       const booking = await prisma.booking.findUnique({
         where: { id },
@@ -64,8 +71,8 @@ export class BookingService {
               id: true,
               name: true,
               email: true,
-              phone: true
-            }
+              phone: true,
+            },
           },
           slots: {
             select: {
@@ -74,12 +81,40 @@ export class BookingService {
               startTime: true,
               endTime: true,
               amount: true,
-              availability: true
-            }
-          }
-        }
+              availability: true,
+            },
+          },
+        },
       });
-      return booking;
+
+      if (!booking) {
+        throw new Error("booking not found");
+      }
+
+      const bookingData: Booking = {
+        id: booking.id,
+        userId: booking.userId,
+        partnerId: booking.partnerId,
+        venueId: booking.venueId,
+        facilityId: booking.facilityId,
+        slotIds: booking.slots.map((slot) => slot.id),
+        activityId: booking.activityId,
+        amount: Number(booking.amount),
+        duration: booking.duration,
+        startTime: booking.startTime,
+        endTime: booking.endTime,
+        numberOfSlots: booking.numberOfSlots,
+        bookedDate: booking.bookedDate,
+        confirmedAt: booking.confirmedAt,
+        cancelledAt: booking.cancelledAt,
+        bookingStatus: booking.bookingStatus as BookingStatus,
+        paymentStatus: booking.paymentStatus as PaymentStatus,
+        customerDetails: booking?.customerDetails as unknown as customerDetails,
+        paymentDetails: booking?.paymentDetails as unknown as paymentDetails,
+        createdAt: booking.createdAt,
+        updatedAt: booking.updatedAt,
+      };
+      return bookingData;
     } catch (error) {
       console.error("Error getting booking by id:", error);
       throw error;
@@ -97,13 +132,13 @@ export class BookingService {
               date: true,
               startTime: true,
               endTime: true,
-              amount: true
-            }
-          }
+              amount: true,
+            },
+          },
         },
         orderBy: {
-          createdAt: 'desc'
-        }
+          createdAt: "desc",
+        },
       });
       return bookings;
     } catch (error) {
@@ -119,20 +154,20 @@ export class BookingService {
         const cancelledBooking = await tx.booking.update({
           where: { id },
           data: {
-            bookingStatus: 'cancelled',
-            cancelledAt: new Date()
-          }
+            bookingStatus: "cancelled",
+            cancelledAt: new Date(),
+          },
         });
 
         // Release the slots
         await tx.slot.updateMany({
           where: {
-            bookingId: id
+            bookingId: id,
           },
           data: {
             bookingId: null,
-            availability: 'available'
-          }
+            availability: "available",
+          },
         });
 
         return cancelledBooking;

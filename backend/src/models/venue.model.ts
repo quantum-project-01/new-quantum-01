@@ -59,12 +59,13 @@ export interface Facility {
 }
 
 // Slot Model
-export type SlotAvailability =
-  | "available"
-  | "not_available"
-  | "booked"
-  | "filling_fast";
-
+export enum SlotAvailability {
+  Locked = "locked",
+  Available = "available",
+  NotAvailable = "not_available",
+  Booked = "booked",
+  FillingFast = "filling_fast",
+}
 export interface Slot {
   id?: string;
   date: string;
