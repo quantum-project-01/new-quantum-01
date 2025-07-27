@@ -132,7 +132,7 @@ export class BookingController {
     }
   }
 
-  static async bookingPayment(req: Request, res: Response) {
+  static async createBookingPayment(req: Request, res: Response) {
     try {
       const { bookingId } = req.params;
 
