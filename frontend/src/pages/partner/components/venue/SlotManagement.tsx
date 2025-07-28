@@ -58,6 +58,31 @@ const roundToThirtyMinutes = (time: string): string => {
   return `${adjustedHours.toString().padStart(2, '0')}:${roundedMinutes.toString().padStart(2, '0')}`;
 };
 
+// Helper function to convert time from HH:MM:SS to HH:MM format
+const convertTimeToHHMM = (time: string): string => {
+  if (!time) return time;
+  
+  const timeParts = time.split(':');
+  
+  // If time already in HH:MM format, return as is
+  if (timeParts.length === 2) {
+    return time;
+  }
+  
+  // If time in HH:MM:SS format, remove seconds
+  if (timeParts.length === 3) {
+    const [hours, minutes] = timeParts;
+    // Ensure hours and minutes are properly padded
+    const paddedHours = hours.padStart(2, '0');
+    const paddedMinutes = minutes.padStart(2, '0');
+    return `${paddedHours}:${paddedMinutes}`;
+  }
+  
+  // For any other format, return as is
+  console.warn('Unexpected time format:', time);
+  return time;
+};
+
 const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isBulkCreateModalOpen, setIsBulkCreateModalOpen] = useState(false);
@@ -70,10 +95,16 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
   });
   const queryClient = useQueryClient();
 
-  // Helper function to ensure time format is HH:MM:SS
-  const formatTime = (time: string): string => {
+  // Helper function to ensure time format is HH:MM (backend expects this format)
+  const formatTimeForBackend = (time: string): string => {
     if (!time) return time;
-    return time.includes(':') && time.split(':').length === 2 ? `${time}:00` : time;
+    // Convert HH:MM:SS to HH:MM by removing seconds
+    const timeParts = time.split(':');
+    if (timeParts.length === 3) {
+      return `${timeParts[0]}:${timeParts[1]}`;
+    }
+    // If already HH:MM format, return as is
+    return time;
   };
 
 
@@ -97,6 +128,8 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
 
   const createSlotMutation = useMutation({
     mutationFn: async (data: SlotModalFormData) => {
+      console.log('Original slot data for creation:', data);
+      
       // Validate required fields
       if (!data.startDate || !data.facilityId || !data.startTime || !data.endTime || !data.amount) {
         throw new Error('All fields are required');
@@ -112,12 +145,14 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
 
       const slotData: SlotFormData = {
         date: data.startDate,
-        startTime: formatTime(data.startTime),
-        endTime: formatTime(data.endTime),
+        startTime: formatTimeForBackend(data.startTime),
+        endTime: formatTimeForBackend(data.endTime),
         amount: data.amount,
         availability: data.availability,
         facilityId: data.facilityId,
       };
+      
+      console.log('Formatted slot data being sent to backend for creation:', slotData);
       return createSlot(slotData);
     },
     onSuccess: () => {
@@ -133,6 +168,8 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
 
   const createBulkSlotsMutation = useMutation({
     mutationFn: async (data: SlotModalFormData) => {
+      console.log('Original bulk slot data:', data);
+      
       // Validate required fields for bulk creation
       if (!data.startDate || !data.endDate || !data.facilityId || !data.startTime || !data.endTime || !data.amount) {
         throw new Error('All fields are required for bulk creation');
@@ -146,24 +183,17 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
         throw new Error('End time must be in 30-minute intervals (e.g., 09:00, 09:30, 10:00)');
       }
 
-      // Format time to HH:MM format (remove seconds if present)
-      const formatTimeForBulk = (time: string): string => {
-        if (!time) return time;
-        const timeParts = time.split(':');
-        return `${timeParts[0]}:${timeParts[1]}`;
-      };
-
       const bulkData: BulkSlotFormData = {
         startDate: data.startDate,
         endDate: data.endDate,
-        startTime: formatTimeForBulk(data.startTime),
-        endTime: formatTimeForBulk(data.endTime),
+        startTime: formatTimeForBackend(data.startTime),
+        endTime: formatTimeForBackend(data.endTime),
         amount: data.amount,
         availability: data.availability,
         facilityId: data.facilityId,
       };
       
-      console.log('Bulk creation data:', bulkData);
+      console.log('Formatted bulk creation data being sent to backend:', bulkData);
       return createMultipleSlots(data.facilityId, bulkData);
     },
     onSuccess: (data) => {
@@ -177,16 +207,20 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
     }
   });
 
-  const updateSlotMutation = useMutation({
+    const updateSlotMutation = useMutation({
     mutationFn: async (data: { id: string; slot: Partial<SlotModalFormData> }) => {
+      console.log('Original slot data for update:', data.slot);
+      
       const slotData: Partial<SlotFormData> = {
         date: data.slot.startDate,
-        startTime: data.slot.startTime ? formatTime(data.slot.startTime) : undefined,
-        endTime: data.slot.endTime ? formatTime(data.slot.endTime) : undefined,
+        startTime: data.slot.startTime ? formatTimeForBackend(data.slot.startTime) : undefined,
+        endTime: data.slot.endTime ? formatTimeForBackend(data.slot.endTime) : undefined,
         amount: data.slot.amount,
         availability: data.slot.availability,
-        facilityId: data.slot.facilityId,
+        facilityId: data.slot.facilityId, // This is required for update
       };
+      
+      console.log('Formatted slot data being sent to backend:', slotData);
       return updateSlot(data.id, slotData);
     },
     onSuccess: () => {
@@ -396,7 +430,7 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
                         <div className="flex items-start justify-between mb-3">
                           <div>
                             <div className="text-white font-medium">
-                              {slot.startTime} - {slot.endTime}
+                              {convertTimeToHHMM(slot.startTime)} - {convertTimeToHHMM(slot.endTime)}
                             </div>
                             <div className="text-blue-400 text-sm">
                               {slot.facilityName}
@@ -475,15 +509,20 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
         onSubmit={(data) => handleUpdateSlot(data)}
         title="Edit Slot"
         facilities={facilities}
-        initialData={editingSlot ? {
-          facilityId: editingSlot.facilityId,
-          startDate: editingSlot.date,
-          endDate: editingSlot.date,
-          startTime: editingSlot.startTime,
-          endTime: editingSlot.endTime,
-          amount: editingSlot.amount,
-          availability: editingSlot.availability,
-        } : undefined}
+        initialData={editingSlot ? (() => {
+          console.log('Creating initialData for editing slot:', editingSlot);
+          const initialData = {
+            facilityId: editingSlot.facilityId,
+            startDate: editingSlot.date,
+            endDate: editingSlot.date,
+            startTime: convertTimeToHHMM(editingSlot.startTime),
+            endTime: convertTimeToHHMM(editingSlot.endTime),
+            amount: editingSlot.amount,
+            availability: editingSlot.availability,
+          };
+          console.log('Processed initialData:', initialData);
+          return initialData;
+        })() : undefined}
         isLoading={updateSlotMutation.isPending}
         isBulk={false}
       />
@@ -527,6 +566,7 @@ const SlotModal: React.FC<SlotModalProps> = ({
 
   React.useEffect(() => {
     if (initialData) {
+      console.log('SlotModal - Setting initial data:', initialData);
       setFormData(initialData);
     }
   }, [initialData]);
@@ -560,10 +600,12 @@ const SlotModal: React.FC<SlotModalProps> = ({
       return;
     }
     if (!isValidThirtyMinuteInterval(formData.startTime)) {
+      console.error('Start time validation failed for:', formData.startTime);
       alert('Start time must be in 30-minute intervals (e.g., 09:00, 09:30, 10:00)');
       return;
     }
     if (!isValidThirtyMinuteInterval(formData.endTime)) {
+      console.error('End time validation failed for:', formData.endTime);
       alert('End time must be in 30-minute intervals (e.g., 09:00, 09:30, 10:00)');
       return;
     }

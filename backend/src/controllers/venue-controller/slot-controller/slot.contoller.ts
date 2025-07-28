@@ -146,11 +146,16 @@ export class SlotController {
         return res.status(400).json({ message: "Slot ID is required" });
       }
 
+      console.log('UpdateSlot - Slot ID:', id);
+      console.log('UpdateSlot - Request body:', req.body);
+
       const existingSlot = await SlotService.getSlotById(id);
 
       if (!existingSlot) {
         return res.status(404).json({ message: "Slot not found" });
       }
+
+      console.log('UpdateSlot - Existing slot:', existingSlot);
 
       const startTime = req.body.startTime || existingSlot.startTime;
       const endTime = req.body.endTime || existingSlot.endTime;
@@ -163,18 +168,33 @@ export class SlotController {
         }
       }
 
+      // Convert date string to Date object if provided
+      const dateValue = req.body.date ? new Date(req.body.date + 'T00:00:00.000Z') : existingSlot.date;
+      
+      // Convert amount to number if it's a string
+      const amountValue = req.body.amount ? 
+        (typeof req.body.amount === 'string' ? parseFloat(req.body.amount) : req.body.amount) 
+        : existingSlot.amount;
+
       const newSlot: Slot = {
-        date: req.body.date || existingSlot.date,
-        amount: req.body.amount || existingSlot.amount,
+        date: dateValue,
+        amount: amountValue,
         availability: req.body.availability || existingSlot.availability,
         startTime,
         endTime,
+        facilityId: req.body.facilityId || existingSlot.facilityId,
       };
+
+      console.log('UpdateSlot - Formatted slot data:', newSlot);
 
       const updatedSlot = await SlotService.updateSlot(id, newSlot);
       return res.status(200).json({ data: updatedSlot.id });
     } catch (error) {
-      return res.status(500).json({ message: "Failed to update slot" });
+      console.error("Error updating slot:", error);
+      return res.status(500).json({ 
+        message: "Failed to update slot",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   }
 
@@ -215,6 +235,7 @@ export class SlotController {
           availability: availability || slot.availability,
           startTime: startTime || slot.startTime,
           endTime: endTime || slot.endTime,
+          facilityId: slot.facilityId, // Include required facilityId
         };
       });
 
@@ -332,7 +353,8 @@ export class SlotController {
         amount: s.amount,
         availability: s.availability,
         startTime: s.startTime,
-        endTime: s.endTime
+        endTime: s.endTime,
+        facilityId: s.facilityId // Include required facilityId
       }));
 
       await SlotService.updateSlots(slotsObj);

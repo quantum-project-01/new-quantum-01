@@ -150,13 +150,34 @@ export class SlotService {
 
   static async updateSlot(id: string, slot: Slot) {
     try {
+      console.log('SlotService.updateSlot - Input data:', { id, slot });
+      
+      // Ensure proper data types for database
+      const updateData = {
+        date: slot.date instanceof Date ? slot.date : new Date(slot.date + 'T00:00:00.000Z'),
+        amount: typeof slot.amount === 'string' ? parseFloat(slot.amount) : slot.amount,
+        availability: slot.availability,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        facilityId: slot.facilityId,
+      };
+      
+      console.log('SlotService.updateSlot - Formatted data for database:', updateData);
+      
       const updatedSlot = await prisma.slot.update({
         where: { id },
-        data: slot,
+        data: updateData,
       });
+      
+      console.log('SlotService.updateSlot - Update successful:', updatedSlot);
       return updatedSlot;
     } catch (error) {
-      console.error("Error updating slot:", error);
+      console.error("Error updating slot in service:", error);
+      console.error("Error details:", {
+        code: (error as any)?.code,
+        message: (error as any)?.message,
+        meta: (error as any)?.meta,
+      });
       throw error;
     }
   }
