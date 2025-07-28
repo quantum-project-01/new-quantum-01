@@ -40,18 +40,17 @@ const Header: React.FC = () => {
 
   return (
     <>
-      <header 
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled 
-            ? 'bg-gray-900/95 backdrop-blur-xl border-b border-gray-700/50 shadow-xl shadow-black/10' 
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
+            ? 'bg-gray-900/95 backdrop-blur-xl border-b border-gray-700/50 shadow-xl shadow-black/10'
             : 'bg-gray-900/80 backdrop-blur-lg border-b border-gray-800/50'
-        }`}
+          }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
-            <Link 
-              to="/" 
+            <Link
+              to="/"
               className="flex items-center space-x-3 group"
               onClick={closeMenu}
             >
@@ -83,11 +82,10 @@ const Header: React.FC = () => {
               </Link> */}
               <Link
                 to="/events"
-                className={`relative px-4 py-2 font-medium transition-all duration-200 ${
-                  isActivePath('/events')
+                className={`relative px-4 py-2 font-medium transition-all duration-200 ${isActivePath('/events')
                     ? 'text-blue-400'
                     : 'text-gray-300 hover:text-white'
-                }`}
+                  }`}
               >
                 Events
                 {isActivePath('/events') && (
@@ -96,11 +94,10 @@ const Header: React.FC = () => {
               </Link>
               <Link
                 to="/shop"
-                className={`relative px-4 py-2 font-medium transition-all duration-200 ${
-                  isActivePath('/shop')
+                className={`relative px-4 py-2 font-medium transition-all duration-200 ${isActivePath('/shop')
                     ? 'text-blue-400'
                     : 'text-gray-300 hover:text-white'
-                }`}
+                  }`}
               >
                 Shop
                 {isActivePath('/shop') && (
@@ -123,11 +120,10 @@ const Header: React.FC = () => {
                 <div className="flex items-center space-x-4">
                   <Link
                     to="/contact"
-                    className={`relative px-4 py-2 font-medium transition-all duration-200 ${
-                      isActivePath('/contact')
+                    className={`relative px-4 py-2 font-medium transition-all duration-200 ${isActivePath('/contact')
                         ? 'text-blue-400'
                         : 'text-gray-300 hover:text-white'
-                    }`}
+                      }`}
                   >
                     Contact Us
                     {isActivePath('/contact') && (
@@ -136,11 +132,10 @@ const Header: React.FC = () => {
                   </Link>
                   <Link
                     to="/wallet"
-                    className={`relative px-4 py-2 font-medium transition-all duration-200 ${
-                      isActivePath('/wallet')
+                    className={`relative px-4 py-2 font-medium transition-all duration-200 ${isActivePath('/wallet')
                         ? 'text-blue-400'
                         : 'text-gray-300 hover:text-white'
-                    }`}
+                      }`}
                   >
                     Wallet
                     {isActivePath('/wallet') && (
@@ -149,11 +144,10 @@ const Header: React.FC = () => {
                   </Link>
                   <Link
                     to="/bookings"
-                    className={`relative px-4 py-2 font-medium transition-all duration-200 ${
-                      isActivePath('/bookings')
+                    className={`relative px-4 py-2 font-medium transition-all duration-200 ${isActivePath('/bookings')
                         ? 'text-blue-400'
                         : 'text-gray-300 hover:text-white'
-                    }`}
+                      }`}
                   >
                     My Bookings
                     {isActivePath('/bookings') && (
@@ -168,7 +162,7 @@ const Header: React.FC = () => {
                     </div>
                     <span className="text-gray-200 font-medium">Hi, {user?.name}</span>
                   </div>
-                  
+
                   <Link
                     to="/profile"
                     className="p-2 text-gray-300 hover:text-blue-400 hover:bg-gray-800/50 rounded-lg transition-all duration-200"
@@ -176,7 +170,7 @@ const Header: React.FC = () => {
                   >
                     <Settings className="h-5 w-5" />
                   </Link>
-                  
+
                   {user?.role === 'partner' && (
                     <Link
                       to="/partner/dashboard"
@@ -186,7 +180,7 @@ const Header: React.FC = () => {
                       <BarChart3 className="h-5 w-5" />
                     </Link>
                   )}
-                  
+
                   {user?.role === 'admin' && (
                     <Link
                       to="/admin/dashboard"
@@ -196,7 +190,7 @@ const Header: React.FC = () => {
                       <Shield className="h-5 w-5" />
                     </Link>
                   )}
-                  
+
                   <button
                     onClick={handleLogout}
                     className="p-2 text-gray-300 hover:text-red-400 hover:bg-red-900/20 rounded-lg transition-all duration-200"
@@ -241,11 +235,11 @@ const Header: React.FC = () => {
       {/* Mobile Menu Overlay */}
       {isMenuOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <div 
+          <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={closeMenu}
           ></div>
-          
+
           {/* Mobile Menu Panel */}
           <div className="absolute top-16 left-0 right-0 bg-gray-900/95 backdrop-blur-xl border-b border-gray-700/50 shadow-xl">
             <div className="max-w-7xl mx-auto px-4 py-6">
@@ -256,33 +250,30 @@ const Header: React.FC = () => {
                     <Link
                       to="/contact"
                       onClick={closeMenu}
-                      className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
-                        isActivePath('/contact')
+                      className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${isActivePath('/contact')
                           ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
                           : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
-                      }`}
+                        }`}
                     >
                       Contact Us
                     </Link>
                     <Link
                       to="/wallet"
                       onClick={closeMenu}
-                      className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
-                        isActivePath('/wallet')
+                      className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${isActivePath('/wallet')
                           ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
                           : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
-                      }`}
+                        }`}
                     >
                       Wallet
                     </Link>
                     <Link
                       to="/bookings"
                       onClick={closeMenu}
-                      className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
-                        isActivePath('/bookings')
+                      className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${isActivePath('/bookings')
                           ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
                           : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
-                      }`}
+                        }`}
                     >
                       My Bookings
                     </Link>
@@ -291,33 +282,30 @@ const Header: React.FC = () => {
                 <Link
                   to="/venues"
                   onClick={closeMenu}
-                  className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
-                    isActivePath('/venues')
+                  className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${isActivePath('/venues')
                       ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
                       : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
-                  }`}
+                    }`}
                 >
                   Venues
                 </Link>
                 <Link
                   to="/events"
                   onClick={closeMenu}
-                  className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
-                    isActivePath('/events')
+                  className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${isActivePath('/events')
                       ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
                       : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
-                  }`}
+                    }`}
                 >
                   Events
                 </Link>
                 <Link
                   to="/shop"
                   onClick={closeMenu}
-                  className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
-                    isActivePath('/shop')
+                  className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${isActivePath('/shop')
                       ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
                       : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
-                  }`}
+                    }`}
                 >
                   Shop
                 </Link>
@@ -337,7 +325,7 @@ const Header: React.FC = () => {
                         <p className="text-sm text-gray-400 capitalize">{user?.role}</p>
                       </div>
                     </div>
-                    
+
                     {/* Menu Items */}
                     <Link
                       to="/profile"
@@ -347,7 +335,7 @@ const Header: React.FC = () => {
                       <Settings className="h-5 w-5" />
                       <span>Profile Settings</span>
                     </Link>
-                    
+
                     {user?.role === 'partner' && (
                       <Link
                         to="/partner/dashboard"
@@ -358,7 +346,7 @@ const Header: React.FC = () => {
                         <span>Partner Dashboard</span>
                       </Link>
                     )}
-                    
+
                     {user?.role === 'admin' && (
                       <Link
                         to="/admin/dashboard"
@@ -369,7 +357,7 @@ const Header: React.FC = () => {
                         <span>Admin Panel</span>
                       </Link>
                     )}
-                    
+
                     <button
                       onClick={handleLogout}
                       className="flex items-center space-x-3 px-4 py-3 text-red-400 hover:bg-red-900/20 rounded-xl transition-all duration-200 w-full text-left"
