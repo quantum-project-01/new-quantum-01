@@ -81,6 +81,18 @@ const Header: React.FC = () => {
                 )}
               </Link> */}
               <Link
+                to="/membership"
+                className={`relative px-4 py-2 font-medium transition-all duration-200 ${isActivePath('/membership')
+                    ? 'text-blue-400'
+                    : 'text-gray-300 hover:text-white'
+                  }`}
+              >
+                Membership
+                {isActivePath('/membership') && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"></div>
+                )}
+              </Link>
+              <Link
                 to="/events"
                 className={`relative px-4 py-2 font-medium transition-all duration-200 ${isActivePath('/events')
                     ? 'text-blue-400'
@@ -279,6 +291,16 @@ const Header: React.FC = () => {
                     </Link>
                   </>
                 )}
+                <Link
+                  to="/membership"
+                  onClick={closeMenu}
+                  className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${isActivePath('/membership')
+                      ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
+                      : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
+                    }`}
+                >
+                  Membership
+                </Link>
                 <Link
                   to="/venues"
                   onClick={closeMenu}

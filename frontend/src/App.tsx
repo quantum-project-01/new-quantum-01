@@ -22,6 +22,7 @@ import VenuesPage from "./pages/venue/VenuesPage";
 import VenueDetailPage from "./pages/venue/VenueDetailPage";
 import BookingPage from "./pages/booking/BookingPage";
 import ProfilePage from "./pages/profile/ProfilePage";
+import MembershipPage from "./pages/MembershipPage";
 
 // Partner Pages
 import PartnerDashboard from "./pages/partner/PartnerDashboard";
@@ -98,6 +99,7 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/venues" element={<VenuesPage />} />
             <Route path="/venues/:id" element={<VenueDetailPage />} />
+            <Route path="/membership" element={<MembershipPage />} />
 
             {/* Demo Routes */}
             {/* <Route path="/demo" element={<DashboardDemo />} />
