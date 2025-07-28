@@ -68,7 +68,7 @@ const Header: React.FC = () => {
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center space-x-8">
-              <Link
+              {/* <Link
                 to="/venues"
                 className={`relative px-4 py-2 font-medium transition-all duration-200 ${
                   isActivePath('/venues')
@@ -80,7 +80,7 @@ const Header: React.FC = () => {
                 {isActivePath('/venues') && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"></div>
                 )}
-              </Link>
+              </Link> */}
               <Link
                 to="/events"
                 className={`relative px-4 py-2 font-medium transition-all duration-200 ${
@@ -112,7 +112,7 @@ const Header: React.FC = () => {
             {/* Partner Link */}
             <Link
               to="/partner/register"
-              className="text-gray-900 hover:bg-gray-100 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md"
+              className="text-white hover:bg-gray-100 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md"
             >
               Join as Partner
             </Link>
