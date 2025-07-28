@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from "react";
-import { Plus, Edit3, Trash2, Calendar, DollarSign, Loader2, RotateCcw, AlertCircle } from "lucide-react";
+import { Plus, Edit3, Trash2, Calendar, DollarSign, Loader2, RotateCcw, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { Venue } from "../../../../types";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
@@ -93,7 +93,21 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
     start: new Date().toISOString().split('T')[0],
     end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   });
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
   const queryClient = useQueryClient();
+
+  // Toggle collapse state for a date section
+  const toggleSectionCollapse = (date: string) => {
+    setCollapsedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(date)) {
+        newSet.delete(date);
+      } else {
+        newSet.add(date);
+      }
+      return newSet;
+    });
+  };
 
   // Helper function to ensure time format is HH:MM (backend expects this format)
   const formatTimeForBackend = (time: string): string => {
@@ -381,6 +395,24 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
         </div>
       </div>
 
+      {/* Collapse/Expand All Controls - Only show when there are slots */}
+      {Object.keys(slotsByDate).length > 1 && (
+        <div className="flex justify-end space-x-2">
+          <button
+            onClick={() => setCollapsedSections(new Set(Object.keys(slotsByDate)))}
+            className="text-gray-400 hover:text-white text-sm px-3 py-1 hover:bg-gray-700 rounded transition-colors"
+          >
+            Collapse All
+          </button>
+          <button
+            onClick={() => setCollapsedSections(new Set())}
+            className="text-gray-400 hover:text-white text-sm px-3 py-1 hover:bg-gray-700 rounded transition-colors"
+          >
+            Expand All
+          </button>
+        </div>
+      )}
+
       {/* Slots Display */}
       {Object.keys(slotsByDate).length === 0 ? (
         <div className="bg-gray-800 border border-gray-700 rounded-xl p-8 text-center">
@@ -408,21 +440,40 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
         <div className="space-y-6">
           {Object.entries(slotsByDate)
             .sort(([a], [b]) => a.localeCompare(b))
-            .map(([date, dateSlots]) => (
-              <div key={date} className="bg-gray-800 border border-gray-700 rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">
-                  {new Date(date).toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </h3>
+            .map(([date, dateSlots]) => {
+              const isCollapsed = collapsedSections.has(date);
+              return (
+                <div key={date} className="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden">
+                  <div 
+                    className="p-6 pb-4 flex items-center justify-between cursor-pointer hover:bg-gray-700/50 transition-colors border-b border-gray-700/50"
+                    onClick={() => toggleSectionCollapse(date)}
+                  >
+                    <h3 className="text-lg font-semibold text-white">
+                      {new Date(date).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                    </h3>
+                    <div className="flex items-center space-x-3">
+                      <span className="text-sm text-gray-400">
+                        {dateSlots.length} slot{dateSlots.length !== 1 ? 's' : ''}
+                      </span>
+                      {isCollapsed ? (
+                        <ChevronDown className="h-5 w-5 text-gray-400" />
+                      ) : (
+                        <ChevronUp className="h-5 w-5 text-gray-400" />
+                      )}
+                    </div>
+                  </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {dateSlots
-                    .sort((a, b) => a.startTime.localeCompare(b.startTime))
-                    .map((slot) => (
+                  {!isCollapsed && (
+                    <div className="px-6 pb-6 animate-in slide-in-from-top-2 duration-200">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {dateSlots
+                          .sort((a, b) => a.startTime.localeCompare(b.startTime))
+                          .map((slot) => (
                       <div
                         key={slot.id}
                         className="bg-gray-700 border border-gray-600 rounded-lg p-4 hover:border-gray-500 transition-colors"
@@ -471,9 +522,12 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
                         </div>
                       </div>
                     ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
         </div>
       )}
 
