@@ -12,5 +12,6 @@ router.get('/get-venue/:id', GetVenueController.getVenue);
 router.get('/get-all-venues-by-partner/', GetVenueController.getAllVenuesByPartner);
 router.put('/update-venue/:id', UpdateVenueController.updateVenue);
 router.delete('/delete-venue/:id', DeleteVenueController.deleteVenue);
+router.get('/get-all-venues', GetVenueController.getAllVenues);
 
 export default router; 

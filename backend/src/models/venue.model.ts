@@ -78,3 +78,13 @@ export interface Slot {
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+
+export interface GetVenuesParams {
+  page?: number | undefined;
+  limit?: number | undefined;
+  search?: string | undefined;
+  sport?: string | undefined;
+  event?: string | undefined;
+  city?: string | undefined;
+}

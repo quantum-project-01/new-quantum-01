@@ -1,19 +1,20 @@
 export interface Payment {
   orderId: string;
-  bookingId: string;
+  bookingId?: string;
+  membershipId?: string;
   paymentAmount: number;
   paymentCurrency: Currency;
   paymentMethod: PaymentMethod;
   paymentDate: Date;
   isRefunded: boolean;
   refundDate?: Date;
-  refundTime?: string;
   captured?: boolean;
   capturedAt?: Date;
   razorpayPaymentId?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
+
 
 export enum Currency {
   INR = "INR",
