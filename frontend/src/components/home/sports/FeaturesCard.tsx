@@ -22,7 +22,7 @@ const FeaturesCard: React.FC<FeaturesCardProps> = ({ sport }) => (
       <div className="pt-4 border-t border-white/20">
         <div className="flex justify-between items-center">
           <span className="text-gray-300">Starting from</span>
-          <span className="text-2xl font-bold text-white">₹199/hr</span>
+          {/* <span className="text-2xl font-bold text-white">₹199/hr</span> */}
         </div>
       </div>
     </div>
