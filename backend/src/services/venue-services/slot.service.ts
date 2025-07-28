@@ -7,9 +7,25 @@ const prisma = new PrismaClient();
 export class SlotService {
   static async createSlot(slot: Slot) {
     try {
+      console.log('SlotService.createSlot - Input data:', slot);
+      
+      // Ensure proper data types for database, similar to updateSlot
+      const createData = {
+        date: slot.date instanceof Date ? slot.date : new Date(slot.date + 'T00:00:00.000Z'),
+        amount: typeof slot.amount === 'string' ? parseFloat(slot.amount) : slot.amount,
+        availability: slot.availability,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        facilityId: slot.facilityId,
+      };
+      
+      console.log('SlotService.createSlot - Formatted data for database:', createData);
+      
       const newSlot = await prisma.slot.create({
-        data: slot,
+        data: createData,
       });
+      
+      console.log('SlotService.createSlot - Creation successful:', newSlot);
       return newSlot;
     } catch (error) {
       console.error("Error creating slot:", error);

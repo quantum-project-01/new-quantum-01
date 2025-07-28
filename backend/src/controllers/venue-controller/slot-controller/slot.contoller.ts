@@ -27,9 +27,15 @@ export class SlotController {
         return res.status(400).json({ message: timeValidation.error });
       }
 
+      // Convert date string to Date object for proper Prisma handling
+      const dateValue = new Date(date + 'T00:00:00.000Z');
+      
+      // Convert amount to number if it's a string
+      const amountValue = typeof amount === 'string' ? parseFloat(amount) : amount;
+
       const newSlot: Slot = {
-        date,
-        amount,
+        date: dateValue,
+        amount: amountValue,
         availability,
         startTime,
         endTime,
