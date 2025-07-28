@@ -25,7 +25,7 @@ export class UpdateVenueController {
         highlight : req.body.highlight ?? venueData.highlight,
         location : {
           address,
-          city: req.body.city ?? location.city,
+          city: req.body?.city?.toLowerCase() ?? location.city,
           state: req.body.state ?? location.state,
           country: req.body.country ?? location.country,
           pincode: req.body.zip ?? location.pincode,

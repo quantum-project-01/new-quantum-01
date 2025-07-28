@@ -23,27 +23,26 @@ model User {
   updatedAt DateTime  @updatedAt
 
   partnerDetails PartnerDetails?
-  bookings       Booking[]
+  wallet         Wallet?
 
   @@map("users")
 }
 
 model PartnerDetails {
-  id               String             @id @default(uuid())
-  userId           String             @unique
-  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  companyName      String             @db.VarChar(255)
-  subscriptionType String             @db.VarChar(20)
-  gstNumber        String?            @db.VarChar(20)
-  websiteUrl       String?            @db.VarChar(255)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName      String   @db.VarChar(255)
+  subscriptionType String   @db.VarChar(20)
+  gstNumber        String?  @db.VarChar(20)
+  websiteUrl       String?  @db.VarChar(255)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  mappings         PartnerVenueMap[]  @relation("PartnerDetailUser")
+  mappings PartnerVenueMap[] @relation("PartnerDetailUser")
 
   @@map("partner_details")
 }
-
 
 model Venue {
   id                   String            @id @default(uuid())
@@ -54,7 +53,7 @@ model Venue {
   start_price_per_hour Decimal           @db.Decimal(10, 2)
   details              Json?             @db.JsonB
   cancellationPolicy   Json?             @db.JsonB
-  images               String[]          
+  images               String[]
   features             String[]          @db.VarChar(255)
   approved             Boolean           @default(false)
   mapLocationLink      String?           @db.Text
@@ -87,16 +86,16 @@ model PartnerVenueMap {
 }
 
 model Activity {
-  id                   String     @id @default(uuid())
-  name                 String     @db.VarChar(255)
-  tags                 String[]   @db.VarChar(100)
+  id                   String   @id @default(uuid())
+  name                 String   @db.VarChar(255)
+  tags                 String[] @db.VarChar(100)
   venueId              String
-  start_price_per_hour Decimal    @db.Decimal(10, 2)
-  createdAt            DateTime   @default(now())
-  updatedAt            DateTime   @updatedAt
+  start_price_per_hour Decimal  @db.Decimal(10, 2)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
-  venue                Venue      @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  facilities           Facility[]
+  venue      Venue      @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  facilities Facility[]
 
   @@map("activities")
 }
@@ -113,8 +112,8 @@ model Facility {
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
-  activity             Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  slots                Slot[]
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  slots    Slot[]
 
   @@map("facilities")
 }
@@ -143,69 +142,122 @@ enum PaymentStatus {
 }
 
 model Slot {
-  id           String            @id @default(uuid())
-  date         DateTime          @db.Date
-  amount       Decimal           @db.Decimal(10, 2)
-  availability SlotAvailability  @default(available)
-  startTime    String            @db.VarChar(10)
-  endTime      String            @db.VarChar(10)
+  id           String           @id @default(uuid())
+  date         DateTime         @db.Date
+  amount       Decimal          @db.Decimal(10, 2)
+  availability SlotAvailability @default(available)
+  startTime    String           @db.VarChar(10)
+  endTime      String           @db.VarChar(10)
   facilityId   String
-  bookingId    String?           // Foreign key to Booking (nullable until booked)
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  bookingId    String? // Foreign key to Booking (nullable until booked)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
 
-  facility     Facility          @relation(fields: [facilityId], references: [id], onDelete: Cascade)
-  booking      Booking?          @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  booking  Booking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@map("slots")
 }
 
 model Booking {
-  id              String         @id @default(uuid())
+  id              String        @id @default(uuid())
   userId          String
   partnerId       String
   venueId         String
   activityId      String
   facilityId      String
-  amount          Decimal        @db.Decimal(10, 2)
+  amount          Decimal       @db.Decimal(10, 2)
   duration        Int
-  startTime       String         @db.VarChar(10)
-  endTime         String         @db.VarChar(10)
+  startTime       String        @db.VarChar(10)
+  endTime         String        @db.VarChar(10)
   numberOfSlots   Int
-  bookedDate      DateTime       @db.Date
-  confirmedAt     DateTime?      @db.Date
-  cancelledAt     DateTime?      @db.Date
-  paymentDetails  Json?          @db.JsonB
-  bookingStatus   BookingStatus  
-  paymentStatus   PaymentStatus  
-  customerDetails Json           @db.JsonB
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  bookedDate      DateTime      @db.Date
+  confirmedAt     DateTime?     @db.Date
+  cancelledAt     DateTime?     @db.Date
+  paymentDetails  Json?         @db.JsonB
+  bookingStatus   BookingStatus
+  paymentStatus   PaymentStatus
+  customerDetails Json          @db.JsonB
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
-  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  slots           Slot[]         // One booking has many slots
-  transaction     TransactionHistory?
+  slots       Slot[] // One booking has many slots
+  transaction TransactionHistory?
 
   @@map("bookings")
 }
 
-
 model TransactionHistory {
-  orderId           String    @db.VarChar(255) @id
-  bookingId         String    @unique
-  paymentAmount     Decimal   @db.Decimal(10, 2)
-  paymentCurrency   String    @db.VarChar(3)
-  paymentMethod     String    @db.VarChar(50)
-  paymentDate       DateTime
-  isRefunded        Boolean   @default(false)
-  refundDate        DateTime?
-  captured          Boolean?
+  orderId String @id @db.VarChar(255)
+
+  // Either bookingId or membershipId will be set
+  bookingId    String? @unique
+  membershipId String? @unique
+
+  paymentAmount   Decimal  @db.Decimal(10, 2)
+  paymentCurrency String   @db.VarChar(3)
+  paymentMethod   String   @db.VarChar(50)
+  paymentDate     DateTime
+
+  isRefunded Boolean   @default(false)
+  refundDate DateTime?
+
+  captured          Boolean? // e.g., payment successfully captured
   capturedAt        DateTime?
   razorpayPaymentId String?   @db.VarChar(255)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
 
-  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  booking Booking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@map("transaction_history")
+}
+
+enum UserRole {
+  partner
+  user
+}
+
+model MembershipPlan {
+  id           String   @id @default(uuid())
+  name         String
+  description  String?
+  amount       Int // what user pays
+  credits      Int // what goes to wallet
+  forRole      UserRole
+  durationDays Int // expiration duration in days
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships Membership[]
+}
+
+model Membership {
+  id                 String   @id @default(uuid())
+  userId             String
+  planId             String
+  transactionOrderId String?  @unique
+  startDate          DateTime
+  endDate            DateTime
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  plan MembershipPlan @relation(fields: [planId], references: [id], onDelete: Restrict)
+
+  @@map("memberships")
+}
+
+model Wallet {
+  id      String @id @default(uuid())
+  userId  String @unique
+  balance Int    @default(0) // in smallest currency unit (e.g., paise)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
