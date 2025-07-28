@@ -46,8 +46,6 @@ export const updateVenue = async (id: string, venue: Venue) => {
     throw error;
   }
 };
-<<<<<<< Updated upstream
-=======
 
 export const deleteVenue = async (id: string) => {
   try {
@@ -77,4 +75,3 @@ export const getAllVenue = async (
     throw error;
   }
 };
->>>>>>> Stashed changes
