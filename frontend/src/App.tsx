@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { Toaster } from "react-hot-toast";
 
 // Layout Components
 import Header from "./components/layout/Header";
@@ -102,7 +103,7 @@ function App() {
 
             {/* Demo Routes */}
             {/* <Route path="/demo" element={<DashboardDemo />} />
-            <Route path="/dashboard-demo" element={<DashboardDemo />} /> */}
+            <Route path="/dashboard-demo" element={<DashboardDemo />} */}
 
             {/* Protected User Routes */}
             <Route path="/booking" element={<BookingPage />} />
@@ -200,6 +201,29 @@ function App() {
               }
             />
           </Routes>
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 3000,
+              style: {
+                background: "#1F2937",
+                color: "#fff",
+                border: "1px solid #374151",
+              },
+              success: {
+                iconTheme: {
+                  primary: "#10B981",
+                  secondary: "#fff",
+                },
+              },
+              error: {
+                iconTheme: {
+                  primary: "#EF4444",
+                  secondary: "#fff",
+                },
+              },
+            }}
+          />
         </Layout>
       </Router>
       <ReactQueryDevtools initialIsOpen={false} />

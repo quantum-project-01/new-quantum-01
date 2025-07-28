@@ -46,8 +46,11 @@ export const updateVenue = async (id: string, venue: Venue) => {
     throw error;
   }
 };
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> c2e6dd17c2b68cfef9a241527abea7f8e59754ab
 
 export const deleteVenue = async (id: string) => {
   try {
@@ -58,6 +61,7 @@ export const deleteVenue = async (id: string) => {
     throw error;
   }
 };
+<<<<<<< HEAD
 
 export const getAllVenue = async (
   searchName: string,
@@ -78,3 +82,5 @@ export const getAllVenue = async (
   }
 };
 >>>>>>> Stashed changes
+=======
+>>>>>>> c2e6dd17c2b68cfef9a241527abea7f8e59754ab
