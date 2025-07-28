@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Calendar, Clock, MapPin, Users, Ticket, Star, Filter, Search } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
@@ -242,9 +243,10 @@ const EventsPage: React.FC = () => {
         {/* Events Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredEvents.map((event, index) => (
-            <div
+            <Link
               key={event.id}
-              className={`group relative bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-2xl overflow-hidden border border-gray-700/50 transition-all duration-500 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/10 transform hover:-translate-y-2 ${
+              to={`/events/${event.id}`}
+              className={`group relative bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-2xl overflow-hidden border border-gray-700/50 transition-all duration-500 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/10 transform hover:-translate-y-2 block ${
                 event.featured ? 'ring-2 ring-blue-500/30' : ''
               }`}
               style={{
@@ -345,7 +347,7 @@ const EventsPage: React.FC = () => {
                   hoveredEvent === event.id ? 'opacity-100' : ''
                 }`}
               ></div>
-            </div>
+            </Link>
           ))}
         </div>
 
