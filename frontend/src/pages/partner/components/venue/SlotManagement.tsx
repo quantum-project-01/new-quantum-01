@@ -43,7 +43,7 @@ const isValidThirtyMinuteInterval = (time: string): boolean => {
   if (!time) return false;
   const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
   if (!timeRegex.test(time)) return false;
-  
+
   const minutes = parseInt(time.split(':')[1], 10);
   return minutes === 0 || minutes === 30;
 };
@@ -54,21 +54,21 @@ const roundToThirtyMinutes = (time: string): string => {
   const [hours, minutes] = time.split(':').map(Number);
   const roundedMinutes = minutes < 15 ? 0 : minutes < 45 ? 30 : 0;
   const adjustedHours = minutes >= 45 ? (hours + 1) % 24 : hours;
-  
+
   return `${adjustedHours.toString().padStart(2, '0')}:${roundedMinutes.toString().padStart(2, '0')}`;
 };
 
 // Helper function to convert time from HH:MM:SS to HH:MM format
 const convertTimeToHHMM = (time: string): string => {
   if (!time) return time;
-  
+
   const timeParts = time.split(':');
-  
+
   // If time already in HH:MM format, return as is
   if (timeParts.length === 2) {
     return time;
   }
-  
+
   // If time in HH:MM:SS format, remove seconds
   if (timeParts.length === 3) {
     const [hours, minutes] = timeParts;
@@ -77,7 +77,7 @@ const convertTimeToHHMM = (time: string): string => {
     const paddedMinutes = minutes.padStart(2, '0');
     return `${paddedHours}:${paddedMinutes}`;
   }
-  
+
   // For any other format, return as is
   console.warn('Unexpected time format:', time);
   return time;
@@ -129,7 +129,7 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
   const createSlotMutation = useMutation({
     mutationFn: async (data: SlotModalFormData) => {
       console.log('Original slot data for creation:', data);
-      
+
       // Validate required fields
       if (!data.startDate || !data.facilityId || !data.startTime || !data.endTime || !data.amount) {
         throw new Error('All fields are required');
@@ -151,7 +151,7 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
         availability: data.availability,
         facilityId: data.facilityId,
       };
-      
+
       console.log('Formatted slot data being sent to backend for creation:', slotData);
       return createSlot(slotData);
     },
@@ -169,7 +169,7 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
   const createBulkSlotsMutation = useMutation({
     mutationFn: async (data: SlotModalFormData) => {
       console.log('Original bulk slot data:', data);
-      
+
       // Validate required fields for bulk creation
       if (!data.startDate || !data.endDate || !data.facilityId || !data.startTime || !data.endTime || !data.amount) {
         throw new Error('All fields are required for bulk creation');
@@ -192,7 +192,7 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
         availability: data.availability,
         facilityId: data.facilityId,
       };
-      
+
       console.log('Formatted bulk creation data being sent to backend:', bulkData);
       return createMultipleSlots(data.facilityId, bulkData);
     },
@@ -207,10 +207,10 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
     }
   });
 
-    const updateSlotMutation = useMutation({
+  const updateSlotMutation = useMutation({
     mutationFn: async (data: { id: string; slot: Partial<SlotModalFormData> }) => {
       console.log('Original slot data for update:', data.slot);
-      
+
       const slotData: Partial<SlotFormData> = {
         date: data.slot.startDate,
         startTime: data.slot.startTime ? formatTimeForBackend(data.slot.startTime) : undefined,
@@ -219,7 +219,7 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
         availability: data.slot.availability,
         facilityId: data.slot.facilityId, // This is required for update
       };
-      
+
       console.log('Formatted slot data being sent to backend:', slotData);
       return updateSlot(data.id, slotData);
     },
@@ -304,8 +304,8 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
     }
   };
 
-  const filteredSlots = selectedFacility === 'all' 
-    ? slots 
+  const filteredSlots = selectedFacility === 'all'
+    ? slots
     : slots.filter(s => s.facilityId === selectedFacility);
 
   // Group slots by date for better display
@@ -348,14 +348,14 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
               </option>
             ))}
           </select>
-          
+
           <input
             type="date"
             value={selectedDateRange.start}
             onChange={(e) => setSelectedDateRange(prev => ({ ...prev, start: e.target.value }))}
             className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
           />
-          
+
           <input
             type="date"
             value={selectedDateRange.end}
@@ -370,7 +370,7 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
             <RotateCcw className="h-4 w-4" />
             <span>Bulk Create</span>
           </button>
-          
+
           <button
             onClick={() => setIsAddModalOpen(true)}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
@@ -418,7 +418,7 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
                     day: 'numeric',
                   })}
                 </h3>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {dateSlots
                     .sort((a, b) => a.startTime.localeCompare(b.startTime))
@@ -573,11 +573,11 @@ const SlotModal: React.FC<SlotModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     console.log('SlotModal handleSubmit called');
     console.log('isBulk:', isBulk);
     console.log('Form data:', formData);
-    
+
     // Validate required fields
     if (!formData.facilityId) {
       alert('Please select a facility');
@@ -617,7 +617,7 @@ const SlotModal: React.FC<SlotModalProps> = ({
       alert('Please enter a valid amount');
       return;
     }
-    
+
     console.log('Submitting form data:', { ...formData, isBulk });
     console.log('About to call onSubmit with mode:', isBulk ? 'BULK' : 'SINGLE');
     onSubmit(formData);
@@ -631,7 +631,7 @@ const SlotModal: React.FC<SlotModalProps> = ({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md border border-gray-700">
         <h3 className="text-xl font-bold text-white mb-6">{title}</h3>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -641,8 +641,8 @@ const SlotModal: React.FC<SlotModalProps> = ({
               value={formData.facilityId}
               onChange={(e) => {
                 const facility = facilities.find(f => f.id === e.target.value);
-                setFormData(prev => ({ 
-                  ...prev, 
+                setFormData(prev => ({
+                  ...prev,
                   facilityId: e.target.value,
                   amount: facility?.start_price_per_hour || 0
                 }));
@@ -666,8 +666,8 @@ const SlotModal: React.FC<SlotModalProps> = ({
                 <div>
                   <h4 className="text-blue-400 font-medium mb-1">Bulk Creation Mode</h4>
                   <p className="text-blue-300 text-sm">
-                    This will create 30-minute slots for all days between the selected date range 
-                    during the specified time period. For example: 09:00-17:00 will create slots 
+                    This will create 30-minute slots for all days between the selected date range
+                    during the specified time period. For example: 09:00-17:00 will create slots
                     from 09:00-09:30, 09:30-10:00, 10:00-10:30, etc.
                   </p>
                 </div>
