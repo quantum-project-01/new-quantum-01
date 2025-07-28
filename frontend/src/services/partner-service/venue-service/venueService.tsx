@@ -46,3 +46,35 @@ export const updateVenue = async (id: string, venue: Venue) => {
     throw error;
   }
 };
+<<<<<<< Updated upstream
+=======
+
+export const deleteVenue = async (id: string) => {
+  try {
+    const response = await axiosInstance.delete(`/venue/delete-venue/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting venue:", error);
+    throw error;
+  }
+};
+
+export const getAllVenue = async (
+  searchName: string,
+  page: number = 1,
+  limit: number = 20,
+  city: string,
+  event: string
+) => {
+  try {
+    const response = await axiosInstance.get(
+      `/venue/get-all-venues?page=${page}&limit=${limit}&search=${searchName}&event=${event}&city=${city}`
+    );
+    
+    return response.data.data;
+  } catch (error) {
+    console.error("Error deleting venue:", error);
+    throw error;
+  }
+};
+>>>>>>> Stashed changes

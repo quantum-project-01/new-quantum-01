@@ -1,13 +1,13 @@
 import { Prisma, PrismaClient } from "@prisma/client";
-import { Venue } from "../../models/venue.model";
+import { GetVenuesParams, Venue } from "../../models/venue.model";
 
 const prisma = new PrismaClient();
 
 export class VenueService {
-  static async createVenue(venue: Venue,tx:Prisma.TransactionClient) {
+  static async createVenue(venue: Venue, tx: Prisma.TransactionClient) {
     try {
       const newVenue = await tx.venue.create({
-        data: { 
+        data: {
           name: venue.name,
           location: venue.location as unknown as Prisma.InputJsonValue,
           highlight: venue.highlight || null,
@@ -71,7 +71,7 @@ export class VenueService {
     }
   }
 
-  static async deleteVenue(id: string,tx:Prisma.TransactionClient) {
+  static async deleteVenue(id: string, tx: Prisma.TransactionClient) {
     try {
       const deletedVenue = await tx.venue.delete({
         where: { id },
@@ -81,5 +81,52 @@ export class VenueService {
       console.error("Error deleting venue:", error);
       throw error;
     }
+  }
+
+  static async getAllVenues(params: GetVenuesParams) {
+    const { page = 1, limit = 20, search, city } = params;
+
+    const where: any = {};
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { event: { contains: search, mode: "insensitive" } },
+        { city: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    // if (event) {
+    //   where.event = { contains: event, mode: "insensitive" };
+    // }
+    const lowercaseCity = city?.toLowerCase();
+    if (city) {
+      where.AND = where.AND || [];
+      where.AND.push({
+        location: {
+          path: ["city"],
+          equals: lowercaseCity,
+        },
+      });
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [venues, totalCount] = await Promise.all([
+      prisma.venue.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { name: "asc" },
+      }),
+      prisma.venue.count({ where }),
+    ]);
+
+    return {
+      venues,
+      totalCount,
+      page,
+      totalPages: Math.ceil(totalCount / limit),
+    };
   }
 }

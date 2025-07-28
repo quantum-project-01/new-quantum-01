@@ -32,8 +32,7 @@ const PartnerVenues: React.FC = () => {
     mutationFn: async (venueData: VenueFormData) => {
       return createVenue(venueData);
     },
-    onSuccess: (data) => {
-      console.log("Venue created successfully!", data);
+    onSuccess: () => {
       setIsAddCartOpen(false);
       // Invalidate and refetch venues
       queryClient.invalidateQueries({ queryKey: ["venues"] });

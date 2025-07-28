@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Search, Star, MapPin, Clock, Tag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useQueries, useQuery } from "@tanstack/react-query";
+import { getAllVenue } from "../../services/partner-service/venue-service/venueService";
 
 // Venue type for our dummy data
 interface Venue {
@@ -14,98 +16,6 @@ interface Venue {
   headline: string;
   images: string[];
 }
-
-// Dummy venue data
-const venues: Venue[] = [
-  {
-    id: 1,
-    name: "Sunset Arena",
-    city: "Mumbai",
-    sport: "Football",
-    rating: 4.5,
-    minPrice: 500,
-    offer: "10% Off for Weekends",
-    headline: "Premium turf in the heart of Mumbai",
-    images: [
-      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=800&h=600&fit=crop",
-    ],
-  },
-  {
-    id: 2,
-    name: "Elite Cricket Ground",
-    city: "Delhi",
-    sport: "Cricket",
-    rating: 4.8,
-    minPrice: 800,
-    offer: "Free Equipment Rental",
-    headline: "Professional cricket facility with floodlights",
-    images: [
-      "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&h=600&fit=crop",
-    ],
-  },
-  {
-    id: 3,
-    name: "Tennis Pro Center",
-    city: "Bangalore",
-    sport: "Tennis",
-    rating: 4.3,
-    minPrice: 600,
-    headline: "Indoor and outdoor tennis courts",
-    images: [
-      "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&h=600&fit=crop",
-    ],
-  },
-  {
-    id: 4,
-    name: "Basketball Court Plus",
-    city: "Chennai",
-    sport: "Basketball",
-    rating: 4.6,
-    minPrice: 400,
-    offer: "Student Discount Available",
-    headline: "Indoor basketball facility with AC",
-    images: [
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800&h=600&fit=crop",
-    ],
-  },
-  {
-    id: 5,
-    name: "Swimming Excellence",
-    city: "Hyderabad",
-    sport: "Swimming",
-    rating: 4.7,
-    minPrice: 700,
-    offer: "Monthly Membership Available",
-    headline: "Olympic-size swimming pool with coaching",
-    images: [
-      "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&h=600&fit=crop",
-    ],
-  },
-  {
-    id: 6,
-    name: "Badminton Zone",
-    city: "Pune",
-    sport: "Badminton",
-    rating: 4.4,
-    minPrice: 350,
-    headline: "Multiple courts with professional flooring",
-    images: [
-      "https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&h=600&fit=crop",
-    ],
-  },
-];
 
 // Image Carousel Component
 const ImageCarousel: React.FC<{ images: string[] }> = ({ images }) => {
@@ -347,85 +257,89 @@ const BookingPage: React.FC = () => {
   const [city, setCity] = useState("");
   const navigate = useNavigate();
 
-  // Filter venues based on search criteria
-  const filteredVenues = venues.filter((venue) => {
-    const matchesName = venue.name
-      .toLowerCase()
-      .includes(venueName.toLowerCase());
-    const matchesSport = venue.sport
-      .toLowerCase()
-      .includes(sport.toLowerCase());
-    const matchesCity = venue.city.toLowerCase().includes(city.toLowerCase());
-
-    return matchesName && matchesSport && matchesCity;
+  const { data, isLoading, error } = useQuery<Venue[]>({
+    queryKey: [
+      "venues",
+      { searchName: venueName, page: 1, limit: 20, city, event: sport },
+    ],
+    queryFn: () => getAllVenue(venueName, 1, 20, city, sport),
   });
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            Book Your Sports Venue
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Discover and book the best sports venues in your city. From football
-            to tennis, find the perfect place for your game.
-          </p>
-        </div>
+  const venues: Venue[] = (data ?? []).map((v: any) => ({
+    id: v.id,
+    name: v.name,
+    city: v.location?.city || "",
+    rating: v.rating ?? null,
+    minPrice: Number(v.start_price_per_hour),
+    headline: v.highlight || "",
+    images: v.images || [],
+    sport: v.sport || undefined,
+    offer: v.offer || undefined,
+  }));
 
-        {/* Search Bar */}
-        <SearchBar
-          venueName={venueName}
-          sport={sport}
-          city={city}
-          onVenueNameChange={setVenueName}
-          onSportChange={setSport}
-          onCityChange={setCity}
-        />
-
-        {/* Results Section */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">
-              Available Venues
-            </h2>
-            <span className="text-sm text-gray-600">
-              {filteredVenues.length} venue
-              {filteredVenues.length !== 1 ? "s" : ""} found
-            </span>
+  if (isLoading)
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Page Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              Book Your Sports Venue
+            </h1>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Discover and book the best sports venues in your city. From
+              football to tennis, find the perfect place for your game.
+            </p>
           </div>
 
-          {/* Venue Cards Grid */}
-          {filteredVenues.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredVenues.map((venue) => (
-                <div
-                  onClick={() => {
-                    navigate(`/booking/${venue.id}`);
-                  }}
-                >
-                  <VenueCard key={venue.id} venue={venue} />
-                </div>
-              ))}
+          {/* Search Bar */}
+          <SearchBar
+            venueName={venueName}
+            sport={sport}
+            city={city}
+            onVenueNameChange={setVenueName}
+            onSportChange={setSport}
+            onCityChange={setCity}
+          />
+
+          {/* Results Section */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Available Venues
+              </h2>
             </div>
-          ) : (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Search className="w-8 h-8 text-gray-400" />
+
+            {/* Venue Cards Grid */}
+            {venues?.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {(venues || []).map((venue) => (
+                  <div
+                    onClick={() => {
+                      navigate(`/booking/${venue.id}`);
+                    }}
+                  >
+                    <VenueCard key={venue.id} venue={venue} />
+                  </div>
+                ))}
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                No venues found
-              </h3>
-              <p className="text-gray-600">
-                Try adjusting your search criteria to find more venues.
-              </p>
-            </div>
-          )}
+            ) : (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No venues found
+                </h3>
+                <p className="text-gray-600">
+                  Try adjusting your search criteria to find more venues.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
 };
 
 export default BookingPage;
