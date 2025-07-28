@@ -68,13 +68,23 @@ export enum SlotAvailability {
 }
 export interface Slot {
   id?: string;
-  date: string;
+  date: Date | string; // Allow both Date object and string for flexibility
   amount: number;
   availability: SlotAvailability;
   startTime: string; 
   endTime: string;  
   bookingId?: string;
-  facilityId?: string;
+  facilityId: string; // Required field as per database schema
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+
+export interface GetVenuesParams {
+  page?: number | undefined;
+  limit?: number | undefined;
+  search?: string | undefined;
+  sport?: string | undefined;
+  event?: string | undefined;
+  city?: string | undefined;
 }

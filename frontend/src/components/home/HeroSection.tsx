@@ -5,10 +5,10 @@ const HeroSection: React.FC = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gray-900">
       {/* Background Image */}
-      <div 
+      <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: "url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80')"
+          backgroundImage: "url('https://images.pexels.com/photos/23848540/pexels-photo-23848540.jpeg')"
         }}
       >
         {/* Dark Overlay */}
@@ -55,24 +55,24 @@ const HeroSection: React.FC = () => {
                 {/* Sport Selection */}
                 <div className="lg:col-span-1">
                   <select className="w-full px-3 py-3 sm:px-4 sm:py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/20 transition-all duration-300 appearance-none cursor-pointer text-sm sm:text-base hover:border-white/30">
-                    <option value="" className="text-gray-900 bg-gray-800">Select Sport</option>
-                    <option value="football" className="text-gray-900 bg-gray-800">Football</option>
-                    <option value="basketball" className="text-gray-900 bg-gray-800">Basketball</option>
-                    <option value="tennis" className="text-gray-900 bg-gray-800">Tennis</option>
-                    <option value="badminton" className="text-gray-900 bg-gray-800">Badminton</option>
-                    <option value="cricket" className="text-gray-900 bg-gray-800">Cricket</option>
+                    <option value="" className="text-white-900 bg-gray-800">Select Sport</option>
+                    <option value="football" className="text-white-900 bg-gray-800">Football</option>
+                    <option value="basketball" className="text-white-900 bg-gray-800">Basketball</option>
+                    <option value="tennis" className="text-white-900 bg-gray-800">Tennis</option>
+                    <option value="badminton" className="text-white-900 bg-gray-800">Badminton</option>
+                    <option value="cricket" className="text-white-900 bg-gray-800">Cricket</option>
                   </select>
                 </div>
 
                 {/* City Selection */}
                 <div className="lg:col-span-1">
                   <select className="w-full px-3 py-3 sm:px-4 sm:py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/20 transition-all duration-300 appearance-none cursor-pointer text-sm sm:text-base hover:border-white/30">
-                    <option value="" className="text-gray-900 bg-gray-800">Select City</option>
-                    <option value="mumbai" className="text-gray-900 bg-gray-800">Mumbai</option>
-                    <option value="delhi" className="text-gray-900 bg-gray-800">Delhi</option>
-                    <option value="bangalore" className="text-gray-900 bg-gray-800">Bangalore</option>
-                    <option value="hyderabad" className="text-gray-900 bg-gray-800">Hyderabad</option>
-                    <option value="pune" className="text-gray-900 bg-gray-800">Pune</option>
+                    <option value="" className="text-white-900 bg-gray-800">Select City</option>
+                    <option value="mumbai" className="text-white-900 bg-gray-800">Mumbai</option>
+                    <option value="delhi" className="text-white-900 bg-gray-800">Delhi</option>
+                    <option value="bangalore" className="text-white-900 bg-gray-800">Bangalore</option>
+                    <option value="hyderabad" className="text-white-900 bg-gray-800">Hyderabad</option>
+                    <option value="pune" className="text-white-900 bg-gray-800">Pune</option>
                   </select>
                 </div>
 

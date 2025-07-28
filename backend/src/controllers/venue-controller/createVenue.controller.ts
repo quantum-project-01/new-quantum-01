@@ -23,7 +23,7 @@ export class CreateVenueController {
         phone,
         mapLocationLink,
         lat,
-        lang
+        lang,
       } = req.body as {
         name: string;
         highlight: string;
@@ -59,49 +59,51 @@ export class CreateVenueController {
 
       // Compose the address field from city, state, country, and zip
       const address = `${city}, ${state}, ${country}, ${zip}`;
-
+      const lowercaseCity = city.toLowerCase();
       const venueData: Venue = {
         name,
         location: {
           address,
-          city,
+          city: lowercaseCity,
           state,
           country,
           pincode: zip,
-          coordinates:{
+          coordinates: {
             lat,
-            lang
-          }
+            lang,
+          },
         },
         highlight,
         start_price_per_hour,
         partnerId,
         phone,
         mapLocationLink,
-        details:{},
-        cancellationPolicy:{},
-        images:images,
-        features:[],
-        approved:false,
-        rating:0,
-        totalReviews:0,
-        createdAt:new Date(),
-        updatedAt:new Date()
+        details: {},
+        cancellationPolicy: {},
+        images: images,
+        features: [],
+        approved: false,
+        rating: 0,
+        totalReviews: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        // 1. Create the venue
-        const createdVenue = await VenueService.createVenue(venueData, tx);
-        
-        // 2. Create the mapping using userId directly
-        const mapping = await PartnerVenueMapService.createMapping(
-          partnerId,
-          createdVenue.id,
-          tx
-        );
+      const result = await prisma.$transaction(
+        async (tx: Prisma.TransactionClient) => {
+          // 1. Create the venue
+          const createdVenue = await VenueService.createVenue(venueData, tx);
 
-        return { createdVenue, mapping };
-      });
+          // 2. Create the mapping using userId directly
+          const mapping = await PartnerVenueMapService.createMapping(
+            partnerId,
+            createdVenue.id,
+            tx
+          );
+
+          return { createdVenue, mapping };
+        }
+      );
 
       if (!result) {
         return res

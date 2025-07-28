@@ -43,7 +43,7 @@ const FeaturesSection: React.FC = () => {
   ];
 
   return (
-    <section className="py-12 sm:py-16 md:py-20 lg:py-24 bg-gray-800 relative overflow-hidden">
+    <section className="py-12 sm:py-16 md:py-20 lg:py-24 bg-gray-900 relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-32 left-20 w-80 h-80 bg-green-500/5 rounded-full blur-3xl animate-pulse"></div>

@@ -3,18 +3,16 @@ import { Plus, Edit3, Trash2, Users, Tag, DollarSign, Loader2 } from "lucide-rea
 import { Venue } from "../../../../types";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
+import {
+  Activity,
+  ActivityFormData,
+  createActivity,
+  getActivitiesByVenue,
+  updateActivity,
+  deleteActivity,
+} from "../../../../services/partner-service/activityService";
 
-interface Activity {
-  id: string;
-  name: string;
-  tags: string[];
-  start_price_per_hour: number;
-  venueId: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-interface ActivityFormData {
+interface ActivityModalFormData {
   name: string;
   tags: string[];
   start_price_per_hour: number;
@@ -30,56 +28,32 @@ const ActivityManagement: React.FC<ActivityManagementProps> = ({ venue }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  // Mock data for now - replace with actual API calls
+  // Fetch activities from backend API
   const { data: activities = [], isLoading } = useQuery({
     queryKey: ['activities', venue.id],
-    queryFn: async () => {
-      // Mock data - replace with actual API call
-      return [
-        {
-          id: '1',
-          name: 'Football',
-          tags: ['Outdoor', 'Equipment Required', 'Professional Turf'],
-          start_price_per_hour: 399,
-          venueId: venue.id!,
-        },
-        {
-          id: '2',
-          name: 'Cricket',
-          tags: ['Outdoor', 'Pitch Available', 'Floodlights'],
-          start_price_per_hour: 599,
-          venueId: venue.id!,
-        }
-      ] as Activity[];
-    }
+    queryFn: () => venue.id ? getActivitiesByVenue(venue.id) : Promise.resolve([]),
+    enabled: !!venue.id,
   });
 
   const createActivityMutation = useMutation({
-    mutationFn: async (data: ActivityFormData) => {
-      // Replace with actual API call
-      const newActivity: Activity = {
-        id: Date.now().toString(),
-        ...data,
-        venueId: venue.id!,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      return newActivity;
+    mutationFn: async (data: ActivityModalFormData) => {
+      if (!venue.id) throw new Error('Venue ID is required');
+      return createActivity({ ...data, venueId: venue.id });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activities', venue.id] });
       setIsAddModalOpen(false);
       toast.success('Activity created successfully!');
     },
-    onError: () => {
-      toast.error('Failed to create activity');
+    onError: (error: any) => {
+      console.error('Error creating activity:', error);
+      toast.error(error?.response?.data?.message || 'Failed to create activity');
     }
   });
 
   const updateActivityMutation = useMutation({
-    mutationFn: async (data: { id: string; activity: ActivityFormData }) => {
-      // Replace with actual API call
-      return { ...data.activity, id: data.id, venueId: venue.id! };
+    mutationFn: async (data: { id: string; activity: ActivityModalFormData }) => {
+      return updateActivity(data.id, data.activity);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activities', venue.id] });
@@ -87,36 +61,38 @@ const ActivityManagement: React.FC<ActivityManagementProps> = ({ venue }) => {
       setEditingActivity(null);
       toast.success('Activity updated successfully!');
     },
-    onError: () => {
-      toast.error('Failed to update activity');
+    onError: (error: any) => {
+      console.error('Error updating activity:', error);
+      toast.error(error?.response?.data?.message || 'Failed to update activity');
     }
   });
 
   const deleteActivityMutation = useMutation({
     mutationFn: async (id: string) => {
-      // Replace with actual API call
-      return id;
+      return deleteActivity(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activities', venue.id] });
       toast.success('Activity deleted successfully!');
     },
-    onError: () => {
-      toast.error('Failed to delete activity');
+    onError: (error: any) => {
+      console.error('Error deleting activity:', error);
+      toast.error(error?.response?.data?.message || 'Failed to delete activity');
     }
   });
 
-  const handleCreateActivity = (data: ActivityFormData) => {
+  const handleCreateActivity = (data: ActivityModalFormData) => {
     createActivityMutation.mutate(data);
   };
 
-  const handleUpdateActivity = (data: ActivityFormData) => {
-    if (editingActivity) {
+  const handleUpdateActivity = (data: ActivityModalFormData) => {
+    if (editingActivity?.id) {
       updateActivityMutation.mutate({ id: editingActivity.id, activity: data });
     }
   };
 
-  const handleDeleteActivity = (id: string) => {
+  const handleDeleteActivity = (id: string | undefined) => {
+    if (!id) return;
     if (window.confirm('Are you sure you want to delete this activity?')) {
       deleteActivityMutation.mutate(id);
     }
@@ -166,7 +142,7 @@ const ActivityManagement: React.FC<ActivityManagementProps> = ({ venue }) => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {activities.map((activity) => (
+          {activities.map((activity: Activity) => (
             <div
               key={activity.id}
               className="bg-gray-800 border border-gray-700 rounded-xl p-6 hover:border-gray-600 transition-colors"
@@ -207,7 +183,7 @@ const ActivityManagement: React.FC<ActivityManagementProps> = ({ venue }) => {
                     <span>Features</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {activity.tags.map((tag, index) => (
+                    {activity.tags.map((tag: string, index: number) => (
                       <span
                         key={index}
                         className="px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded-full"
@@ -256,9 +232,9 @@ const ActivityManagement: React.FC<ActivityManagementProps> = ({ venue }) => {
 interface ActivityModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: ActivityFormData) => void;
+  onSubmit: (data: ActivityModalFormData) => void;
   title: string;
-  initialData?: ActivityFormData;
+  initialData?: ActivityModalFormData;
   isLoading?: boolean;
 }
 
@@ -270,7 +246,7 @@ const ActivityModal: React.FC<ActivityModalProps> = ({
   initialData,
   isLoading = false,
 }) => {
-  const [formData, setFormData] = useState<ActivityFormData>(
+  const [formData, setFormData] = useState<ActivityModalFormData>(
     initialData || {
       name: '',
       tags: [],
