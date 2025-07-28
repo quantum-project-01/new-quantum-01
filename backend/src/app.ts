@@ -24,7 +24,7 @@ app.use((req, res, next) => {
   const allowedOrigins = [
     "http://localhost:3000",
     "http://localhost:4000",
-    "https://your-vercel-frontend-url.vercel.app",
+    "https://quantum-front-end.netlify.app",
     process.env["FRONTEND_URL"] || "",
   ].filter(Boolean);
 
