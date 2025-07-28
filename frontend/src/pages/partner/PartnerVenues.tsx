@@ -66,7 +66,7 @@ const PartnerVenues: React.FC = () => {
       };
       return createVenue(dataWithPartnerId);
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       setIsAddCartOpen(false);
       queryClient.invalidateQueries({ queryKey: ["venues", partnerId] });
       toast.success("Venue created successfully!");

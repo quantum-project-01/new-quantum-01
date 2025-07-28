@@ -1,111 +1,20 @@
 import React, { useState } from "react";
 import { Search, Star, MapPin, Clock, Tag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useQueries, useQuery } from "@tanstack/react-query";
+import { getAllVenue } from "../../services/partner-service/venue-service/venueService";
 
 // Venue type for our dummy data
 interface Venue {
   id: number;
   name: string;
-  city: string;
-  sport: string;
+  location: { city: string };
   rating: number;
-  minPrice: number;
+  start_price_per_hour: number;
   offer?: string;
   headline: string;
   images: string[];
 }
-
-// Dummy venue data
-const venues: Venue[] = [
-  {
-    id: 1,
-    name: "Sunset Arena",
-    city: "Mumbai",
-    sport: "Football",
-    rating: 4.5,
-    minPrice: 500,
-    offer: "10% Off for Weekends",
-    headline: "Premium turf in the heart of Mumbai",
-    images: [
-      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=800&h=600&fit=crop",
-    ],
-  },
-  {
-    id: 2,
-    name: "Elite Cricket Ground",
-    city: "Delhi",
-    sport: "Cricket",
-    rating: 4.8,
-    minPrice: 800,
-    offer: "Free Equipment Rental",
-    headline: "Professional cricket facility with floodlights",
-    images: [
-      "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&h=600&fit=crop",
-    ],
-  },
-  {
-    id: 3,
-    name: "Tennis Pro Center",
-    city: "Bangalore",
-    sport: "Tennis",
-    rating: 4.3,
-    minPrice: 600,
-    headline: "Indoor and outdoor tennis courts",
-    images: [
-      "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&h=600&fit=crop",
-    ],
-  },
-  {
-    id: 4,
-    name: "Basketball Court Plus",
-    city: "Chennai",
-    sport: "Basketball",
-    rating: 4.6,
-    minPrice: 400,
-    offer: "Student Discount Available",
-    headline: "Indoor basketball facility with AC",
-    images: [
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800&h=600&fit=crop",
-    ],
-  },
-  {
-    id: 5,
-    name: "Swimming Excellence",
-    city: "Hyderabad",
-    sport: "Swimming",
-    rating: 4.7,
-    minPrice: 700,
-    offer: "Monthly Membership Available",
-    headline: "Olympic-size swimming pool with coaching",
-    images: [
-      "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&h=600&fit=crop",
-    ],
-  },
-  {
-    id: 6,
-    name: "Badminton Zone",
-    city: "Pune",
-    sport: "Badminton",
-    rating: 4.4,
-    minPrice: 350,
-    headline: "Multiple courts with professional flooring",
-    images: [
-      "https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&h=600&fit=crop",
-    ],
-  },
-];
 
 // Image Carousel Component
 const ImageCarousel: React.FC<{ images: string[] }> = ({ images }) => {
@@ -237,19 +146,13 @@ const VenueCard: React.FC<{ venue: Venue }> = ({ venue }) => {
             </h3>
             <div className="flex items-center text-gray-600 text-sm">
               <MapPin className="w-4 h-4 mr-1" />
-              <span>{venue.city}</span>
+              <span>{venue.location.city}</span>
             </div>
           </div>
           <div className="flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
             <Star className="w-3 h-3 mr-1 fill-current" />
             {venue.rating}
           </div>
-        </div>
-
-        {/* Sport Type */}
-        <div className="flex items-center text-gray-600 text-sm mb-3">
-          <Clock className="w-4 h-4 mr-1" />
-          <span>{venue.sport}</span>
         </div>
 
         {/* Headline */}
@@ -262,7 +165,7 @@ const VenueCard: React.FC<{ venue: Venue }> = ({ venue }) => {
           <div>
             <span className="text-xs text-gray-500">Starting from</span>
             <div className="text-lg font-bold text-gray-900">
-              ₹{venue.minPrice.toLocaleString()}
+              ₹{venue.start_price_per_hour.toLocaleString()}
               <span className="text-sm font-normal text-gray-500">/hour</span>
             </div>
           </div>
@@ -347,18 +250,19 @@ const BookingPage: React.FC = () => {
   const [city, setCity] = useState("");
   const navigate = useNavigate();
 
-  // Filter venues based on search criteria
-  const filteredVenues = venues.filter((venue) => {
-    const matchesName = venue.name
-      .toLowerCase()
-      .includes(venueName.toLowerCase());
-    const matchesSport = venue.sport
-      .toLowerCase()
-      .includes(sport.toLowerCase());
-    const matchesCity = venue.city.toLowerCase().includes(city.toLowerCase());
-
-    return matchesName && matchesSport && matchesCity;
+  const {
+    data: venues,
+    isLoading,
+    error,
+  } = useQuery<Venue[]>({
+    queryKey: [
+      "venues",
+      { searchName: venueName, page: 1, limit: 20, city, event: sport },
+    ],
+    queryFn: () => getAllVenue(venueName, 1, 20, city, sport),
   });
+
+  const venuesList = venues ?? [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -390,16 +294,12 @@ const BookingPage: React.FC = () => {
             <h2 className="text-xl font-semibold text-gray-900">
               Available Venues
             </h2>
-            <span className="text-sm text-gray-600">
-              {filteredVenues.length} venue
-              {filteredVenues.length !== 1 ? "s" : ""} found
-            </span>
           </div>
 
           {/* Venue Cards Grid */}
-          {filteredVenues.length > 0 ? (
+          {venuesList && venuesList.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredVenues.map((venue) => (
+              {(venuesList || []).map((venue: Venue) => (
                 <div
                   onClick={() => {
                     navigate(`/booking/${venue.id}`);
