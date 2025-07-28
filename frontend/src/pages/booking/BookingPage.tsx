@@ -8,10 +8,9 @@ import { getAllVenue } from "../../services/partner-service/venue-service/venueS
 interface Venue {
   id: number;
   name: string;
-  city: string;
-  sport: string;
+  location: { city: string };
   rating: number;
-  minPrice: number;
+  start_price_per_hour: number;
   offer?: string;
   headline: string;
   images: string[];
@@ -147,19 +146,13 @@ const VenueCard: React.FC<{ venue: Venue }> = ({ venue }) => {
             </h3>
             <div className="flex items-center text-gray-600 text-sm">
               <MapPin className="w-4 h-4 mr-1" />
-              <span>{venue.city}</span>
+              <span>{venue.location.city}</span>
             </div>
           </div>
           <div className="flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
             <Star className="w-3 h-3 mr-1 fill-current" />
             {venue.rating}
           </div>
-        </div>
-
-        {/* Sport Type */}
-        <div className="flex items-center text-gray-600 text-sm mb-3">
-          <Clock className="w-4 h-4 mr-1" />
-          <span>{venue.sport}</span>
         </div>
 
         {/* Headline */}
@@ -172,7 +165,7 @@ const VenueCard: React.FC<{ venue: Venue }> = ({ venue }) => {
           <div>
             <span className="text-xs text-gray-500">Starting from</span>
             <div className="text-lg font-bold text-gray-900">
-              ₹{venue.minPrice.toLocaleString()}
+              ₹{venue.start_price_per_hour.toLocaleString()}
               <span className="text-sm font-normal text-gray-500">/hour</span>
             </div>
           </div>
@@ -257,7 +250,11 @@ const BookingPage: React.FC = () => {
   const [city, setCity] = useState("");
   const navigate = useNavigate();
 
-  const { data, isLoading, error } = useQuery<Venue[]>({
+  const {
+    data: venues,
+    isLoading,
+    error,
+  } = useQuery<Venue[]>({
     queryKey: [
       "venues",
       { searchName: venueName, page: 1, limit: 20, city, event: sport },
@@ -265,81 +262,82 @@ const BookingPage: React.FC = () => {
     queryFn: () => getAllVenue(venueName, 1, 20, city, sport),
   });
 
-  const venues: Venue[] = (data ?? []).map((v: any) => ({
-    id: v.id,
-    name: v.name,
-    city: v.location?.city || "",
-    rating: v.rating ?? null,
-    minPrice: Number(v.start_price_per_hour),
-    headline: v.highlight || "",
-    images: v.images || [],
-    sport: v.sport || undefined,
-    offer: v.offer || undefined,
-  }));
+  const venuesList = venues ?? [];
 
-  if (isLoading)
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Page Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-              Book Your Sports Venue
-            </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Discover and book the best sports venues in your city. From
-              football to tennis, find the perfect place for your game.
-            </p>
+  if (isLoading) {
+    return <div>Loading venues...</div>; // ✅ JSX returned
+  }
+
+  if (error) {
+    return <div>Error loading venues.</div>; // ✅ JSX returned
+  }
+
+  if (!venues) {
+    return <div>No venues available.</div>; // ✅ JSX returned
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            Book Your Sports Venue
+          </h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Discover and book the best sports venues in your city. From football
+            to tennis, find the perfect place for your game.
+          </p>
+        </div>
+
+        {/* Search Bar */}
+        <SearchBar
+          venueName={venueName}
+          sport={sport}
+          city={city}
+          onVenueNameChange={setVenueName}
+          onSportChange={setSport}
+          onCityChange={setCity}
+        />
+
+        {/* Results Section */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Available Venues
+            </h2>
           </div>
 
-          {/* Search Bar */}
-          <SearchBar
-            venueName={venueName}
-            sport={sport}
-            city={city}
-            onVenueNameChange={setVenueName}
-            onSportChange={setSport}
-            onCityChange={setCity}
-          />
-
-          {/* Results Section */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Available Venues
-              </h2>
-            </div>
-
-            {/* Venue Cards Grid */}
-            {venues?.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {(venues || []).map((venue) => (
-                  <div
-                    onClick={() => {
-                      navigate(`/booking/${venue.id}`);
-                    }}
-                  >
-                    <VenueCard key={venue.id} venue={venue} />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Search className="w-8 h-8 text-gray-400" />
+          {/* Venue Cards Grid */}
+          {venuesList && venuesList.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {(venuesList || []).map((venue: Venue) => (
+                <div
+                  onClick={() => {
+                    navigate(`/booking/${venue.id}`);
+                  }}
+                >
+                  <VenueCard key={venue.id} venue={venue} />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No venues found
-                </h3>
-                <p className="text-gray-600">
-                  Try adjusting your search criteria to find more venues.
-                </p>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search className="w-8 h-8 text-gray-400" />
               </div>
-            )}
-          </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No venues found
+              </h3>
+              <p className="text-gray-600">
+                Try adjusting your search criteria to find more venues.
+              </p>
+            </div>
+          )}
         </div>
       </div>
-    );
+    </div>
+  );
 };
 
 export default BookingPage;
