@@ -42,8 +42,8 @@ const Header: React.FC = () => {
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-            ? 'bg-gray-900/95 backdrop-blur-xl border-b border-gray-700/50 shadow-xl shadow-black/10'
-            : 'bg-gray-900/80 backdrop-blur-lg border-b border-gray-800/50'
+          ? 'bg-gray-900/95 backdrop-blur-xl border-b border-gray-700/50 shadow-xl shadow-black/10'
+          : 'bg-gray-900/80 backdrop-blur-lg border-b border-gray-800/50'
           }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -83,8 +83,8 @@ const Header: React.FC = () => {
               <Link
                 to="/membership"
                 className={`relative px-4 py-2 font-medium transition-all duration-200 ${isActivePath('/membership')
-                    ? 'text-blue-400'
-                    : 'text-gray-300 hover:text-white'
+                  ? 'text-blue-400'
+                  : 'text-gray-300 hover:text-white'
                   }`}
               >
                 Membership
@@ -95,8 +95,8 @@ const Header: React.FC = () => {
               <Link
                 to="/events"
                 className={`relative px-4 py-2 font-medium transition-all duration-200 ${isActivePath('/events')
-                    ? 'text-blue-400'
-                    : 'text-gray-300 hover:text-white'
+                  ? 'text-blue-400'
+                  : 'text-gray-300 hover:text-white'
                   }`}
               >
                 Events
@@ -107,8 +107,8 @@ const Header: React.FC = () => {
               <Link
                 to="/shop"
                 className={`relative px-4 py-2 font-medium transition-all duration-200 ${isActivePath('/shop')
-                    ? 'text-blue-400'
-                    : 'text-gray-300 hover:text-white'
+                  ? 'text-blue-400'
+                  : 'text-gray-300 hover:text-white'
                   }`}
               >
                 Shop
@@ -133,8 +133,8 @@ const Header: React.FC = () => {
                   <Link
                     to="/contact"
                     className={`relative px-4 py-2 font-medium transition-all duration-200 ${isActivePath('/contact')
-                        ? 'text-blue-400'
-                        : 'text-gray-300 hover:text-white'
+                      ? 'text-blue-400'
+                      : 'text-gray-300 hover:text-white'
                       }`}
                   >
                     Contact Us
@@ -145,8 +145,8 @@ const Header: React.FC = () => {
                   <Link
                     to="/wallet"
                     className={`relative px-4 py-2 font-medium transition-all duration-200 ${isActivePath('/wallet')
-                        ? 'text-blue-400'
-                        : 'text-gray-300 hover:text-white'
+                      ? 'text-blue-400'
+                      : 'text-gray-300 hover:text-white'
                       }`}
                   >
                     Wallet
@@ -157,8 +157,8 @@ const Header: React.FC = () => {
                   <Link
                     to="/bookings"
                     className={`relative px-4 py-2 font-medium transition-all duration-200 ${isActivePath('/bookings')
-                        ? 'text-blue-400'
-                        : 'text-gray-300 hover:text-white'
+                      ? 'text-blue-400'
+                      : 'text-gray-300 hover:text-white'
                       }`}
                   >
                     My Bookings
@@ -263,8 +263,8 @@ const Header: React.FC = () => {
                       to="/contact"
                       onClick={closeMenu}
                       className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${isActivePath('/contact')
-                          ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
-                          : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
+                        ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
+                        : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
                         }`}
                     >
                       Contact Us
@@ -273,8 +273,8 @@ const Header: React.FC = () => {
                       to="/wallet"
                       onClick={closeMenu}
                       className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${isActivePath('/wallet')
-                          ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
-                          : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
+                        ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
+                        : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
                         }`}
                     >
                       Wallet
@@ -283,8 +283,8 @@ const Header: React.FC = () => {
                       to="/bookings"
                       onClick={closeMenu}
                       className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${isActivePath('/bookings')
-                          ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
-                          : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
+                        ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
+                        : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
                         }`}
                     >
                       My Bookings
@@ -295,8 +295,8 @@ const Header: React.FC = () => {
                   to="/membership"
                   onClick={closeMenu}
                   className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${isActivePath('/membership')
-                      ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
-                      : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
+                    ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
+                    : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
                     }`}
                 >
                   Membership
@@ -305,8 +305,8 @@ const Header: React.FC = () => {
                   to="/venues"
                   onClick={closeMenu}
                   className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${isActivePath('/venues')
-                      ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
-                      : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
+                    ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
+                    : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
                     }`}
                 >
                   Venues
@@ -315,8 +315,8 @@ const Header: React.FC = () => {
                   to="/events"
                   onClick={closeMenu}
                   className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${isActivePath('/events')
-                      ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
-                      : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
+                    ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
+                    : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
                     }`}
                 >
                   Events
@@ -325,8 +325,8 @@ const Header: React.FC = () => {
                   to="/shop"
                   onClick={closeMenu}
                   className={`block px-4 py-3 rounded-xl font-medium transition-all duration-200 ${isActivePath('/shop')
-                      ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
-                      : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
+                    ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
+                    : 'text-gray-300 hover:bg-gray-800/50 hover:text-white'
                     }`}
                 >
                   Shop
