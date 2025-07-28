@@ -89,11 +89,11 @@ export class VenueService {
     const where: any = {};
 
     if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { event: { contains: search, mode: "insensitive" } },
-        { city: { contains: search, mode: "insensitive" } },
-      ];
+      if (search) {
+        where.OR = [
+          { name: { contains: search, mode: "insensitive" } },
+        ];
+      }
     }
 
     // if (event) {

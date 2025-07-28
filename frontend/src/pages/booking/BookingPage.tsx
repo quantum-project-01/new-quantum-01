@@ -264,18 +264,6 @@ const BookingPage: React.FC = () => {
 
   const venuesList = venues ?? [];
 
-  if (isLoading) {
-    return <div>Loading venues...</div>; // ✅ JSX returned
-  }
-
-  if (error) {
-    return <div>Error loading venues.</div>; // ✅ JSX returned
-  }
-
-  if (!venues) {
-    return <div>No venues available.</div>; // ✅ JSX returned
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
