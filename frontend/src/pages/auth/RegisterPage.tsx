@@ -68,7 +68,7 @@ const RegisterPage: React.FC = () => {
     }
 
     const { confirmPassword, ...userData } = formData;
-    
+
     try {
       registerMutation.mutate(userData);
     } catch (error) {
@@ -115,7 +115,7 @@ const RegisterPage: React.FC = () => {
               type="video/mp4"
             />
           </video>
-          
+
           {/* Fallback: Try YouTube embed if video fails */}
           <iframe
             className="absolute inset-0 w-full h-full"
@@ -135,7 +135,7 @@ const RegisterPage: React.FC = () => {
               }
             }}
           ></iframe>
-          
+
           {/* Final Fallback: Static Sports Image */}
           <div
             className="absolute inset-0 w-full h-full bg-cover bg-center"
@@ -151,10 +151,10 @@ const RegisterPage: React.FC = () => {
 
         {/* Overlay for better text readability */}
         <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-black/70"></div>
-        
+
         {/* Interactive gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-purple-900/40 via-blue-900/30 to-green-900/40 mix-blend-multiply"></div>
-        
+
         {/* Content */}
         <div className="absolute top-[320px] inset-0 flex flex-col justify-center items-start p-16 text-white z-10 mt-auto">
           <div className="transform hover:scale-105 transition-transform duration-300">
@@ -162,11 +162,11 @@ const RegisterPage: React.FC = () => {
               Join Our Community
             </h1>
             <p className="text-xl max-w-md opacity-90 mb-8 leading-relaxed">
-              Create your account and unlock a world of sports opportunities. 
+              Create your account and unlock a world of sports opportunities.
               Connect, book, and play with ease.
             </p>
           </div>
-          
+
           {/* Interactive Stats */}
           <div className="grid grid-cols-2 gap-6 mt-8">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20 hover:bg-white/20 transition-all duration-300">
