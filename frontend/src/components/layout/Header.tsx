@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, User, LogOut, Settings, BarChart3, Shield } from 'lucide-react';
+import { Menu, X, User, LogOut, Settings, BarChart3, Shield, ChevronDown, Wallet, Calendar, Phone } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 
 const Header: React.FC = () => {
@@ -9,6 +9,8 @@ const Header: React.FC = () => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   // Handle scroll effect
   useEffect(() => {
@@ -20,10 +22,28 @@ const Header: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Handle click outside for user menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    if (isUserMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isUserMenuOpen]);
+
   const handleLogout = () => {
     logout();
     navigate('/');
     setIsMenuOpen(false);
+    setIsUserMenuOpen(false);
   };
 
   const toggleMenu = () => {
@@ -32,6 +52,14 @@ const Header: React.FC = () => {
 
   const closeMenu = () => {
     setIsMenuOpen(false);
+  };
+
+  const toggleUserMenu = () => {
+    setIsUserMenuOpen(!isUserMenuOpen);
+  };
+
+  const closeUserMenu = () => {
+    setIsUserMenuOpen(false);
   };
 
   const isActivePath = (path: string) => {
@@ -128,88 +156,174 @@ const Header: React.FC = () => {
 
             {/* Desktop User Actions */}
             {isAuthenticated ? (
-              <div className="hidden lg:flex items-center space-x-3 xl:space-x-4">
-                <div className="flex items-center space-x-4">
+              <div className="hidden md:flex items-center space-x-3 lg:space-x-4">
+                {/* Quick Access Links - Hidden on smaller desktop screens, shown on larger */}
+                <div className="hidden xl:flex items-center space-x-2">
                   <Link
                     to="/contact"
-                    className={`relative px-4 py-2 font-medium transition-all duration-200 ${isActivePath('/contact')
-                      ? 'text-blue-400'
-                      : 'text-gray-300 hover:text-white'
-                      }`}
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
+                      isActivePath('/contact')
+                        ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
+                        : 'text-gray-300 hover:text-white hover:bg-gray-800/50'
+                    }`}
+                    title="Contact Us"
                   >
-                    Contact Us
-                    {isActivePath('/contact') && (
-                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"></div>
-                    )}
+                    <Phone className="h-4 w-4" />
+                    <span className="hidden 2xl:inline">Contact</span>
                   </Link>
                   <Link
                     to="/wallet"
-                    className={`relative px-4 py-2 font-medium transition-all duration-200 ${isActivePath('/wallet')
-                      ? 'text-blue-400'
-                      : 'text-gray-300 hover:text-white'
-                      }`}
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
+                      isActivePath('/wallet')
+                        ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
+                        : 'text-gray-300 hover:text-white hover:bg-gray-800/50'
+                    }`}
+                    title="Wallet"
                   >
-                    Wallet
-                    {isActivePath('/wallet') && (
-                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"></div>
-                    )}
+                    <Wallet className="h-4 w-4" />
+                    <span className="hidden 2xl:inline">Wallet</span>
                   </Link>
                   <Link
                     to="/bookings"
-                    className={`relative px-4 py-2 font-medium transition-all duration-200 ${isActivePath('/bookings')
-                      ? 'text-blue-400'
-                      : 'text-gray-300 hover:text-white'
-                      }`}
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
+                      isActivePath('/bookings')
+                        ? 'bg-blue-900/50 text-blue-400 border border-blue-700/50'
+                        : 'text-gray-300 hover:text-white hover:bg-gray-800/50'
+                    }`}
+                    title="My Bookings"
                   >
-                    My Bookings
-                    {isActivePath('/bookings') && (
-                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"></div>
-                    )}
+                    <Calendar className="h-4 w-4" />
+                    <span className="hidden 2xl:inline">Bookings</span>
                   </Link>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-3 px-4 py-2 bg-gray-800/50 backdrop-blur-md rounded-xl border border-gray-700/50">
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                      <User className="h-4 w-4 text-white" />
-                    </div>
-                    <span className="text-gray-200 font-medium">Hi, {user?.name}</span>
-                  </div>
 
-                  <Link
-                    to="/profile"
-                    className="p-2 text-gray-300 hover:text-blue-400 hover:bg-gray-800/50 rounded-lg transition-all duration-200"
-                    title="Profile"
-                  >
-                    <Settings className="h-5 w-5" />
-                  </Link>
-
-                  {user?.role === 'partner' && (
-                    <Link
-                      to="/partner/dashboard"
-                      className="p-2 text-gray-300 hover:text-blue-400 hover:bg-gray-800/50 rounded-lg transition-all duration-200"
-                      title="Partner Dashboard"
-                    >
-                      <BarChart3 className="h-5 w-5" />
-                    </Link>
-                  )}
-
-                  {user?.role === 'admin' && (
-                    <Link
-                      to="/admin/dashboard"
-                      className="p-2 text-gray-300 hover:text-blue-400 hover:bg-gray-800/50 rounded-lg transition-all duration-200"
-                      title="Admin Panel"
-                    >
-                      <Shield className="h-5 w-5" />
-                    </Link>
-                  )}
-
+                {/* User Menu Dropdown */}
+                <div className="relative" ref={userMenuRef}>
                   <button
-                    onClick={handleLogout}
-                    className="p-2 text-gray-300 hover:text-red-400 hover:bg-red-900/20 rounded-lg transition-all duration-200"
-                    title="Logout"
+                    onClick={toggleUserMenu}
+                    className="flex items-center space-x-3 px-3 lg:px-4 py-2 bg-gray-800/50 backdrop-blur-md rounded-xl border border-gray-700/50 hover:bg-gray-700/50 transition-all duration-200 group"
+                    aria-expanded={isUserMenuOpen}
+                    aria-haspopup="true"
                   >
-                    <LogOut className="h-5 w-5" />
+                    <div className="w-8 h-8 lg:w-9 lg:h-9 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
+                      <User className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
+                    </div>
+                    <div className="hidden lg:block text-left min-w-0">
+                      <p className="text-gray-200 font-medium text-sm truncate max-w-[120px] xl:max-w-[150px]">
+                        Hi, {user?.name}
+                      </p>
+                      <p className="text-gray-400 text-xs capitalize">{user?.role}</p>
+                    </div>
+                    <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform duration-200 flex-shrink-0 ${
+                      isUserMenuOpen ? 'rotate-180' : ''
+                    }`} />
                   </button>
+
+                  {/* Dropdown Menu */}
+                  {isUserMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-64 lg:w-72 bg-gray-800/95 backdrop-blur-xl border border-gray-700/50 rounded-xl shadow-2xl shadow-black/20 py-2 z-50">
+                      {/* User Info Section - Mobile/Tablet Only */}
+                      <div className="lg:hidden px-4 py-3 border-b border-gray-700/50">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                            <User className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <p className="text-gray-200 font-medium">{user?.name}</p>
+                            <p className="text-gray-400 text-sm capitalize">{user?.role}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Quick Access - Visible on smaller desktop screens */}
+                      <div className="xl:hidden px-2 py-2 border-b border-gray-700/50">
+                        <div className="space-y-1">
+                          <Link
+                            to="/contact"
+                            onClick={closeUserMenu}
+                            className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                              isActivePath('/contact')
+                                ? 'bg-blue-900/50 text-blue-400'
+                                : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
+                            }`}
+                          >
+                            <Phone className="h-4 w-4" />
+                            <span>Contact Us</span>
+                          </Link>
+                          <Link
+                            to="/wallet"
+                            onClick={closeUserMenu}
+                            className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                              isActivePath('/wallet')
+                                ? 'bg-blue-900/50 text-blue-400'
+                                : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
+                            }`}
+                          >
+                            <Wallet className="h-4 w-4" />
+                            <span>Wallet</span>
+                          </Link>
+                          <Link
+                            to="/bookings"
+                            onClick={closeUserMenu}
+                            className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                              isActivePath('/bookings')
+                                ? 'bg-blue-900/50 text-blue-400'
+                                : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
+                            }`}
+                          >
+                            <Calendar className="h-4 w-4" />
+                            <span>My Bookings</span>
+                          </Link>
+                        </div>
+                      </div>
+
+                      {/* Main Menu Items */}
+                      <div className="px-2 py-2">
+                        <div className="space-y-1">
+                          <Link
+                            to="/profile"
+                            onClick={closeUserMenu}
+                            className="flex items-center space-x-3 px-3 py-2 text-gray-300 hover:bg-gray-700/50 hover:text-white rounded-lg transition-all duration-200"
+                          >
+                            <Settings className="h-4 w-4" />
+                            <span>Profile Settings</span>
+                          </Link>
+
+                          {user?.role === 'partner' && (
+                            <Link
+                              to="/partner/dashboard"
+                              onClick={closeUserMenu}
+                              className="flex items-center space-x-3 px-3 py-2 text-gray-300 hover:bg-gray-700/50 hover:text-white rounded-lg transition-all duration-200"
+                            >
+                              <BarChart3 className="h-4 w-4" />
+                              <span>Partner Dashboard</span>
+                            </Link>
+                          )}
+
+                          {user?.role === 'admin' && (
+                            <Link
+                              to="/admin/dashboard"
+                              onClick={closeUserMenu}
+                              className="flex items-center space-x-3 px-3 py-2 text-gray-300 hover:bg-gray-700/50 hover:text-white rounded-lg transition-all duration-200"
+                            >
+                              <Shield className="h-4 w-4" />
+                              <span>Admin Panel</span>
+                            </Link>
+                          )}
+
+                          <hr className="border-gray-700/50 my-2" />
+
+                          <button
+                            onClick={handleLogout}
+                            className="flex items-center space-x-3 px-3 py-2 text-red-400 hover:bg-red-900/20 rounded-lg transition-all duration-200 w-full text-left"
+                          >
+                            <LogOut className="h-4 w-4" />
+                            <span>Logout</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
