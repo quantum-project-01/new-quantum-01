@@ -22,7 +22,7 @@ export class MembershipService {
           creditsGiven: data.creditsGiven,
           startedAt: data.startedAt,
           expiresAt: data.expiresAt,
-          isActive: true,
+          isActive: false,
         },
       });
 
