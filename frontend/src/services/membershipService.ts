@@ -13,10 +13,15 @@ export interface MembershipPlan {
   updatedAt: string;
 }
 
+export interface CreateMembershipPayload {
+  userId: string;
+  planId: string;
+}
+
 export interface CreateOrderPayload {
   amount: number;
-  payment_type: string;
-  type_id: string;
+  userId: string;
+  planId: string;
 }
 
 export interface RazorpayOrderResponse {
@@ -47,10 +52,21 @@ class MembershipService {
     }
   }
 
-  // Create order for membership purchase
-  async createMembershipOrder(payload: CreateOrderPayload): Promise<RazorpayOrderResponse> {
+  // Step 1: Create membership record first
+  async createMembership(payload: CreateMembershipPayload): Promise<{ success: boolean; id: string }> {
     try {
-      const response = await api.post('/membership/create-order', payload);
+      const response = await api.post('/membership/create-membership', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating membership:', error);
+      throw error;
+    }
+  }
+
+  // Step 2: Create order for membership purchase
+  async createMembershipOrder(membershipId: string, payload: CreateOrderPayload): Promise<RazorpayOrderResponse> {
+    try {
+      const response = await api.post(`/membership/create-order/${membershipId}`, payload);
       return response.data;
     } catch (error) {
       console.error('Error creating membership order:', error);

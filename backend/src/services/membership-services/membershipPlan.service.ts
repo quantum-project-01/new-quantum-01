@@ -66,13 +66,50 @@ export class MembershipPlanService {
       throw error;
     }
   }
+  // Helper method to find plan by name pattern (for basic/premium matching)
+  static async getMembershipPlanByName(namePattern: string) {
+    try {
+      const plan = await prisma.membershipPlan.findFirst({
+        where: {
+          name: {
+            contains: namePattern,
+            mode: 'insensitive'
+          },
+          isActive: true
+        },
+      });
+      
+      if (!plan) {
+        throw new Error(`Membership plan with name containing "${namePattern}" not found`);
+      }
+
+      const newPlan: MembershipPlan = {
+        id: plan.id,
+        name: plan.name,
+        description: plan?.description ?? "",
+        amount: plan.amount,
+        durationDays: plan.durationDays,
+        forRole: plan.forRole as MembershipRole,
+        credits: plan.credits,
+        isActive: plan.isActive,
+        createdAt: plan.createdAt,
+        updatedAt: plan.updatedAt,
+      };
+
+      return newPlan;
+    } catch (error) {
+      console.error("Error fetching membership plan by name:", error);
+      throw error;
+    }
+  }
+
   static async getMembershipPlanById(id: string) {
     try {
       const plan = await prisma.membershipPlan.findUnique({
         where: { id },
       });
       if (!plan) {
-        throw new Error("Failed to create membership plan");
+        throw new Error("Membership plan not found");
       }
 
       const newPlan: MembershipPlan = {

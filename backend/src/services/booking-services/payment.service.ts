@@ -12,9 +12,7 @@ export class PaymentService {
     amount,
     bookingId,
     membershipId,
-    venueId,
     customerId,
-    partnerId,
     currency = Currency.INR,
   }: {
     amount: number;

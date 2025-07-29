@@ -153,18 +153,30 @@ const MembershipPage: React.FC = () => {
         planId
       });
 
-      // Step 1: Create order
-      const orderResponse = await membershipService.createMembershipOrder({
+      // Step 1: Create membership record first
+      const membershipResponse = await membershipService.createMembership({
+        userId: user?.id || '',
+        planId: planId
+      });
+
+      if (!membershipResponse.success) {
+        throw new Error('Failed to create membership');
+      }
+
+      console.log('Membership created:', membershipResponse.id);
+
+      // Step 2: Create order for the membership
+      const orderResponse = await membershipService.createMembershipOrder(membershipResponse.id, {
         amount: amount,
-        payment_type: 'membership',
-        type_id: planId
+        userId: user?.id || '',
+        planId: planId
       });
 
       if (!orderResponse.success) {
         throw new Error('Failed to create order');
       }
 
-      // Step 2: Initialize Razorpay payment
+      // Step 3: Initialize Razorpay payment
       const options = {
         key: process.env.REACT_APP_RAZORPAY_KEY_ID || 'rzp_test_MJwUIvOIpb6jEQ',
         amount: amount * 100, // Razorpay expects amount in paise
@@ -175,12 +187,12 @@ const MembershipPage: React.FC = () => {
         order_id: orderResponse.data.id,
         handler: async function (response: any) {
           try {
-            // Step 3: Verify payment
+            // Step 4: Verify payment
             const verificationPayload = {
               paymentId: response.razorpay_payment_id,
               signature: response.razorpay_signature,
               orderId: response.razorpay_order_id,
-              membershipId: planId
+              membershipId: membershipResponse.id
             };
 
             const verificationResponse = await membershipService.verifyMembershipPayment(verificationPayload);

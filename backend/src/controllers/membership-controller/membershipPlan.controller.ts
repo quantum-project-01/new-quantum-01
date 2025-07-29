@@ -17,14 +17,20 @@ export class MembershipPlanController {
     }
   }
 
-  static async getActiveMembershipPlans(res: Response) {
+  static async getActiveMembershipPlans(_req: Request, res: Response) {
     try {
       const plans = await MembershipPlanService.getActiveMembershipPlans();
 
-      return res.status(200).json(plans);
+      return res.status(200).json({
+        success: true,
+        data: plans
+      });
     } catch (error) {
       console.error("Error fetching active membership plans:", error);
-      return res.status(500).json({ error: "Internal server error" });
+      return res.status(500).json({ 
+        success: false,
+        error: "Internal server error" 
+      });
     }
   }
 
