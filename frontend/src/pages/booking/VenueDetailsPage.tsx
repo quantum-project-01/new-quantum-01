@@ -351,15 +351,15 @@ const Tab: React.FC<{
 
 // Book Slots Tab Component
 const BookSlots: React.FC = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   
   // Import the BookSlots component from the components folder
   const BookSlotsComponent = React.lazy(() => import("./components"));
 
-  const handleProceedToCheckout = () => {
-    // Navigate to checkout page with venue ID
-    navigate(`/booking/${venueData.id}/checkout`);
-  };
+  // const handleProceedToCheckout = () => {
+  //   // Navigate to checkout page with venue ID
+  //   navigate(`/booking/${venueData.id}/checkout`);
+  // };
 
   return (
     <React.Suspense

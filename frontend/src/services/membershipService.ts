@@ -81,4 +81,4 @@ class MembershipService {
   }
 }
 
-export default new MembershipService(); 
+export default  new MembershipService(); 

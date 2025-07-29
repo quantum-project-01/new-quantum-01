@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, MapPin, Clock, MoreHorizontal, Filter, Search, Plus, ChevronRight, Eye, Edit, Trash2 } from 'lucide-react';
+import { Calendar, MapPin, Clock, MoreHorizontal, Filter, Search, Plus } from 'lucide-react';
 
 const MyBookingsPage: React.FC = () => {
   const [bookings] = useState([
@@ -41,7 +41,7 @@ const MyBookingsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [isLoaded, setIsLoaded] = useState(false);
-  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+  // const [hoveredCard, setHoveredCard] = useState<number | null>(null);
 
   useEffect(() => {
     setIsLoaded(true);
@@ -56,14 +56,14 @@ const MyBookingsPage: React.FC = () => {
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'confirmed': return '✓';
-      case 'pending': return '⏳';
-      case 'completed': return '✅';
-      default: return '❓';
-    }
-  };
+  // const getStatusIcon = (status: string) => {
+  //   switch (status) {
+  //     case 'confirmed': return '✓';
+  //     case 'pending': return '⏳';
+  //     case 'completed': return '✅';
+  //     default: return '❓';
+  //   }
+  // };
 
   const filteredBookings = bookings.filter(booking => {
     const matchesSearch = booking.venue.toLowerCase().includes(searchTerm.toLowerCase()) ||

@@ -4,8 +4,8 @@ import {
   Calendar, 
   Clock, 
   MapPin, 
-  Users, 
-  Ticket, 
+  // Users, 
+  // Ticket, 
   Star, 
   ArrowLeft, 
   Share2, 
@@ -60,7 +60,7 @@ interface Event {
 const EventDetailsPage: React.FC = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuthStore();
+  const {  isAuthenticated } = useAuthStore();
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [isRegistered, setIsRegistered] = useState(false);

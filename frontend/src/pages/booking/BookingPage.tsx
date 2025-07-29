@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Search, Star, MapPin, Clock, Tag } from "lucide-react";
+import { Search, Star, MapPin,  Tag } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useQueries, useQuery } from "@tanstack/react-query";
+import {  useQuery } from "@tanstack/react-query";
 import { getAllVenue } from "../../services/partner-service/venue-service/venueService";
 
 // Venue type for our dummy data
