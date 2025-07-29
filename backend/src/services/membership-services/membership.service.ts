@@ -168,19 +168,8 @@ export class MembershipService {
               },
             });
 
-            // Update user wallet with credits
-            await tx.wallet.upsert({
-              where: { userId: membership.userId },
-              update: {
-                balance: {
-                  increment: membershipPlan.credits,
-                },
-              },
-              create: {
-                userId: membership.userId,
-                balance: membershipPlan.credits,
-              },
-            });
+            // Update completed - wallet will be updated outside transaction
+            console.log(`Membership activated for user ${membership.userId}`);
 
             await tx.transactionHistory.update({
               where: { orderId },

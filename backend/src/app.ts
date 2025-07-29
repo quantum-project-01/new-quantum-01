@@ -4,6 +4,7 @@ import authRoutes from "./routes/auth.routes";
 import venueRoutes from "./routes/venue-routes/venue.routes";
 import bookingRoutes from "./routes/booking.routes";
 import membershipRoutes from "./routes/membership/membership.routes";
+import walletRoutes from "./routes/wallet.routes";
 import activityFacilityRoutes from "./routes/venue-routes/activity.facility.routes";
 import slotRoutes from "./routes/venue-routes/slot.routes";
 
@@ -89,6 +90,7 @@ app.use("/api/venue/activity-facility", activityFacilityRoutes);
 app.use("/api/venue/slot", slotRoutes);
 app.use("/api/booking", bookingRoutes);
 app.use("/api/membership", membershipRoutes);
+app.use("/api/wallet", walletRoutes);
 
 app.get("/", (_req, res) => {
   res.send("Backend is running");

@@ -1,32 +1,60 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { Wallet as WalletIcon, CreditCard, RefreshCw, TrendingUp, TrendingDown, DollarSign, Activity, Sparkles } from 'lucide-react';
+import { useAuthStore } from '../store/authStore';
+import walletService, { Wallet } from '../services/walletService';
 
 const WalletPage: React.FC = () => {
-  const [balance, setBalance] = useState(1250.75);
+  const { user, isAuthenticated } = useAuthStore();
+  const [wallet, setWallet] = useState<Wallet | null>(null);
+  const [balance, setBalance] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [hoveredTransaction, setHoveredTransaction] = useState<number | null>(null);
 
+  // Static transactions for display (can be replaced with real transaction history later)
   const [transactions, setTransactions] = useState([
     { id: 1, date: '2024-01-15', description: 'Venue Booking', amount: -350.00, type: 'debit', category: 'booking' },
-    { id: 2, date: '2024-01-10', description: 'Refund', amount: 50.00, type: 'credit', category: 'refund' },
+    { id: 2, date: '2024-01-10', description: 'Membership Credits', amount: 6000.00, type: 'credit', category: 'membership' },
     { id: 3, date: '2024-01-05', description: 'Event Ticket', amount: -200.00, type: 'debit', category: 'ticket' },
     { id: 4, date: '2024-01-03', description: 'Cashback Reward', amount: 25.00, type: 'credit', category: 'reward' },
-    { id: 5, date: '2024-01-01', description: 'Service Fee', amount: -15.00, type: 'debit', category: 'fee' },
   ]);
+
+  // Fetch wallet data
+  const fetchWalletData = async () => {
+    if (!user?.id || !isAuthenticated) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await walletService.getUserWallet(user.id);
+      if (response.success && response.data) {
+        setWallet(response.data);
+        setBalance(response.data.balance / 100); // Convert from paise to rupees
+      } else {
+        // No wallet found, set balance to 0
+        setBalance(0);
+      }
+    } catch (error) {
+      console.error('Failed to fetch wallet data:', error);
+      setBalance(0);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     setIsVisible(true);
-  }, []);
+    fetchWalletData();
+  }, [user?.id, isAuthenticated]);
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     setIsRefreshing(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsRefreshing(false);
-      console.log('Refreshing wallet data...');
-    }, 1000);
+    await fetchWalletData();
+    setIsRefreshing(false);
   };
 
   const getTransactionIcon = (type: string, category: string) => {
@@ -101,9 +129,15 @@ const WalletPage: React.FC = () => {
                   </div>
                 </div>
                 <div className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mb-2">
-                  ${balance.toFixed(2)}
+                  {loading ? (
+                    <div className="animate-pulse bg-gray-700 h-12 w-32 rounded"></div>
+                  ) : (
+                    `₹${balance.toFixed(2)}`
+                  )}
                 </div>
-                <p className="text-xs sm:text-sm text-gray-400">Available balance</p>
+                <p className="text-xs sm:text-sm text-gray-400">
+                  {!isAuthenticated ? 'Please login to view balance' : 'Available credits'}
+                </p>
               </div>
             </div>
 
@@ -120,7 +154,7 @@ const WalletPage: React.FC = () => {
                   </div>
                 </div>
                 <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-red-400 mb-2">
-                  -${totalExpenses.toFixed(2)}
+                  -₹{totalExpenses.toFixed(2)}
                 </div>
                 <p className="text-xs sm:text-sm text-gray-400">This month</p>
               </div>
@@ -177,7 +211,7 @@ const WalletPage: React.FC = () => {
                             : 'text-red-400 group-hover:text-red-300'
                           }`}
                       >
-                        {transaction.type === 'credit' ? '+' : '-'}${Math.abs(transaction.amount).toFixed(2)}
+                        {transaction.type === 'credit' ? '+' : '-'}₹{Math.abs(transaction.amount).toFixed(2)}
                       </span>
                       <div className={`w-2 h-2 rounded-full mt-1 ml-auto transition-all duration-300 ${transaction.type === 'credit' ? 'bg-green-400' : 'bg-red-400'
                         } ${hoveredTransaction === transaction.id ? 'scale-150' : 'scale-100'}`}></div>
@@ -187,10 +221,19 @@ const WalletPage: React.FC = () => {
               ))}
             </div>
 
-            {transactions.length === 0 && (
+            {!isAuthenticated && (
+              <div className="text-center py-12">
+                <WalletIcon className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-400 mb-2">Please login to view your transactions</p>
+                <p className="text-sm text-gray-500">Your wallet data will appear here once you're logged in</p>
+              </div>
+            )}
+
+            {isAuthenticated && transactions.length === 0 && (
               <div className="text-center py-12">
                 <Activity className="h-12 w-12 text-gray-600 mx-auto mb-4" />
                 <p className="text-gray-400">No transactions yet</p>
+                <p className="text-sm text-gray-500">Your transactions will appear here</p>
               </div>
             )}
           </div>

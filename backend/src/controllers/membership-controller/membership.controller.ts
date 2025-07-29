@@ -5,6 +5,7 @@ import { SeedDataService } from "../../services/membership-services/seedData.ser
 import { AppError } from "../../types";
 import { MembershipService } from "../../services/membership-services/membership.service";
 import { MembershipPlanService } from "../../services/membership-services/membershipPlan.service";
+import { WalletService } from "../../services/wallet-services/wallet.service";
 
 export class MembershipController {
   static async createMembershipBeforePayment(req: Request, res: Response) {
@@ -146,15 +147,14 @@ export class MembershipController {
 
   static async verifyMembershipPayment(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-
-      const { paymentId, signature, orderId } = req.body as {
+      const { paymentId, signature, orderId, membershipId } = req.body as {
         paymentId: string;
         signature: string;
         orderId: string;
+        membershipId: string;
       };
 
-      if (!id) {
+      if (!membershipId) {
         return res.status(400).json({ message: "Missing membership ID" });
       }
 
@@ -162,7 +162,7 @@ export class MembershipController {
         return res.status(400).json({ message: "Payment details are missing" });
       }
 
-      const membership = await MembershipService.getMembershipById(id);
+      const membership = await MembershipService.getMembershipById(membershipId);
 
       if (!membership) {
         return res.status(404).json({ message: "Membership not found" });
@@ -205,9 +205,17 @@ export class MembershipController {
           expiresAt: membership.expiresAt || null,
         });
 
+      // Add credits to user wallet
+      const walletUpdated = await WalletService.addCredits(membership.userId, plan.credits);
+      
+      if (!walletUpdated) {
+        console.warn(`Warning: Membership activated but wallet update failed for user ${membership.userId}`);
+      }
+
       return res.status(200).json({
         success: true,
         message: "Payment verified and membership activated successfully",
+        walletUpdated: walletUpdated
       });
     } catch (error) {
       console.error("Error verifying membership payment:", error);
