@@ -11,8 +11,8 @@ export interface Payment {
   captured?: boolean;
   capturedAt?: Date;
   razorpayPaymentId?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 

@@ -1,37 +1,87 @@
 import { Request, Response } from "express";
 import { Currency, Order, PaymentMethod } from "../../models/payment.model";
 import { PaymentService } from "../../services/booking-services/payment.service";
-import { MembershipService } from "../../services/membership-services/membership.service";
 import { SeedDataService } from "../../services/membership-services/seedData.service";
 import { AppError } from "../../types";
+import { MembershipService } from "../../services/membership-services/membership.service";
+import { MembershipPlanService } from "../../services/membership-services/membershipPlan.service";
 
 export class MembershipController {
-  
-  static async createMembershipOrder(req: Request, res: Response) {
+  static async createMembershipBeforePayment(req: Request, res: Response) {
     try {
-      const { amount, payment_type, type_id } = req.body;
-      const userId = (req as any).user?.userId; // Assuming auth middleware sets this
+      const { userId, planId } = req.body;
 
-      if (!amount || !payment_type || !type_id) {
-        return res.status(400).json({ 
-          message: "Missing required fields: amount, payment_type, type_id" 
-        });
+      if (!userId || !planId) {
+        return res.status(400).json({ message: "Missing required fields" });
       }
 
-      if (!userId) {
-        return res.status(401).json({ message: "User not authenticated" });
-      }
-
-      // Validate membership plan exists
-      const membershipPlan = await MembershipService.getMembershipPlanById(type_id);
+      const membershipPlan = await MembershipPlanService.getMembershipPlanById(
+        planId
+      );
       if (!membershipPlan) {
         return res.status(404).json({ message: "Membership plan not found" });
       }
 
+      const membership = await MembershipService.createMembership({
+        userId,
+        planId,
+        creditsGiven: membershipPlan.credits,
+        startedAt: new Date(),
+        transactionOrderId: null, // Set to null initially
+        expiresAt: membershipPlan.durationDays
+          ? new Date(
+              Date.now() + membershipPlan.durationDays * 24 * 60 * 60 * 1000
+            )
+          : null,
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: "Membership created successfully",
+        id: membership,
+      });
+    } catch (error: any) {
+      console.error("Error creating membership before payment:", error);
+      return res.status(500).json({
+        message: "Failed to create membership before payment",
+        error: error.message,
+      });
+    }
+  }
+
+  static async createMembershipOrder(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ message: "Missing membership ID" });
+      }
+
+      const { amount, userId, planId } = req.body;
+
+      if (!amount || !userId || !planId) {
+        return res.status(400).json({
+          message: "Missing required fields: amount, userId, planId",
+        });
+      }
+
+      const membershipPlan = await MembershipPlanService.getMembershipPlanById(
+        planId
+      );
+
+      if (!membershipPlan) {
+        return res.status(404).json({ message: "Membership plan not found" });
+      }
+
+      const membership = await MembershipService.getMembershipById(id);
+
+      if (!membership) {
+        return res.status(404).json({ message: "Membership not found" });
+      }
+
       // Create Razorpay order
-      const order = await PaymentService.createMembershipPaymentRazorpay({
+      const order = await PaymentService.createPaymentRazorpay({
         amount: Number(amount),
-        membershipId: type_id,
+        membershipId: membership.id,
         customerId: userId,
         currency: Currency.INR,
       });
@@ -48,6 +98,7 @@ export class MembershipController {
       // Create transaction record (don't set membershipId yet - will be set after payment success)
       const transaction = await PaymentService.createTransaction({
         orderId: order.id,
+        membershipId: membership.id,
         amount: Number(amount),
         currency: Currency.INR,
         paymentMethod: PaymentMethod.Razorpay,
@@ -57,10 +108,9 @@ export class MembershipController {
         console.log("Transaction creation failed for membership order");
       }
 
-      return res.status(200).json({ 
+      return res.status(200).json({
         success: true,
         data: orderData,
-        membershipPlan 
       });
     } catch (error: any) {
       console.error("Error creating membership order:", error);
@@ -73,20 +123,33 @@ export class MembershipController {
 
   static async verifyMembershipPayment(req: Request, res: Response) {
     try {
-      const { paymentId, signature, orderId, membershipId } = req.body as {
+      const { id } = req.params;
+
+      const { paymentId, signature, orderId } = req.body as {
         paymentId: string;
         signature: string;
         orderId: string;
-        membershipId: string;
       };
-      const userId = (req as any).user?.userId;
 
-      if (!paymentId || !signature || !orderId || !membershipId) {
+      if (!id) {
+        return res.status(400).json({ message: "Missing membership ID" });
+      }
+
+      if (!paymentId || !signature || !orderId) {
         return res.status(400).json({ message: "Payment details are missing" });
       }
 
-      if (!userId) {
-        return res.status(401).json({ message: "User not authenticated" });
+      const membership = await MembershipService.getMembershipById(id);
+
+      if (!membership) {
+        return res.status(404).json({ message: "Membership not found" });
+      }
+
+      const planId = membership.planId;
+
+      const plan = await MembershipPlanService.getMembershipPlanById(planId);
+      if (!plan) {
+        return res.status(404).json({ message: "Membership plan not found" });
       }
 
       // Verify payment signature
@@ -97,28 +160,31 @@ export class MembershipController {
       });
 
       if (!verified) {
-        await PaymentService.handleMembershipPayment({
+        await MembershipService.handleMembershipPayment({
           success: false,
-          membershipId,
-          userId,
+          membershipId: membership.id,
+          planId: membership.planId,
           orderId,
           paymentId,
+          expiresAt: membership.expiresAt || null,
         });
+
         throw new Error("Payment verification failed");
       }
 
       // Handle successful payment
-      await PaymentService.handleMembershipPayment({
-        success: true,
-        membershipId,
-        userId,
-        orderId,
-        paymentId,
-      });
+      await MembershipService.handleMembershipPayment({
+          success: true,
+          membershipId: membership.id,
+          planId: membership.planId,
+          orderId,
+          paymentId,
+          expiresAt: membership.expiresAt || null,
+        });
 
-      return res.status(200).json({ 
+      return res.status(200).json({
         success: true,
-        message: "Payment verified and membership activated successfully" 
+        message: "Payment verified and membership activated successfully",
       });
     } catch (error) {
       console.error("Error verifying membership payment:", error);
@@ -130,34 +196,18 @@ export class MembershipController {
     }
   }
 
-  static async getMembershipPlans(_req: Request, res: Response) {
-    try {
-      const plans = await MembershipService.getAllMembershipPlans();
-      return res.status(200).json({ 
-        success: true,
-        data: plans 
-      });
-    } catch (error: any) {
-      console.error("Error fetching membership plans:", error);
-      return res.status(500).json({
-        message: "Failed to fetch membership plans",
-        error: error.message,
-      });
-    }
-  }
-
   static async getUserMemberships(req: Request, res: Response) {
     try {
       const userId = (req as any).user?.userId;
-      
+
       if (!userId) {
         return res.status(401).json({ message: "User not authenticated" });
       }
 
       const memberships = await MembershipService.getUserMemberships(userId);
-      return res.status(200).json({ 
+      return res.status(200).json({
         success: true,
-        data: memberships 
+        data: memberships,
       });
     } catch (error: any) {
       console.error("Error fetching user memberships:", error);
@@ -171,17 +221,17 @@ export class MembershipController {
   // Development only - seed membership plans
   static async seedMembershipPlans(_req: Request, res: Response) {
     try {
-      if (process.env['NODE_ENV'] === 'production') {
-        return res.status(403).json({ 
-          message: "Seeding not allowed in production" 
+      if (process.env["NODE_ENV"] === "production") {
+        return res.status(403).json({
+          message: "Seeding not allowed in production",
         });
       }
 
       const plans = await SeedDataService.seedMembershipPlans();
-      return res.status(200).json({ 
+      return res.status(200).json({
         success: true,
         message: "Membership plans seeded successfully",
-        data: plans 
+        data: plans,
       });
     } catch (error: any) {
       console.error("Error seeding membership plans:", error);

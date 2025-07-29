@@ -23,7 +23,7 @@ export interface Membership {
   creditsGiven: number;
   transactionOrderId?: string;
   startedAt: Date;
-  expiredAt?: Date;
+  expiresAt: Date | null;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
