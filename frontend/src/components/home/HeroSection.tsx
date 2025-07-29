@@ -141,20 +141,39 @@ const HeroSection: React.FC = () => {
                   </select>
                 </div>
 
-                {/* City Selection */}
+                {/* City Selection with Search */}
                 <div className="lg:col-span-1">
-                  <select
+                  <input
+                    type="text"
+                    list="cities"
+                    placeholder="Select or type city"
                     value={searchFilters.city}
                     onChange={(e) => handleInputChange('city', e.target.value)}
-                    className="w-full px-3 py-3 sm:px-4 sm:py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/20 transition-all duration-300 appearance-none cursor-pointer text-sm sm:text-base hover:border-white/30"
-                  >
-                    <option value="" className="text-white-900 bg-gray-800">Select City</option>
-                    <option value="mumbai" className="text-white-900 bg-gray-800">Mumbai</option>
-                    <option value="delhi" className="text-white-900 bg-gray-800">Delhi</option>
-                    <option value="bangalore" className="text-white-900 bg-gray-800">Bangalore</option>
-                    <option value="hyderabad" className="text-white-900 bg-gray-800">Hyderabad</option>
-                    <option value="pune" className="text-white-900 bg-gray-800">Pune</option>
-                  </select>
+                    onKeyPress={handleKeyPress}
+                    className="w-full px-3 py-3 sm:px-4 sm:py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/20 transition-all duration-300 text-sm sm:text-base hover:border-white/30"
+                  />
+                  <datalist id="cities">
+                    <option value="Mumbai" />
+                    <option value="Delhi" />
+                    <option value="Bangalore" />
+                    <option value="Hyderabad" />
+                    <option value="Pune" />
+                    <option value="Chennai" />
+                    <option value="Kolkata" />
+                    <option value="Ahmedabad" />
+                    <option value="Jaipur" />
+                    <option value="Lucknow" />
+                    <option value="Kanpur" />
+                    <option value="Nagpur" />
+                    <option value="Indore" />
+                    <option value="Thane" />
+                    <option value="Bhopal" />
+                    <option value="Visakhapatnam" />
+                    <option value="Pimpri-Chinchwad" />
+                    <option value="Patna" />
+                    <option value="Vadodara" />
+                    <option value="Ghaziabad" />
+                  </datalist>
                 </div>
 
                 {/* Search Button */}
