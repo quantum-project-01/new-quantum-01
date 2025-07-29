@@ -233,7 +233,7 @@ export class BookingController {
       });
 
       if (!verified) {
-        PaymentService.handleBooking({
+        BookingService.handleBooking({
           success: false,
           bookingId: id,
           amount: booking.amount,
@@ -243,7 +243,7 @@ export class BookingController {
         throw new Error("Payment verification failed");
       }
 
-      PaymentService.handleBooking({
+      BookingService.handleBooking({
         success: true,
         bookingId: id,
         amount: booking.amount,
@@ -252,6 +252,7 @@ export class BookingController {
       });
 
       return res.status(200).json({ message: "Payment verified successfully" });
+      
     } catch (error) {
       console.error("Error confirming booking:", error);
       const appError = error as AppError;

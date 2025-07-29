@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRight, ChevronDown, Search, Loader2 } from 'lucide-react';
+import {  ChevronDown, Search, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface SearchFilters {
@@ -8,13 +8,13 @@ interface SearchFilters {
   city: string;
 }
 
-interface Venue {
-  id: string;
-  name: string;
-  city: string;
-  sport: string;
+// interface Venue {
+//   id: string;
+//   name: string;
+//   city: string;
+//   sport: string;
   // Add other venue properties as needed
-}
+// }
 
 const HeroSection: React.FC = () => {
   const navigate = useNavigate();
@@ -24,8 +24,8 @@ const HeroSection: React.FC = () => {
     city: ''
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [searchResults, setSearchResults] = useState<Venue[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  // const [searchResults, setSearchResults] = useState<Venue[]>([]);
+  // const [ setError] = useState<string | null>(null);
 
   const handleInputChange = (field: keyof SearchFilters, value: string) => {
     setSearchFilters(prev => ({
@@ -36,7 +36,7 @@ const HeroSection: React.FC = () => {
 
   const handleSearch = async () => {
     setIsLoading(true);
-    setError(null);
+    // setError(null);
 
     try {
       // Create URL search parameters for navigation
@@ -59,7 +59,7 @@ const HeroSection: React.FC = () => {
       navigate(navigationPath);
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred while searching');
+      // setError(err instanceof Error ? err.message : 'An error occurred while searching');
       console.error('Search error:', err);
     } finally {
       setIsLoading(false);

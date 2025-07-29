@@ -22,7 +22,7 @@ interface Event {
 }
 
 const EventsPage: React.FC = () => {
-  const { user, isAuthenticated } = useAuthStore();
+  // const { user, isAuthenticated } = useAuthStore();
   const [events, setEvents] = useState<Event[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
