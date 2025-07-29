@@ -240,9 +240,12 @@ model Membership {
   id                 String   @id @default(uuid())
   userId             String
   planId             String
-  transactionOrderId String?  @unique
-  startDate          DateTime
-  endDate            DateTime
+  creditsGiven       Int
+  transactionOrderId String?
+  startedAt          DateTime
+  expiresAt          DateTime?
+  paymentDetails     Json?    @db.JsonB
+  isActive           Boolean  @default(true)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 

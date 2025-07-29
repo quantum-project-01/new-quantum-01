@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/auth.routes";
 import venueRoutes from "./routes/venue-routes/venue.routes";
 import bookingRoutes from "./routes/booking.routes";
-import membershipRoutes from "./routes/membership.routes";
+import membershipRoutes from "./routes/membership/membership.routes";
 import activityFacilityRoutes from "./routes/venue-routes/activity.facility.routes";
 import slotRoutes from "./routes/venue-routes/slot.routes";
 
