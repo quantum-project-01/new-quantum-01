@@ -247,15 +247,22 @@ const Header: React.FC = () => {
       </header>
 
       {/* Mobile Menu Overlay */}
-      {isMenuOpen && (
-        <div className="fixed inset-0 z-40 md:hidden">
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={closeMenu}
-          ></div>
+      <div className={`fixed inset-0 z-40 md:hidden transition-all duration-300 ease-in-out ${
+        isMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+      }`}>
+        <div
+          className={`absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ease-in-out ${
+            isMenuOpen ? 'opacity-100' : 'opacity-0'
+          }`}
+          onClick={closeMenu}
+        ></div>
 
-          {/* Mobile Menu Panel */}
-          <div className="absolute top-16 left-0 right-0 bg-gray-900/98 backdrop-blur-xl border-b border-gray-700/50 shadow-2xl max-h-[calc(100vh-4rem)] overflow-y-auto">
+        {/* Mobile Menu Panel */}
+        <div className={`absolute top-16 left-0 right-0 bg-gray-900/98 backdrop-blur-xl border-b border-gray-700/50 shadow-2xl max-h-[calc(100vh-4rem)] overflow-y-auto transform transition-all duration-300 ease-in-out ${
+          isMenuOpen 
+            ? 'translate-y-0 opacity-100' 
+            : '-translate-y-4 opacity-0'
+        }`}>
             <div className="max-w-7xl mx-auto px-4 py-4 sm:py-6">
               {/* Mobile Navigation */}
               <nav className="space-y-2 mb-6">
@@ -422,7 +429,7 @@ const Header: React.FC = () => {
             </div>
           </div>
         </div>
-      )}
+     
     </>
   );
 };
