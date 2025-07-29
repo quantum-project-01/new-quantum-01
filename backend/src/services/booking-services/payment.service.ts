@@ -57,27 +57,38 @@ export class PaymentService {
   static async createTransaction({
     orderId,
     bookingId,
+    membershipId,
     amount,
     currency = Currency.INR,
     paymentMethod = PaymentMethod.Razorpay,
   }: {
     orderId: string;
-    bookingId: string;
+    bookingId?: string;
+    membershipId?: string;
     amount: number;
     currency: Currency;
     paymentMethod: PaymentMethod;
   }) {
     try {
+      const transactionData: any = {
+        orderId: orderId,
+        paymentAmount: amount,
+        paymentCurrency: currency,
+        paymentMethod: paymentMethod,
+        isRefunded: false,
+        paymentDate: new Date(),
+      };
+
+      if (bookingId) {
+        transactionData.bookingId = bookingId;
+      }
+
+      if (membershipId) {
+        transactionData.membershipId = membershipId;
+      }
+
       const transaction = await prisma.transactionHistory.create({
-        data: {
-          bookingId,
-          orderId: orderId,
-          paymentAmount: amount,
-          paymentCurrency: currency,
-          paymentMethod: paymentMethod,
-          isRefunded: false,
-          paymentDate: new Date(),
-        },
+        data: transactionData,
       });
 
       return transaction;
@@ -364,6 +375,132 @@ export class PaymentService {
       }
     } catch (error) {
       console.error("Error handling booking update:", error);
+      throw error;
+    }
+  }
+
+  static async createMembershipPaymentRazorpay({
+    amount,
+    membershipId,
+    customerId,
+    currency = Currency.INR,
+  }: {
+    amount: number;
+    membershipId: string;
+    customerId: string;
+    currency: Currency;
+  }) {
+    try {
+      const razorpay = new Razorpay({
+        key_id: razorpayKey,
+        key_secret: razorpaySecret,
+      });
+
+      const order = await razorpay.orders.create({
+        amount: Math.round(amount * 100), // Razorpay expects amount in paise
+        currency: currency,
+        receipt: `mem_${membershipId.slice(0, 8)}_${Date.now().toString().slice(-8)}`,
+        notes: {
+          membershipId,
+          customerId,
+          type: 'membership',
+        },
+      });
+
+      if (!order) {
+        throw new Error("Failed to create Razorpay order for membership");
+      }
+
+      return order;
+    } catch (error) {
+      console.error("Error creating Razorpay membership order:", error);
+      throw error;
+    }
+  }
+
+  static async handleMembershipPayment({
+    success,
+    membershipId,
+    userId,
+    orderId,
+    paymentId,
+  }: {
+    success: boolean;
+    membershipId: string;
+    userId: string;
+    orderId: string;
+    paymentId: string;
+  }) {
+    try {
+      await withRetries(
+        async () => {
+          await prisma.$transaction(async (tx) => {
+            if (success) {
+              // Get membership plan details
+              const membershipPlan = await tx.membershipPlan.findUnique({
+                where: { id: membershipId },
+              });
+
+              if (!membershipPlan) {
+                throw new Error("Membership plan not found");
+              }
+
+              // Calculate membership dates
+              const startDate = new Date();
+              const endDate = new Date(startDate);
+              endDate.setDate(endDate.getDate() + membershipPlan.durationDays);
+
+              // Create membership record
+              const createdMembership = await tx.membership.create({
+                data: {
+                  userId,
+                  planId: membershipId,
+                  transactionOrderId: orderId,
+                  startDate,
+                  endDate,
+                } as any, // Temporary fix for Prisma type mismatch
+              });
+
+              // Update user wallet with credits
+              await tx.wallet.upsert({
+                where: { userId },
+                update: {
+                  balance: {
+                    increment: membershipPlan.credits,
+                  },
+                },
+                create: {
+                  userId,
+                  balance: membershipPlan.credits,
+                },
+              });
+
+              // Update transaction history with membership instance ID
+              await tx.transactionHistory.update({
+                where: { orderId },
+                data: {
+                  captured: true,
+                  capturedAt: new Date(),
+                  razorpayPaymentId: paymentId,
+                  membershipId: createdMembership.id, // Set to actual membership instance ID
+                },
+              });
+            } else {
+              // Handle failed payment - just update transaction
+              await tx.transactionHistory.update({
+                where: { orderId },
+                data: {
+                  captured: false,
+                  capturedAt: new Date(),
+                },
+              });
+            }
+          });
+        },
+        3
+      );
+    } catch (error) {
+      console.error("Error handling membership payment:", error);
       throw error;
     }
   }

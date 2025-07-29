@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check, Star, Zap, Crown, Gift, Users, Calendar, Shield } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import FaqAndInfo from './membership/components/FaqAndInfo';
 import HeroSection from './membership/components/HeroSection';
+import membershipService, { MembershipPlan as APIMembershipPlan } from '../services/membershipService';
 
 interface MembershipPlan {
   id: string;
@@ -18,11 +19,48 @@ interface MembershipPlan {
   perks: string[];
 }
 
+// Declare Razorpay types
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
 const MembershipPage: React.FC = () => {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const navigate = useNavigate();
   const [hoveredPlan, setHoveredPlan] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [apiPlans, setApiPlans] = useState<APIMembershipPlan[]>([]);
+
+  // Load Razorpay script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  // Fetch membership plans from API
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const response = await membershipService.getMembershipPlans();
+        if (response.success) {
+          setApiPlans(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch membership plans:', error);
+      }
+    };
+
+    fetchPlans();
+  }, []);
 
   const membershipPlans: MembershipPlan[] = [
     {
@@ -75,14 +113,149 @@ const MembershipPage: React.FC = () => {
     }
   ];
 
-  const handlePlanSelect = (planId: string) => {
+  const handleRazorpayPayment = async (plan: MembershipPlan, apiPlan?: APIMembershipPlan) => {
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
-    setSelectedPlan(planId);
-    // Here you would typically integrate with payment gateway
-    console.log('Selected plan:', planId);
+
+    setLoading(true);
+    setSelectedPlan(plan.id);
+
+    // If no API plans loaded, try to fetch them first
+    if (apiPlans.length === 0) {
+      try {
+        console.log('API plans not loaded, fetching...');
+        const response = await membershipService.getMembershipPlans();
+        if (response.success) {
+          setApiPlans(response.data);
+          // Re-match the API plan after loading
+          if (plan.id === 'basic') {
+            apiPlan = response.data.find(p => p.name.toLowerCase().includes('basic'));
+          } else if (plan.id === 'premium') {
+            apiPlan = response.data.find(p => p.name.toLowerCase().includes('premium') || p.name.toLowerCase().includes('elite'));
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch membership plans:', error);
+      }
+    }
+
+    try {
+      // Use API plan data if available, otherwise use static plan data
+      const amount = apiPlan ? apiPlan.amount : plan.price;
+      const planId = apiPlan ? apiPlan.id : plan.id;
+
+      console.log('Payment attempt:', { 
+        staticPlan: plan.name, 
+        apiPlan: apiPlan?.name, 
+        amount, 
+        planId 
+      });
+
+      // Step 1: Create order
+      const orderResponse = await membershipService.createMembershipOrder({
+        amount: amount,
+        payment_type: 'membership',
+        type_id: planId
+      });
+
+      if (!orderResponse.success) {
+        throw new Error('Failed to create order');
+      }
+
+      // Step 2: Initialize Razorpay payment
+      const options = {
+        key: process.env.REACT_APP_RAZORPAY_KEY_ID || 'rzp_test_MJwUIvOIpb6jEQ',
+        amount: amount * 100, // Razorpay expects amount in paise
+        currency: 'INR',
+        name: 'Quantum Sports',
+        description: `${plan.name} Membership`,
+        image: '/logo192.png',
+        order_id: orderResponse.data.id,
+        handler: async function (response: any) {
+          try {
+            // Step 3: Verify payment
+            const verificationPayload = {
+              paymentId: response.razorpay_payment_id,
+              signature: response.razorpay_signature,
+              orderId: response.razorpay_order_id,
+              membershipId: planId
+            };
+
+            const verificationResponse = await membershipService.verifyMembershipPayment(verificationPayload);
+            
+            if (verificationResponse.success) {
+              alert('🎉 Payment successful! Your membership has been activated.');
+              // You can redirect to a success page or refresh user data here
+              window.location.reload(); // Refresh to update user membership status
+            } else {
+              throw new Error('Payment verification failed');
+            }
+          } catch (error) {
+            console.error('Payment verification error:', error);
+            alert('❌ Payment verification failed. Please contact support.');
+          }
+        },
+        prefill: {
+          name: user?.name || '',
+          email: user?.email || '',
+          contact: user?.phone || ''
+        },
+        notes: {
+          membership_plan: plan.name,
+          user_id: user?.id || ''
+        },
+        theme: {
+          color: '#6366f1'
+        },
+        modal: {
+          ondismiss: function() {
+            setLoading(false);
+            setSelectedPlan(null);
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      
+      rzp.on('payment.failed', function (response: any) {
+        console.error('Payment failed:', response.error);
+        alert('❌ Payment failed: ' + response.error.description);
+        setLoading(false);
+        setSelectedPlan(null);
+      });
+
+      rzp.open();
+    } catch (error) {
+      console.error('Error initiating payment:', error);
+      alert('❌ Failed to initiate payment. Please try again.');
+      setLoading(false);
+      setSelectedPlan(null);
+    }
+  };
+
+  const handlePlanSelect = (planId: string) => {
+    const plan = membershipPlans.find(p => p.id === planId);
+    
+    // Better matching logic for API plans
+    let apiPlan;
+    if (planId === 'basic') {
+      apiPlan = apiPlans.find(p => p.name.toLowerCase().includes('basic'));
+    } else if (planId === 'premium') {
+      apiPlan = apiPlans.find(p => p.name.toLowerCase().includes('premium') || p.name.toLowerCase().includes('elite'));
+    }
+    
+    // If no API plan found, log available plans for debugging
+    if (!apiPlan && apiPlans.length > 0) {
+      console.log('Available API plans:', apiPlans.map(p => ({ id: p.id, name: p.name })));
+      console.log(`No API plan found for ${planId}, using first available plan`);
+      apiPlan = apiPlans[0]; // Fallback to first plan
+    }
+    
+    if (plan) {
+      handleRazorpayPayment(plan, apiPlan);
+    }
   };
 
   return (
@@ -206,6 +379,7 @@ const MembershipPage: React.FC = () => {
                   {/* CTA Button */}
                   <button
                     onClick={() => handlePlanSelect(plan.id)}
+                    disabled={loading && selectedPlan === plan.id}
                     className={`
                       w-full py-4 px-6 rounded-xl font-bold text-white text-lg
                       bg-gradient-to-r ${plan.color}
@@ -213,11 +387,12 @@ const MembershipPage: React.FC = () => {
                       transform transition-all duration-300
                       ${hoveredPlan === plan.id ? 'scale-105' : ''}
                       ${selectedPlan === plan.id ? 'animate-pulse' : ''}
+                      ${loading && selectedPlan === plan.id ? 'opacity-75 cursor-not-allowed' : ''}
                       relative overflow-hidden group
                     `}
                   >
                     <span className="relative z-10">
-                      {selectedPlan === plan.id ? 'Processing...' : 'Choose This Plan'}
+                      {loading && selectedPlan === plan.id ? 'Processing...' : 'Choose This Plan'}
                     </span>
                     <div className="absolute inset-0 bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
                   </button>

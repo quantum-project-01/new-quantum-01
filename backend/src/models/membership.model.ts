@@ -5,25 +5,24 @@ export interface MembershipPlan {
   amount: number;
   credits: number;
   forRole: MembershipRole;
-  durationDays?: number; 
+  durationDays: number; 
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export enum MembershipRole {
-    Customer = "customer",
-    Partner = "partner"
+  user = "user",
+  partner = "partner"
 }
 
 export interface Membership {
   id: string;
   userId: string;
-  membershipPlanId: string;
-  creditsGiven: number;
-  startedAt: Date;
-  expiredAt?: Date;
-  isActive: boolean;
+  planId: string;
+  transactionOrderId?: string;
+  startDate: Date;
+  endDate: Date;
   createdAt: Date;
   updatedAt: Date;
 }
