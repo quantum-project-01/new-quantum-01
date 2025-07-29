@@ -219,7 +219,7 @@ const TestimonialSection: React.FC = () => {
           {/* Animated Testimonials Container */}
           <div className="relative overflow-hidden">
             {/* Scrolling Container */}
-            <div className="flex animate-scroll-right pause-animation">
+            <div className="flex animate-scroll-right pause-animation z-10">
               {duplicatedTestimonials.map((testimonial, index) => {
                 const colors = colorClasses[testimonial.colorScheme];
 

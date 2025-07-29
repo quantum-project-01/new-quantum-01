@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, Star, MapPin, Clock, Tag } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { getAllVenue } from "../../services/partner-service/venue-service/venueService";
 
@@ -69,9 +69,8 @@ const ImageCarousel: React.FC<{ images: string[] }> = ({ images }) => {
           <button
             key={index}
             onClick={() => goToImage(index)}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              index === currentImage ? "bg-white" : "bg-white/50"
-            }`}
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentImage ? "bg-white" : "bg-white/50"
+              }`}
           />
         ))}
       </div>
@@ -197,58 +196,76 @@ const SearchBar: React.FC<{
   onSportChange,
   onCityChange,
 }) => {
-  return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-8">
-      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
-        Find Your Perfect Venue
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Venue Name Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search by venue name"
-            value={venueName}
-            onChange={(e) => onVenueNameChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-          />
-        </div>
+    return (
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-8">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
+          Find Your Perfect Venue
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Venue Name Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by venue name"
+              value={venueName}
+              onChange={(e) => onVenueNameChange(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            />
+          </div>
 
-        {/* Sport Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search by sport"
-            value={sport}
-            onChange={(e) => onSportChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-          />
-        </div>
+          {/* Sport Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by sport"
+              value={sport}
+              onChange={(e) => onSportChange(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            />
+          </div>
 
-        {/* City Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search by city"
-            value={city}
-            onChange={(e) => onCityChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-          />
+          {/* City Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by city"
+              value={city}
+              onChange={(e) => onCityChange(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            />
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
 // Main BookingPage Component
 const BookingPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [venueName, setVenueName] = useState("");
   const [sport, setSport] = useState("");
   const [city, setCity] = useState("");
   const navigate = useNavigate();
+
+  // Initialize state from URL search parameters
+  useEffect(() => {
+    const searchParam = searchParams.get('search');
+    const eventParam = searchParams.get('event');
+    const cityParam = searchParams.get('city');
+
+    if (searchParam) {
+      setVenueName(searchParam);
+    }
+    if (eventParam) {
+      setSport(eventParam);
+    }
+    if (cityParam) {
+      setCity(cityParam);
+    }
+  }, [searchParams]);
 
   const {
     data: venues,

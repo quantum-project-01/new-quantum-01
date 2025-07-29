@@ -90,7 +90,7 @@ const HowItWorksSection: React.FC = () => {
         {/* CTA Button */}
         <div className="text-center mt-12 sm:mt-16">
           <Link
-            to="/venues"
+            to="/booking"
             className="group inline-flex items-center px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white text-base sm:text-lg font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-2xl hover:shadow-blue-500/25 transform hover:scale-105"
           >
             Start Booking Now

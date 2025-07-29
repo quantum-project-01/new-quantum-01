@@ -1,7 +1,77 @@
-import React from 'react';
-import { ArrowRight, ChevronDown } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowRight, ChevronDown, Search, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+interface SearchFilters {
+  search: string;
+  event: string;
+  city: string;
+}
+
+interface Venue {
+  id: string;
+  name: string;
+  city: string;
+  sport: string;
+  // Add other venue properties as needed
+}
 
 const HeroSection: React.FC = () => {
+  const navigate = useNavigate();
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    search: '',
+    event: '',
+    city: ''
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState<Venue[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleInputChange = (field: keyof SearchFilters, value: string) => {
+    setSearchFilters(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSearch = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Create URL search parameters for navigation
+      const searchParams = new URLSearchParams();
+
+      if (searchFilters.search.trim()) {
+        searchParams.set('search', searchFilters.search.trim());
+      }
+      if (searchFilters.event) {
+        searchParams.set('event', searchFilters.event);
+      }
+      if (searchFilters.city) {
+        searchParams.set('city', searchFilters.city);
+      }
+
+      // Navigate to booking page with search parameters
+      const searchQuery = searchParams.toString();
+      const navigationPath = searchQuery ? `/booking?${searchQuery}` : '/booking';
+
+      navigate(navigationPath);
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred while searching');
+      console.error('Search error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gray-900">
       {/* Background Image */}
@@ -48,13 +118,20 @@ const HeroSection: React.FC = () => {
                   <input
                     type="text"
                     placeholder="Search Venue Name"
+                    value={searchFilters.search}
+                    onChange={(e) => handleInputChange('search', e.target.value)}
+                    onKeyPress={handleKeyPress}
                     className="w-full px-3 py-3 sm:px-4 sm:py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/20 transition-all duration-300 text-sm sm:text-base hover:border-white/30"
                   />
                 </div>
 
                 {/* Sport Selection */}
                 <div className="lg:col-span-1">
-                  <select className="w-full px-3 py-3 sm:px-4 sm:py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/20 transition-all duration-300 appearance-none cursor-pointer text-sm sm:text-base hover:border-white/30">
+                  <select
+                    value={searchFilters.event}
+                    onChange={(e) => handleInputChange('event', e.target.value)}
+                    className="w-full px-3 py-3 sm:px-4 sm:py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/20 transition-all duration-300 appearance-none cursor-pointer text-sm sm:text-base hover:border-white/30"
+                  >
                     <option value="" className="text-white-900 bg-gray-800">Select Sport</option>
                     <option value="football" className="text-white-900 bg-gray-800">Football</option>
                     <option value="basketball" className="text-white-900 bg-gray-800">Basketball</option>
@@ -64,23 +141,54 @@ const HeroSection: React.FC = () => {
                   </select>
                 </div>
 
-                {/* City Selection */}
+                {/* City Selection with Search */}
                 <div className="lg:col-span-1">
-                  <select className="w-full px-3 py-3 sm:px-4 sm:py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/20 transition-all duration-300 appearance-none cursor-pointer text-sm sm:text-base hover:border-white/30">
-                    <option value="" className="text-white-900 bg-gray-800">Select City</option>
-                    <option value="mumbai" className="text-white-900 bg-gray-800">Mumbai</option>
-                    <option value="delhi" className="text-white-900 bg-gray-800">Delhi</option>
-                    <option value="bangalore" className="text-white-900 bg-gray-800">Bangalore</option>
-                    <option value="hyderabad" className="text-white-900 bg-gray-800">Hyderabad</option>
-                    <option value="pune" className="text-white-900 bg-gray-800">Pune</option>
-                  </select>
+                  <input
+                    type="text"
+                    list="cities"
+                    placeholder="Select or type city"
+                    value={searchFilters.city}
+                    onChange={(e) => handleInputChange('city', e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    className="w-full px-3 py-3 sm:px-4 sm:py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg sm:rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white/20 transition-all duration-300 text-sm sm:text-base hover:border-white/30"
+                  />
+                  <datalist id="cities">
+                    <option value="Mumbai" />
+                    <option value="Delhi" />
+                    <option value="Bangalore" />
+                    <option value="Hyderabad" />
+                    <option value="Pune" />
+                    <option value="Chennai" />
+                    <option value="Kolkata" />
+                    <option value="Ahmedabad" />
+                    <option value="Jaipur" />
+                    <option value="Lucknow" />
+                    <option value="Kanpur" />
+                    <option value="Nagpur" />
+                    <option value="Indore" />
+                    <option value="Thane" />
+                    <option value="Bhopal" />
+                    <option value="Visakhapatnam" />
+                    <option value="Pimpri-Chinchwad" />
+                    <option value="Patna" />
+                    <option value="Vadodara" />
+                    <option value="Ghaziabad" />
+                  </datalist>
                 </div>
 
                 {/* Search Button */}
                 <div className="sm:col-span-2 lg:col-span-1">
-                  <button className="w-full px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white font-semibold rounded-lg sm:rounded-xl hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl hover:shadow-blue-500/25 flex items-center justify-center space-x-2 text-sm sm:text-base group">
-                    <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform duration-300" />
-                    <span>Search</span>
+                  <button
+                    onClick={handleSearch}
+                    disabled={isLoading}
+                    className="w-full px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white font-semibold rounded-lg sm:rounded-xl hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl hover:shadow-blue-500/25 flex items-center justify-center space-x-2 text-sm sm:text-base group disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
+                    ) : (
+                      <Search className="h-4 w-4 sm:h-5 sm:w-5 group-hover:scale-110 transition-transform duration-300" />
+                    )}
+                    <span>{isLoading ? 'Searching...' : 'Search'}</span>
                   </button>
                 </div>
               </div>
