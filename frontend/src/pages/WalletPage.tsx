@@ -33,7 +33,7 @@ const WalletPage: React.FC = () => {
       const response = await walletService.getUserWallet(user.id);
       if (response.success && response.data) {
         setWallet(response.data);
-        setBalance(response.data.balance / 100); // Convert from paise to rupees
+        setBalance(response.data.balance); // Balance is already in rupees
       } else {
         // No wallet found, set balance to 0
         setBalance(0);
