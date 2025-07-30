@@ -26,7 +26,7 @@ app.use((req, res, next) => {
   const allowedOrigins = [
     "http://localhost:3000",
     "http://localhost:4000",
-    "https://quantum-front-end.netlify.app",
+    "https://quantum-sports.netlify.app",
     process.env["FRONTEND_URL"] || "",
   ].filter(Boolean);
 
