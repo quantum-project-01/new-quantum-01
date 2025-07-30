@@ -1,5 +1,5 @@
 import React, {  } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 
 const VenueDetailPage: React.FC = () => {
@@ -7,7 +7,6 @@ const VenueDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
 
-  // Mock venue data (replace with actual data fetching)
   const venue = {
     id: id,
     name: 'Grand Sports Arena',

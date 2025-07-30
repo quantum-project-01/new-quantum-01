@@ -1,5 +1,3 @@
-import api from './api';
-
 export interface MembershipPlan {
   id: string;
   name: string;
