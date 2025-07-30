@@ -424,6 +424,7 @@ const EventDetailsPage: React.FC = () => {
       }
       setLoading(false);
     }, 1000);
+     // eslint-disable-next-line
   }, [eventId]);
 
   const handleRegister = () => {

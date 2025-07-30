@@ -49,6 +49,7 @@ const WalletPage: React.FC = () => {
   useEffect(() => {
     setIsVisible(true);
     fetchWalletData();
+     // eslint-disable-next-line
   }, [user?.id, isAuthenticated]);
 
   const handleRefresh = async () => {
