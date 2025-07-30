@@ -8,7 +8,6 @@ import {
   Calendar,
   Award,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 // Types
 interface VenueDetailsData {

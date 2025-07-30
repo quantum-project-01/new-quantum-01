@@ -1,3 +1,5 @@
+import api from "./api";
+
 export interface Wallet {
   id: string;
   userId: string;
@@ -10,7 +12,7 @@ export interface Wallet {
   };
 }
 
-class WalletService {
+export class WalletService {
   // Get wallet balance for a user
   async getWalletBalance(userId: string): Promise<{ success: boolean; balance: number }> {
     try {
@@ -61,5 +63,3 @@ class WalletService {
     }
   }
 }
-
-export default new WalletService(); 

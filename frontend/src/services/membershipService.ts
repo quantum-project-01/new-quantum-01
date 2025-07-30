@@ -1,3 +1,5 @@
+import api from "./api";
+
 export interface MembershipPlan {
   id: string;
   name: string;
@@ -38,7 +40,7 @@ export interface VerifyPaymentPayload {
   membershipId: string;
 }
 
-class MembershipService {
+export class MembershipService {
   // Get all available membership plans
   async getMembershipPlans(): Promise<{ success: boolean; data: MembershipPlan[] }> {
     try {
@@ -94,5 +96,3 @@ class MembershipService {
     }
   }
 }
-
-export default  new MembershipService(); 
