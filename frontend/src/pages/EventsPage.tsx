@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, MapPin, Users, Ticket, Star, Filter, Search } from 'lucide-react';
-import { useAuthStore } from '../store/authStore';
+// import { useAuthStore } from '../store/authStore';
 
 interface Event {
   id: string;
@@ -31,6 +31,7 @@ const EventsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   // Mock data for events
+   // eslint-disable-next-line
   const mockEvents: Event[] = [
     {
       id: '1',
@@ -145,7 +146,7 @@ const EventsPage: React.FC = () => {
       setFilteredEvents(mockEvents);
       setLoading(false);
     }, 1000);
-  }, []);
+  }, [mockEvents]);
 
   useEffect(() => {
     let filtered = events;

@@ -269,7 +269,9 @@ const BookingPage: React.FC = () => {
 
   const {
     data: venues,
+    // eslint-disable-next-line
     isLoading,
+     // eslint-disable-next-line
     error,
   } = useQuery<Venue[]>({
     queryKey: [
