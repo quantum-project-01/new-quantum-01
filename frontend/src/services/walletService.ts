@@ -12,7 +12,7 @@ export interface Wallet {
   };
 }
 
-export class WalletService {
+class WalletService {
   // Get wallet balance for a user
   async getWalletBalance(userId: string): Promise<{ success: boolean; balance: number }> {
     try {
@@ -63,3 +63,6 @@ export class WalletService {
     }
   }
 }
+
+const walletService = new WalletService();
+export default walletService;

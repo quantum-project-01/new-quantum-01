@@ -40,7 +40,7 @@ export interface VerifyPaymentPayload {
   membershipId: string;
 }
 
-export class MembershipService {
+class MembershipService {
   // Get all available membership plans
   async getMembershipPlans(): Promise<{ success: boolean; data: MembershipPlan[] }> {
     try {
@@ -96,3 +96,6 @@ export class MembershipService {
     }
   }
 }
+
+const membershipService = new MembershipService();
+export default membershipService;
