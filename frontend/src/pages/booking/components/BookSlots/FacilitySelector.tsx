@@ -1,35 +1,47 @@
 import React from "react";
 import { ArrowLeft } from "lucide-react";
 import { Activity } from "./ActivitySelector";
+import { getFacilitiesByActivity } from "../../../../services/partner-service/facilityService";
+import { useQuery } from "@tanstack/react-query";
 
 export interface Facility {
-  id: string;
+  id?: string;
   name: string;
-  activityId: string;
-  minPrice: number;
-  timeRange: string;
   images: string[];
-  availability: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  activityId: string;
+  start_price_per_hour: number;
+  startTime: string; // Format: "HH:MM:SS" (e.g., "09:00:00")
+  endTime: string; // Format: "HH:MM:SS" (e.g., "17:00:00")
+  isAvailable?: boolean;
+  isFillingFast?: boolean;
 }
 
 interface FacilitySelectorProps {
-  facilities: Facility[];
   selectedActivity: Activity | null;
   selectedFacility: Facility | null;
-  onFacilitySelect: (facility: Facility, selectedActivity: Activity) => void;
+  onFacilitySelect: (
+    facility: Facility,
+    selectedActivity: Activity | null
+  ) => void;
   onResetSelection: () => void;
 }
 
 const FacilitySelector: React.FC<FacilitySelectorProps> = ({
-  facilities,
   selectedActivity,
   selectedFacility,
   onFacilitySelect,
   onResetSelection,
 }) => {
-  const filteredFacilities = facilities.filter(
-    (facility) => facility.activityId === selectedActivity?.id
-  );
+  const {
+    data: facilities,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["facilities", selectedActivity?.id],
+    queryFn: () => getFacilitiesByActivity(selectedActivity?.id || ""),
+  });
 
   if (!selectedActivity) {
     return (
@@ -65,8 +77,8 @@ const FacilitySelector: React.FC<FacilitySelectorProps> = ({
           <div className="relative h-full max-h-36 overflow-hidden rounded-t-2xl">
             <div className="flex transition-transform duration-300 ease-in-out">
               <img
-                src={selectedFacility.images[1]}
-                alt={`${selectedFacility.name}`}
+                src={selectedFacility?.images?.[0] || "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop"}
+                alt={`${selectedFacility?.name}`}
                 className="w-full h-full object-cover flex-shrink-0"
               />
             </div>
@@ -78,15 +90,19 @@ const FacilitySelector: React.FC<FacilitySelectorProps> = ({
             </h4>
             <div className="flex items-center justify-between mb-1">
               <span className="text-2xl font-bold text-gray-900">
-                ₹{selectedFacility.minPrice}
+                ₹{selectedFacility.start_price_per_hour}
               </span>
               <span className="text-sm text-gray-500">onwards</span>
             </div>
             <div className="text-sm text-gray-600 mb-1">
-              {selectedFacility.timeRange}
+              {selectedFacility.startTime} - {selectedFacility.endTime}
             </div>
             <div className="text-sm text-blue-600 font-medium mb-2">
-              {selectedFacility.availability}
+              {selectedFacility.isAvailable
+                ? "Available"
+                : selectedFacility.isFillingFast
+                ? "Filling Fast"
+                : "Not Available"}
             </div>
             <div className="text-sm text-green-600 font-medium flex items-center">
               <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
@@ -115,7 +131,7 @@ const FacilitySelector: React.FC<FacilitySelectorProps> = ({
       </div>
 
       <div className="flex space-x-4 overflow-x-auto scrollbar-hide">
-        {filteredFacilities.map((facility) => (
+        {(facilities || []).map((facility: Facility) => (
           <div
             key={facility.id}
             onClick={() => onFacilitySelect(facility, selectedActivity)}
@@ -125,7 +141,7 @@ const FacilitySelector: React.FC<FacilitySelectorProps> = ({
             <div className="relative h-full max-h-36 overflow-hidden rounded-t-2xl">
               <div className="flex transition-transform duration-300 ease-in-out">
                 <img
-                  src={facility.images[1]}
+                  src={facility?.images?.[0] || "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop"}
                   alt={`${facility.name}`}
                   className="w-full h-full object-cover flex-shrink-0"
                 />
@@ -138,15 +154,19 @@ const FacilitySelector: React.FC<FacilitySelectorProps> = ({
               </h4>
               <div className="flex items-center justify-between mb-1">
                 <span className="text-2xl font-bold text-gray-900">
-                  ₹{facility.minPrice}
+                  ₹{facility.start_price_per_hour}
                 </span>
                 <span className="text-sm text-gray-500">onwards</span>
               </div>
               <div className="text-sm text-gray-600 mb-1">
-                {facility.timeRange}
+                {facility.startTime} - {facility.endTime}
               </div>
               <div className="text-sm text-blue-600 font-medium mb-2">
-                {facility.availability}
+                {facility.isAvailable
+                  ? "Available"
+                  : facility.isFillingFast
+                  ? "Filling Fast"
+                  : "Not Available"}
               </div>
             </div>
           </div>

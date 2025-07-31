@@ -4,6 +4,8 @@ import SlotCard from "./SlotCard";
 import { Sun, Moon } from "lucide-react";
 import { Activity } from "./ActivitySelector";
 import { Facility } from "./FacilitySelector";
+import { useQuery } from "@tanstack/react-query";
+import { getSlotsByFacility } from "../../../../services/partner-service/slotService";
 
 export type SlotAvailability =
   | "available"
@@ -12,11 +14,16 @@ export type SlotAvailability =
   | "filling-fast";
 
 export interface Slot {
-  slotId: number;
-  slotDate: string;
-  slotAmount: number;
-  slotAvailability: SlotAvailability;
-  slotTime: string;
+  id?: string;
+  date: Date | string; // Allow both Date object and string for flexibility
+  amount: number;
+  availability: SlotAvailability;
+  startTime: string;
+  endTime: string;
+  bookingId?: string;
+  facilityId: string; // Required field as per database schema
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface SlotDataByDate {
@@ -26,18 +33,21 @@ export interface SlotDataByDate {
 interface SlotSelectorProps {
   selectedFacility: Facility | null;
   selectedActivity: Activity | null;
-  selectedSlots: Slot[];
-  slotData: SlotDataByDate;
+  selectedSlots?: Slot[]; // Add selectedSlots as optional prop
   onSlotSelect: (slot: Slot) => void;
 }
 
 const SlotSelector: React.FC<SlotSelectorProps> = ({
   selectedActivity,
   selectedFacility,
-  selectedSlots,
-  slotData,
+  selectedSlots = [], // Default to empty array
   onSlotSelect,
 }) => {
+  const { data } = useQuery({
+    queryKey: ["slots", selectedFacility?.id],
+    queryFn: () => getSlotsByFacility(selectedFacility?.id || ""),
+  });
+
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [filter, setFilter] = useState("all");
   const [isMobile, setIsMobile] = useState(false);
@@ -66,13 +76,14 @@ const SlotSelector: React.FC<SlotSelectorProps> = ({
     );
   }
 
-  // Generate timeLabels from the first available date in slotData
-  const firstDateWithSlots = Object.keys(slotData).find(
-    (date) => slotData[date] && slotData[date].length > 0
-  );
-  const timeLabels = firstDateWithSlots
-    ? slotData[firstDateWithSlots].map((slot) => slot.slotTime)
-    : [];
+  // Generate timeLabels from the first available date in data
+  const firstDateWithSlots = data
+    ? Object.keys(data).find((date) => data[date] && data[date].length > 0)
+    : null;
+  const timeLabels =
+    firstDateWithSlots && data
+      ? data[firstDateWithSlots].map((slot: Slot) => slot.startTime)
+      : [];
 
   // Prepare the visible dates for the grid (3 for mobile, 4 for desktop)
   const numVisibleDates = isMobile ? 3 : 4;
@@ -148,7 +159,7 @@ const SlotSelector: React.FC<SlotSelectorProps> = ({
           >
             {/* Time Labels */}
             <div className="flex flex-col justify-center text-center gap-2">
-              {timeLabels.map((label, rowIdx) => {
+              {timeLabels.map((label: string, rowIdx: number) => {
                 // Determine if this is a day or night slot (6 AM = 12, 6 PM = 36)
                 const isDay = rowIdx >= 12 && rowIdx < 36;
                 return (
@@ -178,18 +189,17 @@ const SlotSelector: React.FC<SlotSelectorProps> = ({
                 className="flex flex-col h-full space-y-3 min-h-0 scrollbar-hide"
                 key={dateStr}
               >
-                {timeLabels.map((_, rowIdx) => {
-                  const slotsForDate = slotData[dateStr] || [];
+                {timeLabels.map((_: string, rowIdx: number) => {
+                  const slotsForDate = (data && data[dateStr]) || [];
                   const slot = slotsForDate[rowIdx];
                   const matchesFilter =
-                    filter === "all" ||
-                    (slot && slot.slotAvailability === filter);
+                    filter === "all" || (slot && slot.availability === filter);
                   return slot && matchesFilter ? (
                     <SlotCard
-                      key={slot.slotId + "-" + slot.slotDate}
+                      key={slot.id + "-" + slot.date}
                       slot={slot}
                       isSelected={selectedSlots.some(
-                        (selectedSlot) => selectedSlot.slotId === slot.slotId
+                        (selectedSlot: Slot) => selectedSlot.id === slot.id
                       )}
                       onClick={() => onSlotSelect(slot)}
                     />

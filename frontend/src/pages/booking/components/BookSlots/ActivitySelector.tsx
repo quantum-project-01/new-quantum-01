@@ -1,27 +1,38 @@
 import React from "react";
 import { ArrowLeft } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { getActivitiesByVenue } from "../../../../services/partner-service/activityService";
 
 export interface Activity {
-  id: string;
+  id?: string;
   name: string;
-  minPrice: number;
-  features: string[];
+  tags: string[];
+  createdAt?: Date;
+  updatedAt?: Date;
+  venueId?: string;
+  start_price_per_hour: number;
 }
 
+
 interface ActivitySelectorProps {
-  activities: Activity[];
+  venueId: string;
   selectedActivity: Activity | null;
   onActivitySelect: (activity: Activity) => void;
   onResetSelection: () => void;
 }
 
 const ActivitySelector: React.FC<ActivitySelectorProps> = ({
-  activities,
+  venueId,
   selectedActivity,
   onActivitySelect,
   onResetSelection,
 }) => {
-  // If an activity is selected, show only that card with a change button
+
+  const {data, isLoading, error} = useQuery({
+    queryKey: ['activities', venueId],
+    queryFn: () => getActivitiesByVenue(venueId),
+  });
+
   if (selectedActivity) {
     return (
       <div className="space-y-6 bg-white rounded-xl px-2 xl:px-8 py-6">
@@ -45,17 +56,17 @@ const ActivitySelector: React.FC<ActivitySelectorProps> = ({
             </h4>
             <div className="flex items-center justify-between mb-4">
               <span className="text-2xl font-bold text-gray-900">
-                ₹{selectedActivity.minPrice}
+                ₹{selectedActivity.start_price_per_hour}
               </span>
               <span className="text-sm text-gray-500">onwards</span>
             </div>
             <div className="flex flex-wrap gap-2 mb-2">
-              {selectedActivity.features.map((feature, index) => (
+              {selectedActivity.tags.map((tag, index) => (
                 <span
                   key={index}
                   className="px-3 py-1 bg-green-50 text-green-700 text-sm font-medium rounded-full"
                 >
-                  {feature}
+                  {tag}
                 </span>
               ))}
             </div>
@@ -76,7 +87,7 @@ const ActivitySelector: React.FC<ActivitySelectorProps> = ({
         Choose an Activity
       </h3>
       <div className="flex space-x-4 overflow-x-auto px-1 lg:p-4 scrollbar-hide">
-        {activities.map((activity) => (
+        {data?.map((activity: Activity) => (
           <div
             key={activity.id}
             onClick={() => onActivitySelect(activity)}
@@ -89,17 +100,17 @@ const ActivitySelector: React.FC<ActivitySelectorProps> = ({
               </h4>
               <div className="flex items-center justify-between mb-4">
                 <span className="text-2xl font-bold text-gray-900">
-                  ₹{activity.minPrice}
+                  ₹{activity.start_price_per_hour}
                 </span>
                 <span className="text-sm text-gray-500">onwards</span>
               </div>
               <div className="flex flex-wrap gap-2 mb-2">
-                {activity.features.map((feature, index) => (
+                {activity.tags.map((tag, index) => (
                   <span
                     key={index}
                     className="px-2 py-1 bg-green-50 text-green-700 text-sm font-medium rounded-full"
                   >
-                    {feature}
+                    {tag}
                   </span>
                 ))}
               </div>

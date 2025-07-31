@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { MapPin, X, Gift, ArrowRight, Calendar, Clock } from "lucide-react";
-import { Slot } from "./SlotSelector";
 import { Activity } from "./ActivitySelector";
 import { Facility } from "./FacilitySelector";
+import { Slot } from "./SlotSelector";
 
 interface CheckoutCardProps {
   selectedActivity: Activity | null;
@@ -30,7 +30,7 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
   const [showCoupon, setShowCoupon] = useState(false);
   const [couponCode, setCouponCode] = useState("");
 
-  const subtotal = selectedSlots.reduce((sum, slot) => sum + slot.slotAmount, 0);
+  const subtotal = selectedSlots.reduce((sum, slot) => sum + slot.amount, 0);
   const gst = subtotal * 0.18;
   const total = subtotal + gst;
 
@@ -78,24 +78,24 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
         <div className="mb-6">
           <h5 className="font-medium text-gray-900 mb-3">Selected Slots</h5>
           <div className="space-y-3">
-            {selectedSlots.map((slot) => (
+            {selectedSlots.map((slot: Slot) => (
               <div
-                key={slot.slotId}
+                key={slot.id}
                 className="flex items-center justify-between p-3 bg-gray-50 rounded-xl"
               >
                 <div className="flex items-center space-x-3">
                   <div className="flex items-center space-x-1 text-sm text-gray-600">
                     <Calendar className="w-4 h-4" />
-                    <span>{formatDate(slot.slotDate)}</span>
+                    <span>{formatDate(slot?.date?.toString())}</span>
                   </div>
                   <div className="flex items-center space-x-1 text-sm text-gray-600">
                     <Clock className="w-4 h-4" />
-                    <span>{formatTime(slot.slotTime)}</span>
+                    <span>{formatTime(slot?.startTime?.toString())}</span>
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="font-semibold text-gray-900">
-                    ₹{slot.slotAmount}
+                    ₹{slot.amount.toFixed(2)}
                   </div>
                   <button className="text-red-600 text-sm hover:text-red-700">
                     <X className="w-4 h-4" />

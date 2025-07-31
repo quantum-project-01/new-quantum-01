@@ -281,7 +281,6 @@ const BookingPage: React.FC = () => {
     queryFn: () => getAllVenue(venueName, 1, 20, city, sport),
   });
 
-  const venuesList = venues ?? [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -316,9 +315,9 @@ const BookingPage: React.FC = () => {
           </div>
 
           {/* Venue Cards Grid */}
-          {venuesList && venuesList.length > 0 ? (
+          {venues && venues.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {(venuesList || []).map((venue: Venue) => (
+              {(venues || []).map((venue: Venue) => (
                 <div
                   onClick={() => {
                     navigate(`/booking/${venue.id}`);
