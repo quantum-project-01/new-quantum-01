@@ -363,4 +363,93 @@ export class AuthController {
       });
     }
   }
-} 
+
+  static async adminLogin(req: Request, res: Response) {
+    try {
+      console.log('===== Admin Login Request Debug =====');
+      console.log('Request Body:', JSON.stringify(req.body, null, 2));
+
+      const { email, password } = req.body;
+      
+      // Comprehensive input validation
+      const validationErrors: string[] = [];
+      if (!email) validationErrors.push('Email is required');
+      if (!password) validationErrors.push('Password is required');
+      
+      if (validationErrors.length > 0) {
+        console.log('Admin Login Validation Errors:', validationErrors);
+        return res.status(400).json({ 
+          success: false, 
+          errors: validationErrors,
+          message: 'Invalid input' 
+        });
+      }
+
+      // Email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        console.log('Invalid email format:', email);
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Invalid email format'
+        });
+      }
+
+      try {
+        const result = await AuthService.loginUser(email, password, 'admin');
+        
+        console.log('Admin Login Service Result:', {
+          success: result.success,
+          hasUser: !!result.user,
+          hasToken: !!result.token,
+          userRole: result.user?.role
+        });
+
+        if (result.success && result.user && result.token) {
+          // Verify that the user is actually an admin
+          if (result.user.role !== 'admin') {
+            console.log('Non-admin user attempted admin login:', result.user.email);
+            return res.status(403).json({
+              success: false,
+              message: 'Access denied. Admin privileges required.'
+            });
+          }
+
+          return res.status(200).json({
+            success: true,
+            message: 'Admin login successful',
+            data: {
+              user: {
+                id: result.user.id,
+                name: result.user.name,
+                email: result.user.email,
+                role: result.user.role,
+                phone: result.user.phone
+              },
+              token: result.token
+            }
+          });
+        } else {
+          return res.status(401).json({
+            success: false,
+            message: result.error || 'Invalid admin credentials'
+          });
+        }
+      } catch (serviceError) {
+        console.error('Admin Login Service Error:', serviceError);
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid admin credentials',
+          details: serviceError instanceof Error ? serviceError.message : 'Unknown service error'
+        });
+      }
+    } catch (error) {
+      console.error('Admin Login Error:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Internal server error during admin login',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+}
