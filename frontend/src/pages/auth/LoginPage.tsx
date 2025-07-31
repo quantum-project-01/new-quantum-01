@@ -14,7 +14,7 @@ const LoginPage: React.FC = () => {
   const { login } = useAuthStore();
 
   // Determine the redirect path from location state
-  const from = location.state?.from?.pathname || "/dashboard";
+  const from = location.state?.from?.pathname || "/booking";
   const loginIntent = location.state?.intent;
 
   // Login mutation

@@ -38,7 +38,7 @@ const OTPLoginPage: React.FC = () => {
     try {
       const response = await loginWithOTP(email, otp);
       if (response.success) {
-        navigate("/dashboard");
+        navigate("/booking");
       } else {
         setError(response.message || "Invalid OTP. Please try again.");
       }
