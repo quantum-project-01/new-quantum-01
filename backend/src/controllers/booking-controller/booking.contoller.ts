@@ -12,8 +12,12 @@ import { PaymentService } from "../../services/booking-services/payment.service"
 import { SlotService } from "../../services/venue-services/slot.service";
 import { AuthService } from "../../services/auth-services/auth.service";
 import { AppError } from "../../types";
+import { timeStringToMinutes } from "../../utils/convertSlotTime";
 
 export class BookingController {
+  // Helper method to convert time string (HH:MM:SS) to minutes
+  
+
   static async createBookingBeforePayment(req: Request, res: Response) {
     try {
       const bookingData = req.body as Booking;
@@ -34,14 +38,27 @@ export class BookingController {
         return res.status(400).json({ message: "Required fields are missing" });
       }
 
-      const startTime = Number(bookingData.startTime);
-      const endTime = Number(bookingData.endTime);
-      const duration = endTime - startTime;
+      // Validate time format and calculate duration
+      const startTime = bookingData.startTime;
+      const endTime = bookingData.endTime;
+      
+      // Validate time string format (HH:MM:SS or HH:MM)
+      const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/;
+      if (!timeRegex.test(startTime) || !timeRegex.test(endTime)) {
+        return res.status(400).json({ 
+          message: "Invalid time format. Expected HH:MM or HH:MM:SS format" 
+        });
+      }
+      
+      // Convert time strings to minutes for duration calculation
+      const startMinutes = timeStringToMinutes(startTime);
+      const endMinutes = timeStringToMinutes(endTime);
+      const duration = endMinutes - startMinutes;
 
-      if (isNaN(startTime) || isNaN(endTime)) {
-        return res
-          .status(400)
-          .json({ message: "Invalid startTime, endTime, or duration" });
+      if (isNaN(startMinutes) || isNaN(endMinutes) || duration <= 0) {
+        return res.status(400).json({ 
+          message: "Invalid time values or end time must be after start time" 
+        });
       }
 
       if (duration % 30 !== 0) {
@@ -106,8 +123,8 @@ export class BookingController {
         amount: bookingData.amount,
         duration: duration,
         numberOfSlots: numberOfSlots,
-        startTime: bookingData.startTime,
-        endTime: bookingData.endTime,
+        startTime: startTime, // Keep as time string
+        endTime: endTime,     // Keep as time string
         bookedDate: new Date(bookingData.bookedDate),
         bookingStatus: BookingStatus.Pending,
         paymentStatus: PaymentStatus.Initiated,
@@ -148,7 +165,7 @@ export class BookingController {
 
       if (
         booking.paymentStatus !== PaymentStatus.Initiated ||
-        booking.bookingStatus === BookingStatus.Pending
+        booking.bookingStatus !== BookingStatus.Pending
       ) {
         return res.status(400).json({
           message: "Payment has already been initiated for this booking",
@@ -208,6 +225,9 @@ export class BookingController {
         orderId: string;
       };
 
+      console.log("Verifying payment for booking ID:", id);
+      console.log(req.body);
+
       if (!id) {
         return res.status(400).json({ message: "Booking ID is required" });
       }
@@ -220,10 +240,10 @@ export class BookingController {
 
       if (
         !booking ||
-        booking.paymentStatus === PaymentStatus.Initiated ||
-        booking.bookingStatus === BookingStatus.Pending
+        booking.paymentStatus !== PaymentStatus.Initiated ||
+        booking.bookingStatus !== BookingStatus.Pending
       ) {
-        return res.status(400).json({ message: "Payment details are missing" });
+        return res.status(400).json({ message: "Invalid booking state" });
       }
 
       const verified = await PaymentService.verifyPaymentSignature({

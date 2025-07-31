@@ -95,7 +95,7 @@ export const createMultipleSlots = async (facilityId: string, bulkData: BulkSlot
 
 export const getSlotsByFacility = async (facilityId: string) => {
   try {
-  const response = await axiosInstance.get(`/venue/get-slots-by-facility/${facilityId}~`);
+  const response = await axiosInstance.get(`/venue/slot/get-slots-by-facility/${facilityId}`);
     return response.data.data;
   } catch (error) {
     console.error("Error getting slots by facility:", error);

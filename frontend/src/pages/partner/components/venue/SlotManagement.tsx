@@ -472,8 +472,8 @@ const SlotManagement: React.FC<SlotManagementProps> = ({ venue }) => {
                     <div className="px-6 pb-6 animate-in slide-in-from-top-2 duration-200">
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         {dateSlots
-                          .sort((a, b) => a.startTime.localeCompare(b.startTime))
-                          .map((slot) => (
+                          .sort((a: Slot, b: Slot) => a.startTime.localeCompare(b.startTime))
+                          .map((slot: Slot) => (
                       <div
                         key={slot.id}
                         className="bg-gray-700 border border-gray-600 rounded-lg p-4 hover:border-gray-500 transition-colors"

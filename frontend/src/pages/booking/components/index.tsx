@@ -1,16 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import ActivitySelector, { Activity } from "./BookSlots/ActivitySelector";
 import FacilitySelector, { Facility } from "./BookSlots/FacilitySelector";
-import SlotSelector, {
-  Slot
-} from "./BookSlots/SlotSelector";
+import SlotSelector, { Slot } from "./BookSlots/SlotSelector";
 import CheckoutCard from "./BookSlots/CheckoutCard";
+import { Venue } from "../VenueDetailsPage";
 
-
-const BookSlots: React.FC = () => {
-  const navigate = useNavigate();
-  const { venueId } = useParams(); // Get the venue ID from the URL
+const BookSlots: React.FC<{ venue: Venue }> = ({ venue }) => {
+  const { venueId } = useParams();
 
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
     null
@@ -26,13 +23,17 @@ const BookSlots: React.FC = () => {
     setSelectedSlots([]);
   };
 
-  const handleActivityReset = () => {
+  const handleActivityReset = (refetchActivities: () => void) => {
     setSelectedActivity(null);
     setSelectedFacility(null);
     setSelectedSlots([]);
+    refetchActivities();
   };
 
-  const handleFacilitySelect = (activity: Activity | null, facility: Facility) => {
+  const handleFacilitySelect = (
+    activity: Activity | null,
+    facility: Facility
+  ) => {
     setSelectedActivity(activity);
     setSelectedFacility(facility);
     setSelectedSlots([]);
@@ -49,22 +50,6 @@ const BookSlots: React.FC = () => {
       setSelectedSlots(selectedSlots.filter((s) => s.id !== slot.id));
     } else {
       setSelectedSlots([...selectedSlots, slot]);
-    }
-  };
-
-  const handleProceed = () => {
-    // Navigate to checkout page with selected booking details
-    if (selectedActivity && selectedFacility && selectedSlots.length > 0) {
-      navigate(`/booking/${venueId}/checkout`, {
-        state: {
-          activity: selectedActivity,
-          facility: selectedFacility,
-          slots: selectedSlots,
-        },
-      });
-    } else {
-      // Optional: Show an error or alert
-      alert("Please select an activity, facility, and at least one slot.");
     }
   };
 
@@ -91,6 +76,7 @@ const BookSlots: React.FC = () => {
         <SlotSelector
           selectedActivity={selectedActivity}
           selectedFacility={selectedFacility}
+          selectedSlots={selectedSlots}
           onSlotSelect={handleSlotSelect}
         />
       </div>
@@ -98,10 +84,10 @@ const BookSlots: React.FC = () => {
       {/* Right Section - Checkout Card */}
       <div className="lg:col-span-1">
         <CheckoutCard
+          venue={venue}
           selectedActivity={selectedActivity}
           selectedFacility={selectedFacility}
           selectedSlots={selectedSlots}
-          onProceed={handleProceed}
         />
       </div>
     </div>

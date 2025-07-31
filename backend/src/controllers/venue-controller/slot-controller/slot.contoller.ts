@@ -97,6 +97,7 @@ export class SlotController {
       }
 
       const slots = await SlotService.getSlotsByFacilityId(facilityId);
+      
       return res.status(200).json({ data: slots });
     } catch (error) {
       return res.status(500).json({ message: "Failed to get slots" });

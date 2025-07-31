@@ -25,7 +25,7 @@ interface FacilitySelectorProps {
     facility: Facility,
     selectedActivity: Activity | null
   ) => void;
-  onResetSelection: () => void;
+  onResetSelection: (refetchFacilities: () => void) => void;
 }
 
 const FacilitySelector: React.FC<FacilitySelectorProps> = ({
@@ -38,10 +38,37 @@ const FacilitySelector: React.FC<FacilitySelectorProps> = ({
     data: facilities,
     isLoading,
     error,
+    refetch: refetchFacilities,
   } = useQuery({
     queryKey: ["facilities", selectedActivity?.id],
     queryFn: () => getFacilitiesByActivity(selectedActivity?.id || ""),
+    enabled: !!selectedActivity?.id, // Only fetch when activity is selected
   });
+
+  // Skeleton component for facility cards
+  const FacilitySkeleton = () => (
+    <div className="flex-shrink-0 w-80 bg-white rounded-2xl border-2 border-gray-200 animate-pulse">
+      {/* Image skeleton */}
+      <div className="relative h-36 bg-gray-200 rounded-t-2xl"></div>
+
+      <div className="p-1 px-3">
+        {/* Facility name skeleton */}
+        <div className="h-6 bg-gray-200 rounded mb-2 w-3/4"></div>
+
+        {/* Price skeleton */}
+        <div className="flex items-center justify-between mb-1">
+          <div className="h-8 bg-gray-200 rounded w-20"></div>
+          <div className="h-4 bg-gray-200 rounded w-16"></div>
+        </div>
+
+        {/* Time skeleton */}
+        <div className="h-4 bg-gray-200 rounded mb-1 w-24"></div>
+
+        {/* Status skeleton */}
+        <div className="h-4 bg-gray-200 rounded mb-2 w-20"></div>
+      </div>
+    </div>
+  );
 
   if (!selectedActivity) {
     return (
@@ -64,7 +91,7 @@ const FacilitySelector: React.FC<FacilitySelectorProps> = ({
             Selected Facility
           </h3>
           <button
-            onClick={onResetSelection}
+            onClick={() => onResetSelection(refetchFacilities)}
             className="flex items-center text-green-600 hover:text-green-700 text-xs lg:text-sm font-medium transition-colors"
           >
             <ArrowLeft className="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
@@ -77,7 +104,10 @@ const FacilitySelector: React.FC<FacilitySelectorProps> = ({
           <div className="relative h-full max-h-36 overflow-hidden rounded-t-2xl">
             <div className="flex transition-transform duration-300 ease-in-out">
               <img
-                src={selectedFacility?.images?.[0] || "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop"}
+                src={
+                  selectedFacility?.images?.[0] ||
+                  "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop"
+                }
                 alt={`${selectedFacility?.name}`}
                 className="w-full h-full object-cover flex-shrink-0"
               />
@@ -122,7 +152,7 @@ const FacilitySelector: React.FC<FacilitySelectorProps> = ({
         </h3>
         {selectedFacility && (
           <button
-            onClick={onResetSelection}
+            onClick={() => onResetSelection(refetchFacilities)}
             className="text-blue-600 hover:text-blue-700 text-sm font-medium"
           >
             Change Facility
@@ -131,46 +161,71 @@ const FacilitySelector: React.FC<FacilitySelectorProps> = ({
       </div>
 
       <div className="flex space-x-4 overflow-x-auto scrollbar-hide">
-        {(facilities || []).map((facility: Facility) => (
-          <div
-            key={facility.id}
-            onClick={() => onFacilitySelect(facility, selectedActivity)}
-            className="flex-shrink-0 w-80 bg-white rounded-2xl border-2 border-gray-200 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.01]"
-          >
-            {/* Image Carousel */}
-            <div className="relative h-full max-h-36 overflow-hidden rounded-t-2xl">
-              <div className="flex transition-transform duration-300 ease-in-out">
-                <img
-                  src={facility?.images?.[0] || "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop"}
-                  alt={`${facility.name}`}
-                  className="w-full h-full object-cover flex-shrink-0"
-                />
+        {isLoading || error ? (
+          // Show skeleton loading cards
+          <>
+            <FacilitySkeleton />
+            <FacilitySkeleton />
+            <FacilitySkeleton />
+          </>
+        ) : facilities && facilities.length > 0 ? (
+          // Show actual facility cards
+          facilities.map((facility: Facility) => (
+            <div
+              key={facility.id}
+              onClick={() => onFacilitySelect(facility, selectedActivity)}
+              className="flex-shrink-0 w-80 bg-white rounded-2xl border-2 border-gray-200 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.01]"
+            >
+              {/* Image Carousel */}
+              <div className="relative h-full max-h-36 overflow-hidden rounded-t-2xl">
+                <div className="flex transition-transform duration-300 ease-in-out">
+                  <img
+                    src={
+                      facility?.images?.[0] ||
+                      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop"
+                    }
+                    alt={`${facility.name}`}
+                    className="w-full h-full object-cover flex-shrink-0"
+                  />
+                </div>
+              </div>
+
+              <div className="p-1 px-3">
+                <h4 className="text-lg font-semibold text-gray-900">
+                  {facility.name}
+                </h4>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-2xl font-bold text-gray-900">
+                    ₹{facility.start_price_per_hour}
+                  </span>
+                  <span className="text-sm text-gray-500">onwards</span>
+                </div>
+                <div className="text-sm text-gray-600 mb-1">
+                  {facility.startTime} - {facility.endTime}
+                </div>
+                <div className="text-sm text-blue-600 font-medium mb-2">
+                  {facility.isAvailable
+                    ? "Available"
+                    : facility.isFillingFast
+                    ? "Filling Fast"
+                    : "Not Available"}
+                </div>
               </div>
             </div>
-
-            <div className="p-1 px-3">
-              <h4 className="text-lg font-semibold text-gray-900">
-                {facility.name}
-              </h4>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-2xl font-bold text-gray-900">
-                  ₹{facility.start_price_per_hour}
-                </span>
-                <span className="text-sm text-gray-500">onwards</span>
+          ))
+        ) : (
+          // Show no facilities message
+          <div className="flex-shrink-0 w-80 bg-gray-50 rounded-2xl border-2 border-gray-200">
+            <div className="flex flex-col p-4 h-full text-center">
+              <div className="text-gray-600 text-lg font-semibold mb-2">
+                No Facilities Available
               </div>
-              <div className="text-sm text-gray-600 mb-1">
-                {facility.startTime} - {facility.endTime}
-              </div>
-              <div className="text-sm text-blue-600 font-medium mb-2">
-                {facility.isAvailable
-                  ? "Available"
-                  : facility.isFillingFast
-                  ? "Filling Fast"
-                  : "Not Available"}
+              <div className="text-gray-500 text-sm">
+                No facilities found for this activity.
               </div>
             </div>
           </div>
-        ))}
+        )}
       </div>
     </div>
   );

@@ -13,6 +13,7 @@ import slotRoutes from "./routes/venue-routes/slot.routes";
 dotenv.config();
 
 const app = express();
+app.use(express.json());
 
 // CORS middleware
 app.use((req, res, next) => {

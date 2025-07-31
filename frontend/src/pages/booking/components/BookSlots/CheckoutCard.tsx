@@ -1,24 +1,252 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MapPin, X, Gift, ArrowRight, Calendar, Clock } from "lucide-react";
+import { Slot } from "./SlotSelector";
 import { Activity } from "./ActivitySelector";
 import { Facility } from "./FacilitySelector";
-import { Slot } from "./SlotSelector";
+import { useMutation } from "@tanstack/react-query";
+import {
+  createBookingOrder,
+  validateAndCreateBooking,
+  verifyBookingPayment,
+} from "../../../../services/partner-service/paymentService";
+import { useAuthStore } from "../../../../store/authStore";
+import { toast } from "react-hot-toast";
+import { Venue } from "../../VenueDetailsPage";
+
+export enum Currency {
+  INR = "INR",
+  USD = "USD",
+}
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 interface CheckoutCardProps {
+  venue: Venue;
   selectedActivity: Activity | null;
   selectedFacility: Facility | null;
   selectedSlots: Slot[];
-  onProceed: () => void;
-  onProceedToCheckout?: () => void; // Add optional prop
 }
 
 const CheckoutCard: React.FC<CheckoutCardProps> = ({
+  venue,
+  selectedSlots,
   selectedActivity,
   selectedFacility,
-  selectedSlots,
-  onProceed,
-  onProceedToCheckout, // Add prop
 }) => {
+  const { user } = useAuthStore();
+  const subtotal = selectedSlots.reduce((sum, slot) => sum + slot.amount, 0);
+  const gst = subtotal * 0.18;
+  const total = subtotal + gst;
+  const [validating, setValidating] = useState(false);
+  const [initiatingPayment, setInitiatingPayment] = useState(false);
+  const [verifyingPayment, setVerifyingPayment] = useState(false);
+  const [bookingId, setBookingId] = useState<string>("");
+
+  // Step 1: Validate and create booking mutation
+  const validateBookingMutation = useMutation({
+    mutationFn: () => {
+      const bookingData = {
+        venueId: selectedActivity?.venueId || "",
+        userId: user?.id || "",
+        partnerId: venue.partnerId,
+        facilityId: selectedFacility?.id || "",
+        slotIds: selectedSlots
+          .map((slot) => slot.id)
+          .filter((id): id is string => typeof id === "string"),
+        activityId: selectedActivity?.id || "",
+        amount: total,
+        startTime: selectedSlots[0]?.startTime || "",
+        endTime: selectedSlots[selectedSlots.length - 1]?.endTime || "",
+        bookedDate: new Date(),
+      };
+
+      return validateAndCreateBooking(bookingData);
+    },
+    onSuccess: (bookingResponse) => {
+      setBookingId(bookingResponse);
+      setValidating(false);
+      setInitiatingPayment(true);
+
+      // Proceed to create order
+      createOrderMutation.mutate(bookingResponse);
+    },
+    onError: (error) => {
+      toast.error("Error validating booking. Please try again.");
+      setValidating(false);
+    },
+  });
+
+  // Step 2: Create payment order mutation
+  const createOrderMutation = useMutation({
+    mutationFn: (bookingId: string) => {
+      return createBookingOrder(bookingId);
+    },
+    onSuccess: (orderResponse) => {
+      if (!orderResponse?.id) {
+        throw new Error("Failed to create payment order");
+      }
+      setInitiatingPayment(false);
+      openRazorpayCheckout(orderResponse);
+    },
+    onError: (error) => {
+      toast.error("Error creating booking order. Please try again.");
+      setInitiatingPayment(false);
+    },
+  });
+
+  // Step 3: Verify payment mutation
+  const verifyPaymentMutation = useMutation({
+    mutationFn: ({
+      bookingId,
+      paymentId,
+      orderId,
+      signature,
+    }: {
+      bookingId: string;
+      paymentId: string;
+      orderId: string;
+      signature: string;
+    }) => {
+      
+      return verifyBookingPayment({ bookingId, paymentId, orderId, signature });
+    },
+    onSuccess: (response) => {
+      // Check if verification was successful
+      if (
+        response &&
+        response.message &&
+        response.message.includes("verified")
+      ) {
+        toast.success("🎉 Payment successful! Your slots are booked.");
+      } else {
+        toast.error("Payment verification failed. Please contact support.");
+      }
+    },
+    onError: (error) => {
+      toast.error("Payment verification failed. Please contact support.");
+    },
+    onSettled: () => {
+      setVerifyingPayment(false);
+    },
+  });
+
+  // Razorpay checkout handler
+  const openRazorpayCheckout = (orderData: any) => {
+
+    // Check if Razorpay is loaded
+    if (!window.Razorpay) {
+      toast.error(
+        "Payment system not loaded. Please refresh the page and try again."
+      );
+      setInitiatingPayment(false);
+      return;
+    }
+
+    const razorpayOptions = {
+      key: process.env.REACT_APP_RAZORPAY_KEY_ID || "", // TODO: Add your Razorpay key
+      amount: total * 100, // Amount in paise
+      currency: Currency.INR,
+      name: venue.name,
+      order_id: orderData?.id,
+
+      // Payment success handler
+      handler: async function (response: any) {
+        setVerifyingPayment(true);
+
+        const verificationPayload = {
+          bookingId: bookingId,
+          paymentId: response.razorpay_payment_id,
+          orderId: response.razorpay_order_id,
+          signature: response.razorpay_signature,
+        };
+        verifyPaymentMutation.mutate(verificationPayload);
+      },
+
+      // Pre-fill user information
+      prefill: {
+        name: user?.name || user?.email?.split("@")[0] || "Customer",
+        email: userInfo.email || user?.email || "",
+        contact: userInfo.mobile || "",
+      },
+
+      // Additional booking details
+      notes: {
+        venue_id: selectedActivity?.venueId || "",
+        facility_id: selectedFacility?.id || "",
+        activity_id: selectedActivity?.id || "",
+        booking_id: bookingId,
+        user_id: user?.id || "",
+      },
+
+      // UI theme
+      theme: {
+        color: "#16a34a", // Green color matching your design
+      },
+
+      // Payment modal settings
+      modal: {
+        ondismiss: function () {
+          setInitiatingPayment(false);
+          setVerifyingPayment(false);
+          toast.error("Payment cancelled");
+        },
+      },
+    };
+
+    // Open Razorpay checkout
+    const razorpay = new window.Razorpay(razorpayOptions);
+
+    // Handle payment failures
+    razorpay.on("payment.failed", function (response: any) {
+      toast.error(`Payment failed: ${response.error.description}`);
+      setInitiatingPayment(false);
+      setVerifyingPayment(false);
+    });
+
+    razorpay.open();
+  };
+
+  // Load Razorpay script on component mount
+  useEffect(() => {
+    // Load Razorpay script only if not already loaded
+    if (!window.Razorpay) {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
+      document.body.appendChild(script);
+
+      return () => {
+        // Only remove if we added it
+        if (document.body.contains(script)) {
+          document.body.removeChild(script);
+        }
+      };
+    }
+  }, []);
+
+  // Main payment initiation handler
+  const handleProceed = () => {
+    // Validate required fields
+    if (!userInfo.email || !userInfo.mobile) {
+      toast.error("Please fill in email and mobile number");
+      return;
+    }
+
+    if (!selectedActivity || !selectedFacility || selectedSlots.length === 0) {
+      toast.error(
+        "Please select an activity, facility, and at least one slot."
+      );
+      return;
+    }
+
+    // Start the booking flow
+    setValidating(true);
+    validateBookingMutation.mutate();
+  };
   const [userInfo, setUserInfo] = useState({
     email: "",
     mobile: "",
@@ -29,10 +257,6 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
   const [whatsappUpdates, setWhatsappUpdates] = useState(true);
   const [showCoupon, setShowCoupon] = useState(false);
   const [couponCode, setCouponCode] = useState("");
-
-  const subtotal = selectedSlots.reduce((sum, slot) => sum + slot.amount, 0);
-  const gst = subtotal * 0.18;
-  const total = subtotal + gst;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -49,15 +273,6 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
     const ampm = hour >= 12 ? "PM" : "AM";
     const displayHour = hour % 12 || 12;
     return `${displayHour}:${minutes} ${ampm}`;
-  };
-
-  const handleProceed = () => {
-    // If onProceedToCheckout is provided, use it; otherwise, use onProceed
-    if (onProceedToCheckout) {
-      onProceedToCheckout();
-    } else {
-      onProceed();
-    }
   };
 
   return (
@@ -218,13 +433,26 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
 
         <button
           onClick={handleProceed}
-          disabled={selectedSlots.length === 0}
+          disabled={
+            selectedSlots.length === 0 ||
+            validating ||
+            initiatingPayment ||
+            verifyingPayment
+          }
           className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors duration-200 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
         >
-          <span>₹{total.toFixed(2)}</span>
-          <span className="mx-2">•</span>
-          <span>{onProceedToCheckout ? "CHECKOUT" : "PROCEED"}</span>
-          <ArrowRight className="w-4 h-4 ml-2" />
+          {validating ? (
+            <span>Validating Booking...</span>
+          ) : initiatingPayment ? (
+            <span>Opening Payment...</span>
+          ) : verifyingPayment ? (
+            <span>Verifying Payment...</span>
+          ) : (
+            <>
+              <span>Pay ₹{total.toFixed(2)}</span>
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </>
+          )}
         </button>
       </div>
     </div>
