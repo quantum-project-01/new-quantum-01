@@ -9,5 +9,6 @@ router.post('/send-otp', AuthController.sendLoginOTP);
 router.post('/verify-otp', AuthController.verifyOTP);
 router.post('/register-partner', AuthController.registerPartner);
 router.post('/partner-login', AuthController.partnerLogin);
+router.post('/admin-login', AuthController.adminLogin);
 
-export default router; 
+export default router;

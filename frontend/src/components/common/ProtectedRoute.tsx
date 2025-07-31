@@ -30,13 +30,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (requiredRole && user?.role !== requiredRole) {
-    // User doesn't have the required role
-    return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Access Denied</h1>
-        <p className="text-gray-600">You don't have permission to access this page.</p>
-      </div>
-    );
+    // User doesn't have the required role - redirect to appropriate login
+    return <Navigate 
+      to={redirectTo} 
+      state={{ 
+        from: location, 
+        intent: 'role_required',
+        requiredRole 
+      }} 
+      replace 
+    />;
   }
 
   return <>{children}</>;
