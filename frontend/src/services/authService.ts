@@ -43,6 +43,12 @@ export const authService = {
     return response.data;
   },
 
+  // Admin login
+  adminLogin: async (credentials: LoginForm): Promise<ApiResponse<{ user: User; token: string }>> => {
+    const response = await api.post('/auth/admin-login', credentials);
+    return response.data;
+  },
+
   // Get current user profile
   getProfile: async (): Promise<ApiResponse<User>> => {
     const response = await api.get('/auth/profile');

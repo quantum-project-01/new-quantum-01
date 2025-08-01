@@ -34,6 +34,7 @@ import PartnerRegisterPage from "./pages/auth/PartnerRegisterPage";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminLoginPage from "./pages/auth/AdminLoginPage";
 
 // Demo Page
 // import DashboardDemo from './pages/DashboardDemo';
@@ -101,6 +102,7 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/login-otp" element={<OTPLoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/admin/login" element={<AdminLoginPage />} />
             <Route path="/venues" element={<VenuesPage />} />
             <Route path="/venues/:id" element={<VenueDetailPage />} />
             <Route path="/membership" element={<MembershipPage />} />
@@ -150,20 +152,46 @@ function App() {
               }
             />
 
-            {/* Admin Routes - Nested dashboard routes */}
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/dashboard/users" element={<AdminDashboard />} />
+            {/* Admin Routes - Protected with admin role */}
+            <Route 
+              path="/admin/dashboard" 
+              element={
+                <ProtectedRoute requiredRole="admin" redirectTo="/admin/login">
+                  <AdminDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/dashboard/users" 
+              element={
+                <ProtectedRoute requiredRole="admin" redirectTo="/admin/login">
+                  <AdminDashboard />
+                </ProtectedRoute>
+              } 
+            />
             <Route
               path="/admin/dashboard/partners"
-              element={<AdminDashboard />}
+              element={
+                <ProtectedRoute requiredRole="admin" redirectTo="/admin/login">
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/admin/dashboard/venues"
-              element={<AdminDashboard />}
+              element={
+                <ProtectedRoute requiredRole="admin" redirectTo="/admin/login">
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/admin/dashboard/bookings"
-              element={<AdminDashboard />}
+              element={
+                <ProtectedRoute requiredRole="admin" redirectTo="/admin/login">
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/admin/dashboard/settings"
