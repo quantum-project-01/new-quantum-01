@@ -50,6 +50,8 @@ import CheckoutPage from "./pages/booking/CheckoutPage";
 import ContactPage from "./pages/ContactPage";
 import WalletPage from "./pages/WalletPage";
 import MyBookingsPage from "./pages/MyBookingsPage";
+import ShopPage from "./pages/ShopPage";
+import ShopCheckoutPage from "./pages/ShopCheckoutPage";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -104,6 +106,8 @@ function App() {
             <Route path="/venues" element={<VenuesPage />} />
             <Route path="/venues/:id" element={<VenueDetailPage />} />
             <Route path="/membership" element={<MembershipPage />} />
+            <Route path="/shop" element={<ShopPage />} />
+            <Route path="/shop/checkout" element={<ShopCheckoutPage />} />
             <Route path="/events" element={<EventsPage />} />
             <Route path="/events/:eventId" element={<EventDetailsPage />} />
 
