@@ -31,6 +31,7 @@ export interface SlotDataByDate {
 }
 
 interface SlotSelectorProps {
+  refetchSlots?: React.MutableRefObject<(() => void) | null>;
   selectedFacility: Facility | null;
   selectedActivity: Activity | null;
   selectedSlots?: Slot[]; // Add selectedSlots as optional prop
@@ -38,6 +39,7 @@ interface SlotSelectorProps {
 }
 
 const SlotSelector: React.FC<SlotSelectorProps> = ({
+  refetchSlots,
   selectedActivity,
   selectedFacility,
   selectedSlots = [], // Default to empty array
@@ -47,11 +49,20 @@ const SlotSelector: React.FC<SlotSelectorProps> = ({
     data: rawData,
     isLoading,
     error,
+    refetch: refetchSlotsQuery,
   } = useQuery({
     queryKey: ["slots", selectedFacility?.id],
     queryFn: () => getSlotsByFacility(selectedFacility?.id || ""),
     enabled: !!selectedFacility?.id, // Only fetch when facility is selected
   });
+
+  // Use useEffect to call the prop refetchSlots when we need to refetch
+  React.useEffect(() => {
+    if (refetchSlots) {
+      // Replace the refetchSlots prop with our actual refetch function
+      refetchSlots.current = refetchSlotsQuery;
+    }
+  }, [refetchSlotsQuery, refetchSlots]);
 
   // Skeleton component for slot grid
   const SlotSkeleton = () => (

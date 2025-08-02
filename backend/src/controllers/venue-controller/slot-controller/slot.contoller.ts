@@ -121,13 +121,6 @@ export class SlotController {
         });
       }
 
-      console.log('Controller received params:', {
-        facilityId,
-        startDate,
-        endDate,
-        sortType
-      });
-
       const slots = await SlotService.getSlotsByDateRangeAndFacilityId(
         startDate as string,
         endDate as string,
@@ -373,6 +366,26 @@ export class SlotController {
       return res.status(500).json({
         message: "Failed to update slots",
         error: error.message,
+      });
+    }
+  }
+
+  static async unlockSlots(req: Request, res: Response) {
+    try {
+      const { ids } = req.body as { ids: string[] };
+
+      if (!ids) {
+        return res.status(400).json({ message: "Slot IDs are required" });
+      }
+
+      await SlotService.unlockSlots(ids);
+
+      return res.status(200).json({ message: "Slots unlocked successfully" });
+    } catch (error) {
+      console.error("Error unlocking slot:", error);
+      return res.status(500).json({
+        message: "Failed to unlock slot",
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import ActivitySelector, { Activity } from "./BookSlots/ActivitySelector";
 import FacilitySelector, { Facility } from "./BookSlots/FacilitySelector";
@@ -8,6 +8,7 @@ import { Venue } from "../VenueDetailsPage";
 
 const BookSlots: React.FC<{ venue: Venue }> = ({ venue }) => {
   const { venueId } = useParams();
+  const refetchSlotsRef = useRef<(() => void) | null>(null);
 
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
     null
@@ -53,6 +54,12 @@ const BookSlots: React.FC<{ venue: Venue }> = ({ venue }) => {
     }
   };
 
+  const refetchSlots = () => {
+    if (refetchSlotsRef.current) {
+      refetchSlotsRef.current();
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 py-4">
       {/* Left Section - Booking Steps */}
@@ -74,6 +81,7 @@ const BookSlots: React.FC<{ venue: Venue }> = ({ venue }) => {
         />
 
         <SlotSelector
+          refetchSlots={refetchSlotsRef}
           selectedActivity={selectedActivity}
           selectedFacility={selectedFacility}
           selectedSlots={selectedSlots}
@@ -84,6 +92,7 @@ const BookSlots: React.FC<{ venue: Venue }> = ({ venue }) => {
       {/* Right Section - Checkout Card */}
       <div className="lg:col-span-1">
         <CheckoutCard
+          refetchSlots={refetchSlots}
           venue={venue}
           selectedActivity={selectedActivity}
           selectedFacility={selectedFacility}

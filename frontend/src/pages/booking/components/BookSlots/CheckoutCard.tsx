@@ -12,6 +12,7 @@ import {
 import { useAuthStore } from "../../../../store/authStore";
 import { toast } from "react-hot-toast";
 import { Venue } from "../../VenueDetailsPage";
+import { unlockSlots } from "../../../../services/partner-service/slotService";
 
 export enum Currency {
   INR = "INR",
@@ -25,6 +26,7 @@ declare global {
 }
 
 interface CheckoutCardProps {
+  refetchSlots: () => void;
   venue: Venue;
   selectedActivity: Activity | null;
   selectedFacility: Facility | null;
@@ -32,6 +34,7 @@ interface CheckoutCardProps {
 }
 
 const CheckoutCard: React.FC<CheckoutCardProps> = ({
+  refetchSlots,
   venue,
   selectedSlots,
   selectedActivity,
@@ -45,6 +48,22 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
   const [initiatingPayment, setInitiatingPayment] = useState(false);
   const [verifyingPayment, setVerifyingPayment] = useState(false);
   const [bookingId, setBookingId] = useState<string>("");
+  const [slotIds, setSlotIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    setSlotIds(
+      selectedSlots
+        .map((slot) => slot.id)
+        .filter((id): id is string => typeof id === "string")
+    );
+  }, [selectedSlots]);
+
+  const unlockSlotmutation = useMutation({
+    mutationFn: () => unlockSlots(slotIds),
+    onSuccess: () => {
+      refetchSlots();
+    },
+  });
 
   // Step 1: Validate and create booking mutation
   const validateBookingMutation = useMutation({
@@ -54,9 +73,7 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
         userId: user?.id || "",
         partnerId: venue.partnerId,
         facilityId: selectedFacility?.id || "",
-        slotIds: selectedSlots
-          .map((slot) => slot.id)
-          .filter((id): id is string => typeof id === "string"),
+        slotIds: slotIds,
         activityId: selectedActivity?.id || "",
         amount: total,
         startTime: selectedSlots[0]?.startTime || "",
@@ -77,6 +94,7 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
     onError: (error) => {
       toast.error("Error validating booking. Please try again.");
       setValidating(false);
+      unlockSlotmutation.mutate();
     },
   });
 
@@ -95,6 +113,7 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
     onError: (error) => {
       toast.error("Error creating booking order. Please try again.");
       setInitiatingPayment(false);
+      unlockSlotmutation.mutate();
     },
   });
 
@@ -111,7 +130,6 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
       orderId: string;
       signature: string;
     }) => {
-      
       return verifyBookingPayment({ bookingId, paymentId, orderId, signature });
     },
     onSuccess: (response) => {
@@ -123,11 +141,12 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
       ) {
         toast.success("🎉 Payment successful! Your slots are booked.");
       } else {
-        toast.error("Payment verification failed. Please contact support.");
+        toast.error("Payment verification failed. Don't worry, if your money has been deducted, our team will contact you shortly.");
       }
     },
     onError: (error) => {
-      toast.error("Payment verification failed. Please contact support.");
+      toast.error("Payment verification failed. Don't worry, if your money has been deducted, our team will contact you shortly.");
+      unlockSlotmutation.mutate();
     },
     onSettled: () => {
       setVerifyingPayment(false);
@@ -136,7 +155,6 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
 
   // Razorpay checkout handler
   const openRazorpayCheckout = (orderData: any) => {
-
     // Check if Razorpay is loaded
     if (!window.Razorpay) {
       toast.error(
@@ -231,7 +249,7 @@ const CheckoutCard: React.FC<CheckoutCardProps> = ({
   // Main payment initiation handler
   const handleProceed = () => {
     // Validate required fields
-    if (!userInfo.email || !userInfo.mobile) {
+    if (!userInfo.email && !userInfo.mobile) {
       toast.error("Please fill in email and mobile number");
       return;
     }

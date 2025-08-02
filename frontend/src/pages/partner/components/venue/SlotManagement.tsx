@@ -4,14 +4,12 @@ import { Plus, Edit3, Trash2, Calendar, DollarSign, Loader2, RotateCcw, AlertCir
 import { Venue } from "../../../../types";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
-import {
-  Activity,
-  getActivitiesByVenue,
-} from "../../../../services/partner-service/activityService";
+
 import {
   Facility,
   getFacilitiesByVenue,
 } from "../../../../services/partner-service/facilityService";
+
 import {
   Slot,
   SlotFormData,
@@ -20,8 +18,7 @@ import {
   createMultipleSlots,
   getSlotsByVenue,
   updateSlot,
-  deleteSlot,
-  generateBulkSlots,
+  deleteSlot
 } from "../../../../services/partner-service/slotService";
 
 interface SlotModalFormData {
